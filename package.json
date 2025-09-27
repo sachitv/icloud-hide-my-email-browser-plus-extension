@@ -29,7 +29,7 @@
     "lodash.isequal": "^4.5.0",
     "lodash.startcase": "^4.4.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "react-dom": "^19.1.1",
     "regenerator-runtime": "^0.14.1",
     "uuid": "^8.3.2",
     "webextension-polyfill": "^0.12.0"
@@ -39,7 +39,7 @@
     "@types/lodash.isequal": "^4.5.6",
     "@types/lodash.startcase": "^4.4.7",
     "@types/react": "^18.0.39",
-    "@types/react-dom": "^18.2.18",
+    "@types/react-dom": "^19.1.9",
     "@types/uuid": "^8.3.4",
     "@types/webextension-polyfill": "^0.12.1",
     "@typescript-eslint/eslint-plugin": "^5.47.1",
