@@ -71,9 +71,9 @@ jobs:
         run: npm ci
       - name: Ensure ATTRIBUTIONS.md is up to date
         run: |
-          node utils/generateLicenseTable.mjs > ATTRIBUTIONS.md
+          npm run report:licenses
           if ! git diff --quiet ATTRIBUTIONS.md; then
-            echo "::error::ATTRIBUTIONS.md is out of date. Run 'npm run report:licenses > ATTRIBUTIONS.md' and commit the result.";
+            echo "::error::ATTRIBUTIONS.md is out of date. Run 'npm run report:licenses' and commit the result.";
             git diff -- ATTRIBUTIONS.md;
             exit 1;
           fi

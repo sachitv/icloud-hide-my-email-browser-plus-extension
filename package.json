@@ -19,7 +19,7 @@
     "prettier": "prettier --write '**/*.{js,jsx,ts,tsx,json,css,scss,md,eslintrc}'",
     "prettier:check": "prettier --check '**/*.{js,jsx,ts,tsx,json,css,scss,md,eslintrc}'",
     "check:licenses": "node utils/checkLicenses.mjs",
-    "report:licenses": "node utils/generateLicenseTable.mjs"
+    "report:licenses": "node utils/generateLicenseTable.mjs > ATTRIBUTIONS.md && npx prettier --write ATTRIBUTIONS.md"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^7.0.1",
