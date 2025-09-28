@@ -62,7 +62,7 @@ const SignInInstructions = () => {
   const userguideUrl = browser.runtime.getURL('userguide.html');
 
   return (
-    <TitledComponent title="Hide My Email" subtitle="Sign in to iCloud">
+    <TitledComponent title="Hide My Email+" subtitle="Sign in to iCloud">
       <div className="space-y-6 text-slate-100">
         <div className="space-y-3 text-sm leading-relaxed text-slate-200/95">
           <p>
@@ -431,6 +431,25 @@ const HmeGenerator = (props: {
           <SignOutButton {...props} />
         </div>
       </div>
+      <div className="pt-4 text-xs text-slate-400">
+        <p className="text-center">
+          Made by <Link href="https://sachit.dev">Sachit Vithaldas</Link>.
+        </p>
+        <p className="text-center">
+          Forked from{' '}
+          <Link href="https://github.com/dedoussis/icloud-hide-my-email-browser-extension">
+            icloud-hide-my-email-browser-extension
+          </Link>
+          {' '}by <Link href="https://twitter.com/dedoussis">Dimitrios Dedoussis</Link>.
+        </p>
+        <p className="text-center">
+          The source code is available on{' '}
+          <Link href="https://github.com/sachitv/icloud-hide-my-email-browser-extension">
+            Github
+          </Link>
+          .
+        </p>
+      </div>
     </TitledComponent>
   );
 };
@@ -662,7 +681,7 @@ const HmeManager = (props: {
           type="search"
           className="w-full rounded-2xl border border-slate-700 bg-slate-900 py-2 pl-10 pr-3 text-sm text-slate-100 placeholder-slate-500 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/60"
           placeholder="Search"
-          aria-label="Search through your HideMyEmail addresses"
+          aria-label="Search through your HideMyEmail+ aliases"
           onChange={(e) => {
             setSearchPrompt(e.target.value);
             setSelectedHmeIdx(0);
