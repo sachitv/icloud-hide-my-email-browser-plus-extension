@@ -71,20 +71,29 @@ const SignInInstructions = () => {
               icloud.com
             </Link>
             . Complete the flow, including{' '}
-            <span className="font-semibold text-white">two-factor authentication</span>{' '}
+            <span className="font-semibold text-white">
+              two-factor authentication
+            </span>{' '}
             and{' '}
-            <span className="font-semibold text-white">Trust This Browser</span>.
+            <span className="font-semibold text-white">Trust This Browser</span>
+            .
           </p>
         </div>
         <div
           className="flex items-start gap-3 rounded-2xl border border-rainbow-blue/40 bg-rainbow-blue/10 px-4 py-3 text-sm text-slate-100"
           role="alert"
         >
-          <FontAwesomeIcon icon={faInfoCircle} className="mt-1 text-rainbow-blue" />
+          <FontAwesomeIcon
+            icon={faInfoCircle}
+            className="mt-1 text-rainbow-blue"
+          />
           <div>
             <p className="font-semibold text-white">Pro tip</p>
             <p>
-              Tick the <span className="font-semibold text-white">Keep me signed in</span>{' '}
+              Tick the{' '}
+              <span className="font-semibold text-white">
+                Keep me signed in
+              </span>{' '}
               box so the extension stays connected.
             </p>
           </div>
@@ -439,8 +448,9 @@ const HmeGenerator = (props: {
           Forked from{' '}
           <Link href="https://github.com/dedoussis/icloud-hide-my-email-browser-extension">
             icloud-hide-my-email-browser-extension
-          </Link>
-          {' '}by <Link href="https://twitter.com/dedoussis">Dimitrios Dedoussis</Link>.
+          </Link>{' '}
+          by{' '}
+          <Link href="https://twitter.com/dedoussis">Dimitrios Dedoussis</Link>.
         </p>
         <p className="text-center">
           The source code is available on{' '}

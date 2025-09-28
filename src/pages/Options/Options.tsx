@@ -137,23 +137,24 @@ const Disclaimer = () => {
         This extension is not endorsed by, directly affiliated with, maintained,
         authorized, or sponsored by Apple.
       </p>
-        <p className="text-center">
-          Made by <Link href="https://sachit.me">Sachit Vithaldas</Link>.
-        </p>
-        <p className="text-center">
-          Forked from{' '}
-          <Link href="https://github.com/dedoussis/icloud-hide-my-email-browser-extension">
-            icloud-hide-my-email-browser-extension
-          </Link>
-          {' '}by <Link href="https://twitter.com/dedoussis">Dimitrios Dedoussis</Link>.
-        </p>
-        <p className="text-center">
-          The source code is available at{' '}
-          <Link href="https://github.com/sachitv/icloud-hide-my-email-browser-extension">
-            Github
-          </Link>
-          .
-        </p>
+      <p className="text-center">
+        Made by <Link href="https://sachit.me">Sachit Vithaldas</Link>.
+      </p>
+      <p className="text-center">
+        Forked from{' '}
+        <Link href="https://github.com/dedoussis/icloud-hide-my-email-browser-extension">
+          icloud-hide-my-email-browser-extension
+        </Link>{' '}
+        by <Link href="https://twitter.com/dedoussis">Dimitrios Dedoussis</Link>
+        .
+      </p>
+      <p className="text-center">
+        The source code is available at{' '}
+        <Link href="https://github.com/sachitv/icloud-hide-my-email-browser-extension">
+          Github
+        </Link>
+        .
+      </p>
       <p>
         The extension itself is licensed under the same license as the source
         code.
@@ -210,7 +211,9 @@ const Options = () => {
             <Disclaimer />
           </div>
           <div className="space-y-3">
-            <h3 className="text-lg font-semibold text-white">Forward To Address</h3>
+            <h3 className="text-lg font-semibold text-white">
+              Forward To Address
+            </h3>
             <SelectFwdToForm />
           </div>
           <div className="space-y-3">

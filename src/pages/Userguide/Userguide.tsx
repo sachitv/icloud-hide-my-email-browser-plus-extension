@@ -44,10 +44,7 @@ const SignInInstructions = () => {
         <p>
           To setup this extension, you need to sign-in to your iCloud account
           from within the browser. Navigate to{' '}
-          <Link
-            href="https://icloud.com"
-            aria-label="Go to iCloud.com"
-          >
+          <Link href="https://icloud.com" aria-label="Go to iCloud.com">
             icloud.com
           </Link>{' '}
           and complete the full sign-in process, including the{' '}
@@ -115,10 +112,7 @@ const AutofillableDemoInput = (props: {
       >
         {props.label}{' '}
         {autofillableInputValue?.endsWith('@icloud.com') && (
-          <FontAwesomeIcon
-            icon={faCheckCircle}
-            className="ml-1 text-success"
-          />
+          <FontAwesomeIcon icon={faCheckCircle} className="ml-1 text-success" />
         )}
       </label>
       <input
