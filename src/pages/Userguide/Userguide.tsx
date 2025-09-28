@@ -15,22 +15,22 @@ const Notice = (props: {
 }) => {
   const { title, children, isAlert = false } = props;
 
-  const colourPalette = isAlert
-    ? 'bg-yellow-50 border-yellow-400 text-yellow-600'
-    : 'text-gray-600 bg-gray-50';
+  const basePalette = isAlert
+    ? 'border border-rainbow-yellow/50 bg-rainbow-yellow/10 text-amber-100'
+    : 'border border-slate-800/60 bg-slate-950/60 text-slate-200';
 
   return (
     <div
-      className={`flex p-3 text-sm border rounded-lg ${colourPalette}`}
+      className={`flex items-start gap-3 rounded-2xl px-4 py-3 text-sm shadow-inner shadow-slate-900/30 ${basePalette}`}
       role={isAlert ? 'alert' : 'info'}
     >
       <FontAwesomeIcon
         icon={isAlert ? faWarning : faInfoCircle}
-        className="mr-2 mt-1"
+        className={`mt-1 ${isAlert ? 'text-rainbow-yellow' : 'text-rainbow-blue'}`}
       />
       <span className="sr-only">Info</span>
       <div className="space-y-1">
-        <p className="font-semibold">{title}</p>
+        <p className="font-semibold text-white">{title}</p>
         {children}
       </div>
     </div>
@@ -39,14 +39,13 @@ const Notice = (props: {
 
 const SignInInstructions = () => {
   return (
-    <div className="space-y-4">
-      <div>
+    <div className="space-y-6 text-slate-200 leading-relaxed">
+      <div className="space-y-4">
         <p>
           To setup this extension, you need to sign-in to your iCloud account
           from within the browser. Navigate to{' '}
           <Link
             href="https://icloud.com"
-            className="font-semibold"
             aria-label="Go to iCloud.com"
           >
             icloud.com
@@ -55,10 +54,11 @@ const SignInInstructions = () => {
           <span className="font-semibold">two-factor authentication</span> and{' '}
           <span className="font-semibold">Trust This Browser</span> steps.
         </p>
-        <div className="text-center">
+        <div className="overflow-hidden rounded-3xl border border-slate-800/60 bg-slate-950/60 p-3 text-center shadow-[0_25px_45px_-30px_rgba(15,23,42,0.9)]">
           <img
             src="./icloud-sign-in.webp"
             alt="Screenshots of the icloud.com sign-in flow"
+            className="mx-auto rounded-2xl"
           />
         </div>
         <p>
@@ -111,18 +111,18 @@ const AutofillableDemoInput = (props: {
     <div className="space-y-2">
       <label
         htmlFor={props.inputAttributes.id}
-        className="block font-semibold text-gray-600"
+        className="block text-xs font-semibold uppercase tracking-[0.32em] text-slate-400"
       >
         {props.label}{' '}
         {autofillableInputValue?.endsWith('@icloud.com') && (
           <FontAwesomeIcon
             icon={faCheckCircle}
-            className="ml-1 mt-1 text-green-500"
+            className="ml-1 text-success"
           />
         )}
       </label>
       <input
-        className="block w-full rounded-md relative px-3 py-2 border border-gray-300 placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-sky-400 focus:border-sky-400 focus:z-10 sm:text-sm"
+        className="block w-full rounded-2xl border border-slate-800/70 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 transition focus:border-rainbow-blue focus:outline-none focus:ring-2 focus:ring-rainbow-blue/60"
         defaultValue={autofillableInputValue}
         onInput={(e) =>
           setAutoFillableInputValue((e.target as HTMLInputElement).value)
@@ -135,8 +135,8 @@ const AutofillableDemoInput = (props: {
 
 const UsageInstructions = () => {
   return (
-    <div className="space-y-4">
-      <div className="space-y-2">
+    <div className="space-y-6 text-slate-200">
+      <div className="space-y-3">
         <p>
           In the extension pop-up (🍏 icon) you can find a
           MacOS-System-Settings-like UI that enables you to generate new
@@ -153,10 +153,10 @@ const UsageInstructions = () => {
           extension.
         </p>
       </div>
-      <div className="space-y-2">
-        <p>Try it yourself:</p>
-        <div className="w-full max-w-md p-3 border rounded-lg bg-gray-50">
-          <form className="space-y-2">
+      <div className="space-y-3">
+        <p className="font-semibold text-white">Try it yourself:</p>
+        <div className="w-full max-w-md rounded-3xl border border-slate-800/60 bg-slate-950/60 p-4 shadow-inner shadow-slate-900/30">
+          <form className="space-y-3">
             <AutofillableDemoInput
               label="Autofill via button"
               inputAttributes={{
@@ -178,14 +178,14 @@ const UsageInstructions = () => {
           </form>
         </div>
       </div>
-      <div>
+      <div className="text-slate-200">
         If you find the autofill-via-button feature intrusive, you can disable
         it in the <Link href="./options.html">extension Options</Link>.
       </div>
-      <div>
+      <div className="text-slate-200">
         Don&apos;t forget to delete the HideMyEmail addresses you created above
         for the purposes of trying this out:
-        <ol className="list-decimal list-inside">
+        <ol className="list-decimal list-inside marker:text-rainbow-purple">
           <li>Open the extension pop-up (🍏 icon)</li>
           <li>Navigate to the &quot;Manage emails&quot; view</li>
           <li>Select, deactivate, and delete the relevant addresses</li>
@@ -197,7 +197,7 @@ const UsageInstructions = () => {
 
 const TechnicalOverview = () => {
   return (
-    <div className="space-y-2">
+    <div className="space-y-3 text-slate-200">
       <p>
         How does it work? At a high level, the extension interacts with the
         iCloud APIs by simulating the client behavior (i.e. the network
@@ -252,7 +252,7 @@ const TechnicalOverview = () => {
 
 const Userguide = () => {
   return (
-    <div className="w-9/12 m-auto mt-3 mb-24">
+    <div className="w-9/12 m-auto mt-3 mb-24 text-slate-100">
       <TitledComponent title="Hide My Email" subtitle="Quickstart guide">
         <div>
           <h3 className="font-bold text-lg mb-3">Sign-in to iCloud</h3>
