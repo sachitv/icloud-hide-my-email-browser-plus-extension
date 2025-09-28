@@ -23,37 +23,20 @@ function licenseValueToString(value) {
   return String(value);
 }
 
-function packageNameFromIdentifier(identifier) {
-  if (!identifier) {
-    return identifier;
+function normalizeRepositoryUrl(repo) {
+  if (!repo || typeof repo !== 'string') {
+    return null;
   }
 
-  const atIndex = identifier.lastIndexOf('@');
-  if (atIndex <= 0) {
-    return identifier;
+  let cleaned = repo.trim();
+  if (cleaned.startsWith('git+')) {
+    cleaned = cleaned.slice(4);
+  }
+  if (cleaned.endsWith('.git')) {
+    cleaned = cleaned.slice(0, -4);
   }
 
-  return identifier.slice(0, atIndex);
-}
-
-function markdownLink(identifier, repository) {
-  const packageName = packageNameFromIdentifier(identifier);
-
-  if (repository && typeof repository === 'string') {
-    // Handle git+ URLs so the rendered link is browser-friendly.
-    const cleanedRepository = repository.startsWith('git+')
-      ? repository.slice(4)
-      : repository;
-    return `[${identifier}](${cleanedRepository})`;
-  }
-
-  if (packageName) {
-    // Fall back to the npm package page when we have no explicit repository URL.
-    const npmUrl = `https://www.npmjs.com/package/${encodeURIComponent(packageName)}`;
-    return `[${identifier}](${npmUrl})`;
-  }
-
-  return identifier;
+  return cleaned;
 }
 
 async function main() {
@@ -65,19 +48,41 @@ async function main() {
     json: true,
   });
 
-  const rows = Object.entries(results)
-    .map(([dependency, info]) => ({
-      dependency,
+  const aggregated = new Map();
+
+  Object.entries(results).forEach(([dependency, info]) => {
+    const repoUrl = normalizeRepositoryUrl(info.repository);
+    const key = repoUrl || dependency;
+    const record = aggregated.get(key) || {
+      name: repoUrl ? repoUrl : dependency,
       license: licenseValueToString(info.licenses),
-      repository: info.repository,
+      repository: repoUrl,
+      packages: new Set(),
+    };
+
+    record.packages.add(dependency);
+
+    if (!record.repository && repoUrl) {
+      record.repository = repoUrl;
+    }
+
+    aggregated.set(key, record);
+  });
+
+  const rows = Array.from(aggregated.values())
+    .map((record) => ({
+      displayName: record.repository ? record.repository : Array.from(record.packages).sort()[0],
+      license: record.license,
+      repository: record.repository,
     }))
-    .sort((a, b) => a.dependency.localeCompare(b.dependency));
+    .sort((a, b) => a.displayName.localeCompare(b.displayName));
 
   // Markdown header for the generated table.
   const lines = ['| Package | License |', '| --- | --- |'];
 
   rows.forEach((row) => {
-    const link = markdownLink(row.dependency, row.repository);
+    const label = row.repository ? row.repository : row.displayName;
+    const link = row.repository ? `[${label}](${row.repository})` : label;
     const license = row.license || 'UNKNOWN';
     lines.push(`| ${link} | ${license} |`);
   });
