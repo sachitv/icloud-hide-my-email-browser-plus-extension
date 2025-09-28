@@ -42,12 +42,8 @@
 | [@nodelib/fs.stat@2.0.5](https://github.com/nodelib/nodelib.git#master)                                             | MIT                           |
 | [@nodelib/fs.walk@1.2.8](https://github.com/nodelib/nodelib.git#master)                                             | MIT                           |
 | [@npmcli/fs@3.1.1](https://github.com/npm/fs)                                                                       | ISC                           |
-| [@parcel/watcher-darwin-arm64@2.5.1](https://github.com/parcel-bundler/watcher)                                     | MIT                           |
-| [@parcel/watcher@2.5.1](https://github.com/parcel-bundler/watcher)                                                  | MIT                           |
-| [@pkgjs/parseargs@0.11.0](https://github.com/pkgjs/parseargs)                                                       | MIT                           |
 | [@rtsao/scc@1.1.0](https://github.com/rtsao/scc)                                                                    | MIT                           |
 | [@tailwindcss/node@4.1.13](https://github.com/tailwindlabs/tailwindcss)                                             | MIT                           |
-| [@tailwindcss/oxide-darwin-arm64@4.1.13](https://github.com/tailwindlabs/tailwindcss)                               | MIT                           |
 | [@tailwindcss/oxide@4.1.13](https://github.com/tailwindlabs/tailwindcss)                                            | MIT                           |
 | [@tailwindcss/postcss@4.1.13](https://github.com/tailwindlabs/tailwindcss)                                          | MIT                           |
 | [@types/body-parser@1.19.6](https://github.com/DefinitelyTyped/DefinitelyTyped)                                     | MIT                           |
@@ -174,8 +170,6 @@
 | [camel-case@4.1.2](https://github.com/blakeembrey/change-case)                                                      | MIT                           |
 | [caniuse-lite@1.0.30001745](https://github.com/browserslist/caniuse-lite)                                           | CC-BY-4.0                     |
 | [chalk@4.1.2](https://github.com/chalk/chalk)                                                                       | MIT                           |
-| [chokidar@3.6.0](https://github.com/paulmillr/chokidar)                                                             | MIT                           |
-| [chokidar@4.0.3](https://github.com/paulmillr/chokidar)                                                             | MIT                           |
 | [chownr@3.0.0](https://github.com/isaacs/chownr)                                                                    | BlueOak-1.0.0                 |
 | [chrome-trace-event@1.0.4](https://github.com/samccone/chrome-trace-event)                                          | MIT                           |
 | [clean-css@5.3.3](https://github.com/clean-css/clean-css)                                                           | MIT                           |
@@ -223,8 +217,6 @@
 | [depd@1.1.2](https://github.com/dougwilson/nodejs-depd)                                                             | MIT                           |
 | [depd@2.0.0](https://github.com/dougwilson/nodejs-depd)                                                             | MIT                           |
 | [destroy@1.2.0](https://github.com/stream-utils/destroy)                                                            | MIT                           |
-| [detect-libc@1.0.3](https://github.com/lovell/detect-libc)                                                          | Apache-2.0                    |
-| [detect-libc@2.1.1](https://github.com/lovell/detect-libc)                                                          | Apache-2.0                    |
 | [detect-node@2.1.0](https://github.com/iliakan/detect-node)                                                         | MIT                           |
 | [dns-packet@5.6.1](https://github.com/mafintosh/dns-packet)                                                         | MIT                           |
 | [doctrine@2.1.0](https://github.com/eslint/doctrine)                                                                | Apache-2.0                    |
@@ -305,7 +297,6 @@
 | [forwarded@0.2.0](https://github.com/jshttp/forwarded)                                                              | MIT                           |
 | [fresh@0.5.2](https://github.com/jshttp/fresh)                                                                      | MIT                           |
 | [fs.realpath@1.0.0](https://github.com/isaacs/fs.realpath)                                                          | ISC                           |
-| [fsevents@2.3.3](https://github.com/fsevents/fsevents)                                                              | MIT                           |
 | [function-bind@1.1.2](https://github.com/Raynos/function-bind)                                                      | MIT                           |
 | [function.prototype.name@1.1.8](https://github.com/es-shims/Function.prototype.name)                                | MIT                           |
 | [functions-have-names@1.2.3](https://github.com/inspect-js/functions-have-names)                                    | MIT                           |
@@ -426,7 +417,6 @@
 | [launch-editor@2.11.1](https://github.com/yyx990803/launch-editor)                                                  | MIT                           |
 | [levn@0.4.1](https://github.com/gkz/levn)                                                                           | MIT                           |
 | [license-checker-rseidelsohn@4.4.2](https://github.com/RSeidelsohn/license-checker-rseidelsohn)                     | BSD-3-Clause                  |
-| [lightningcss-darwin-arm64@1.30.1](https://github.com/parcel-bundler/lightningcss)                                  | MPL-2.0                       |
 | [lightningcss@1.30.1](https://github.com/parcel-bundler/lightningcss)                                               | MPL-2.0                       |
 | [lines-and-columns@1.2.4](https://github.com/eventualbuddha/lines-and-columns)                                      | MIT                           |
 | [loader-runner@4.3.0](https://github.com/webpack/loader-runner)                                                     | MIT                           |
@@ -472,7 +462,6 @@
 | [negotiator@0.6.4](https://github.com/jshttp/negotiator)                                                            | MIT                           |
 | [neo-async@2.6.2](https://github.com/suguru03/neo-async)                                                            | MIT                           |
 | [no-case@3.0.4](https://github.com/blakeembrey/change-case)                                                         | MIT                           |
-| [node-addon-api@7.1.1](https://github.com/nodejs/node-addon-api)                                                    | MIT                           |
 | [node-forge@1.3.1](https://github.com/digitalbazaar/forge)                                                          | (BSD-3-Clause OR GPL-2.0)     |
 | [node-releases@2.0.21](https://github.com/chicoxyzzy/node-releases)                                                 | MIT                           |
 | [nopt@7.2.1](https://github.com/npm/nopt)                                                                           | ISC                           |
@@ -552,8 +541,6 @@
 | [read-package-json@6.0.4](https://github.com/npm/read-package-json)                                                 | ISC                           |
 | [readable-stream@2.3.8](https://github.com/nodejs/readable-stream)                                                  | MIT                           |
 | [readable-stream@3.6.2](https://github.com/nodejs/readable-stream)                                                  | MIT                           |
-| [readdirp@3.6.0](https://github.com/paulmillr/readdirp)                                                             | MIT                           |
-| [readdirp@4.1.2](https://github.com/paulmillr/readdirp)                                                             | MIT                           |
 | [rechoir@0.8.0](https://github.com/gulpjs/rechoir)                                                                  | MIT                           |
 | [reflect.getprototypeof@1.0.10](https://github.com/es-shims/Reflect.getPrototypeOf)                                 | MIT                           |
 | [regenerator-runtime@0.14.1](https://github.com/facebook/regenerator.git#main)                                      | MIT                           |
@@ -579,10 +566,8 @@
 | [safe-push-apply@1.0.0](https://github.com/ljharb/safe-push-apply)                                                  | MIT                           |
 | [safe-regex-test@1.1.0](https://github.com/ljharb/safe-regex-test)                                                  | MIT                           |
 | [safer-buffer@2.1.2](https://github.com/ChALkeR/safer-buffer)                                                       | MIT                           |
-| [sass-embedded-darwin-arm64@1.93.2](https://github.com/sass/embedded-host-node)                                     | MIT                           |
 | [sass-embedded@1.93.2](https://github.com/sass/embedded-host-node)                                                  | MIT                           |
 | [sass-loader@16.0.5](https://github.com/webpack-contrib/sass-loader)                                                | MIT                           |
-| [sass@1.93.2](https://github.com/sass/dart-sass)                                                                    | MIT                           |
 | [scheduler@0.26.0](https://github.com/facebook/react)                                                               | MIT                           |
 | [schema-utils@4.3.2](https://github.com/webpack/schema-utils)                                                       | MIT                           |
 | [select-hose@2.0.0](https://github.com/indutny/select-hose)                                                         | MIT                           |
