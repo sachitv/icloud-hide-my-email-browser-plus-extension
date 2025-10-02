@@ -543,7 +543,6 @@
 | [readable-stream@3.6.2](https://github.com/nodejs/readable-stream)                                                     | MIT                           |
 | [rechoir@0.8.0](https://github.com/gulpjs/rechoir)                                                                     | MIT                           |
 | [reflect.getprototypeof@1.0.10](https://github.com/es-shims/Reflect.getPrototypeOf)                                    | MIT                           |
-| [regenerator-runtime@0.14.1](https://github.com/facebook/regenerator.git#main)                                         | MIT                           |
 | [regexp.prototype.flags@1.5.4](https://github.com/es-shims/RegExp.prototype.flags)                                     | MIT                           |
 | [relateurl@0.2.7](https://github.com/stevenvachon/relateurl)                                                           | MIT                           |
 | [renderkid@3.0.0](https://github.com/AriaMinaei/RenderKid)                                                             | MIT                           |

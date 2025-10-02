@@ -31,7 +31,6 @@
     "lodash.startcase": "^4.4.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "regenerator-runtime": "^0.14.1",
     "uuid": "^13.0.0",
     "webextension-polyfill": "^0.12.0"
   },
