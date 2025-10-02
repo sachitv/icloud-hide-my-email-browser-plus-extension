@@ -41,13 +41,13 @@ const applyFirefoxManifestTransformations = (manifest) => {
           // https://blog.mozilla.org/addons/2023/05/17/declarativenetrequest-available-in-firefox/
           strict_min_version: '126.0',
           data_collection_permissions: {
-            required: ["none"],
+            required: ['none'],
           },
         },
         gecko_android: {
           strict_min_version: '126.0',
           data_collection_permissions: {
-            required: ["none"],
+            required: ['none'],
           },
         },
       },
