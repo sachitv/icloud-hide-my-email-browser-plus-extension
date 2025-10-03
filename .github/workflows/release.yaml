@@ -104,7 +104,6 @@ jobs:
       - name: Publish to Firefox Add-ons
         uses: wdzeng/firefox-addon@v1
         with:
-          upload-only: true
           addon-guid: ${{ secrets.FIREFOX_ADDON_GUID }}
           xpi-path: artifacts/icloud-hide-my-email-plus-firefox-extension.zip
           self-hosted: false
