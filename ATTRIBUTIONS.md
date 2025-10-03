@@ -2,7 +2,29 @@
 | ---------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
 | [@alloc/quick-lru@5.2.0](https://github.com/sindresorhus/quick-lru)                                                    | MIT                           |
 | [@babel/code-frame@7.27.1](https://github.com/babel/babel)                                                             | MIT                           |
+| [@babel/compat-data@7.28.4](https://github.com/babel/babel)                                                            | MIT                           |
+| [@babel/core@7.28.4](https://github.com/babel/babel)                                                                   | MIT                           |
+| [@babel/generator@7.28.3](https://github.com/babel/babel)                                                              | MIT                           |
+| [@babel/helper-annotate-as-pure@7.27.3](https://github.com/babel/babel)                                                | MIT                           |
+| [@babel/helper-compilation-targets@7.27.2](https://github.com/babel/babel)                                             | MIT                           |
+| [@babel/helper-create-class-features-plugin@7.28.3](https://github.com/babel/babel)                                    | MIT                           |
+| [@babel/helper-globals@7.28.0](https://github.com/babel/babel)                                                         | MIT                           |
+| [@babel/helper-member-expression-to-functions@7.27.1](https://github.com/babel/babel)                                  | MIT                           |
+| [@babel/helper-module-imports@7.27.1](https://github.com/babel/babel)                                                  | MIT                           |
+| [@babel/helper-module-transforms@7.28.3](https://github.com/babel/babel)                                               | MIT                           |
+| [@babel/helper-optimise-call-expression@7.27.1](https://github.com/babel/babel)                                        | MIT                           |
+| [@babel/helper-plugin-utils@7.27.1](https://github.com/babel/babel)                                                    | MIT                           |
+| [@babel/helper-replace-supers@7.27.1](https://github.com/babel/babel)                                                  | MIT                           |
+| [@babel/helper-skip-transparent-expression-wrappers@7.27.1](https://github.com/babel/babel)                            | MIT                           |
+| [@babel/helper-string-parser@7.27.1](https://github.com/babel/babel)                                                   | MIT                           |
 | [@babel/helper-validator-identifier@7.27.1](https://github.com/babel/babel)                                            | MIT                           |
+| [@babel/helper-validator-option@7.27.1](https://github.com/babel/babel)                                                | MIT                           |
+| [@babel/helpers@7.28.4](https://github.com/babel/babel)                                                                | MIT                           |
+| [@babel/parser@7.28.4](https://github.com/babel/babel)                                                                 | MIT                           |
+| [@babel/plugin-proposal-private-methods@7.18.6](https://github.com/babel/babel)                                        | MIT                           |
+| [@babel/template@7.27.2](https://github.com/babel/babel)                                                               | MIT                           |
+| [@babel/traverse@7.28.4](https://github.com/babel/babel)                                                               | MIT                           |
+| [@babel/types@7.28.4](https://github.com/babel/babel)                                                                  | MIT                           |
 | [@bufbuild/protobuf@2.9.0](https://github.com/bufbuild/protobuf-es)                                                    | (Apache-2.0 AND BSD-3-Clause) |
 | [@discoveryjs/json-ext@0.6.3](https://github.com/discoveryjs/json-ext)                                                 | MIT                           |
 | [@eslint-community/eslint-utils@4.9.0](https://github.com/eslint-community/eslint-utils)                               | MIT                           |
@@ -14,11 +36,11 @@
 | [@eslint/js@9.36.0](https://github.com/eslint/eslint)                                                                  | MIT                           |
 | [@eslint/object-schema@2.1.6](https://github.com/eslint/rewrite)                                                       | Apache-2.0                    |
 | [@eslint/plugin-kit@0.3.5](https://github.com/eslint/rewrite)                                                          | Apache-2.0                    |
-| [@fortawesome/fontawesome-common-types@7.0.1](https://github.com/FortAwesome/Font-Awesome)                             | MIT                           |
-| [@fortawesome/fontawesome-svg-core@7.0.1](https://github.com/FortAwesome/Font-Awesome)                                 | MIT                           |
-| [@fortawesome/free-brands-svg-icons@7.0.1](https://github.com/FortAwesome/Font-Awesome)                                | (CC-BY-4.0 AND MIT)           |
-| [@fortawesome/free-solid-svg-icons@7.0.1](https://github.com/FortAwesome/Font-Awesome)                                 | (CC-BY-4.0 AND MIT)           |
-| [@fortawesome/react-fontawesome@3.0.2](https://github.com/FortAwesome/react-fontawesome)                               | MIT                           |
+| [@fortawesome/fontawesome-common-types@7.1.0](https://github.com/FortAwesome/Font-Awesome)                             | MIT                           |
+| [@fortawesome/fontawesome-svg-core@7.1.0](https://github.com/FortAwesome/Font-Awesome)                                 | MIT                           |
+| [@fortawesome/free-brands-svg-icons@7.1.0](https://github.com/FortAwesome/Font-Awesome)                                | (CC-BY-4.0 AND MIT)           |
+| [@fortawesome/free-solid-svg-icons@7.1.0](https://github.com/FortAwesome/Font-Awesome)                                 | (CC-BY-4.0 AND MIT)           |
+| [@fortawesome/react-fontawesome@3.1.0](https://github.com/FortAwesome/react-fontawesome)                               | MIT                           |
 | [@humanfs/core@0.19.1](https://github.com/humanwhocodes/humanfs)                                                       | Apache-2.0                    |
 | [@humanfs/node@0.16.7](https://github.com/humanwhocodes/humanfs)                                                       | Apache-2.0                    |
 | [@humanwhocodes/module-importer@1.0.1](https://github.com/humanwhocodes/module-importer)                               | Apache-2.0                    |
@@ -43,12 +65,12 @@
 | [@nodelib/fs.walk@1.2.8](https://github.com/nodelib/nodelib.git#master)                                                | MIT                           |
 | [@npmcli/fs@3.1.1](https://github.com/npm/fs)                                                                          | ISC                           |
 | [@rtsao/scc@1.1.0](https://github.com/rtsao/scc)                                                                       | MIT                           |
-| [@tailwindcss/node@4.1.13](https://github.com/tailwindlabs/tailwindcss)                                                | MIT                           |
-| [@tailwindcss/oxide@4.1.13](https://github.com/tailwindlabs/tailwindcss)                                               | MIT                           |
-| [@tailwindcss/postcss@4.1.13](https://github.com/tailwindlabs/tailwindcss)                                             | MIT                           |
+| [@tailwindcss/node@4.1.14](https://github.com/tailwindlabs/tailwindcss)                                                | MIT                           |
+| [@tailwindcss/oxide@4.1.14](https://github.com/tailwindlabs/tailwindcss)                                               | MIT                           |
+| [@tailwindcss/postcss@4.1.14](https://github.com/tailwindlabs/tailwindcss)                                             | MIT                           |
 | [@types/body-parser@1.19.6](https://github.com/DefinitelyTyped/DefinitelyTyped)                                        | MIT                           |
 | [@types/bonjour@3.5.13](https://github.com/DefinitelyTyped/DefinitelyTyped)                                            | MIT                           |
-| [@types/chrome@0.1.12](https://github.com/DefinitelyTyped/DefinitelyTyped)                                             | MIT                           |
+| [@types/chrome@0.1.19](https://github.com/DefinitelyTyped/DefinitelyTyped)                                             | MIT                           |
 | [@types/connect-history-api-fallback@1.5.4](https://github.com/DefinitelyTyped/DefinitelyTyped)                        | MIT                           |
 | [@types/connect@3.4.38](https://github.com/DefinitelyTyped/DefinitelyTyped)                                            | MIT                           |
 | [@types/eslint-scope@3.7.7](https://github.com/DefinitelyTyped/DefinitelyTyped)                                        | MIT                           |
@@ -72,25 +94,25 @@
 | [@types/node@24.5.2](https://github.com/DefinitelyTyped/DefinitelyTyped)                                               | MIT                           |
 | [@types/qs@6.14.0](https://github.com/DefinitelyTyped/DefinitelyTyped)                                                 | MIT                           |
 | [@types/range-parser@1.2.7](https://github.com/DefinitelyTyped/DefinitelyTyped)                                        | MIT                           |
-| [@types/react-dom@19.1.9](https://github.com/DefinitelyTyped/DefinitelyTyped)                                          | MIT                           |
-| [@types/react@19.1.14](https://github.com/DefinitelyTyped/DefinitelyTyped)                                             | MIT                           |
+| [@types/react-dom@19.2.0](https://github.com/DefinitelyTyped/DefinitelyTyped)                                          | MIT                           |
+| [@types/react@19.2.0](https://github.com/DefinitelyTyped/DefinitelyTyped)                                              | MIT                           |
 | [@types/retry@0.12.2](https://github.com/DefinitelyTyped/DefinitelyTyped)                                              | MIT                           |
 | [@types/send@0.17.5](https://github.com/DefinitelyTyped/DefinitelyTyped)                                               | MIT                           |
 | [@types/serve-index@1.9.4](https://github.com/DefinitelyTyped/DefinitelyTyped)                                         | MIT                           |
 | [@types/serve-static@1.15.8](https://github.com/DefinitelyTyped/DefinitelyTyped)                                       | MIT                           |
 | [@types/sockjs@0.3.36](https://github.com/DefinitelyTyped/DefinitelyTyped)                                             | MIT                           |
-| [@types/webextension-polyfill@0.12.3](https://github.com/DefinitelyTyped/DefinitelyTyped)                              | MIT                           |
+| [@types/webextension-polyfill@0.12.4](https://github.com/DefinitelyTyped/DefinitelyTyped)                              | MIT                           |
 | [@types/ws@8.18.1](https://github.com/DefinitelyTyped/DefinitelyTyped)                                                 | MIT                           |
-| [@typescript-eslint/eslint-plugin@8.44.1](https://github.com/typescript-eslint/typescript-eslint)                      | MIT                           |
-| [@typescript-eslint/parser@8.44.1](https://github.com/typescript-eslint/typescript-eslint)                             | MIT                           |
-| [@typescript-eslint/project-service@8.44.1](https://github.com/typescript-eslint/typescript-eslint)                    | MIT                           |
-| [@typescript-eslint/scope-manager@8.44.1](https://github.com/typescript-eslint/typescript-eslint)                      | MIT                           |
-| [@typescript-eslint/tsconfig-utils@8.44.1](https://github.com/typescript-eslint/typescript-eslint)                     | MIT                           |
-| [@typescript-eslint/type-utils@8.44.1](https://github.com/typescript-eslint/typescript-eslint)                         | MIT                           |
-| [@typescript-eslint/types@8.44.1](https://github.com/typescript-eslint/typescript-eslint)                              | MIT                           |
-| [@typescript-eslint/typescript-estree@8.44.1](https://github.com/typescript-eslint/typescript-eslint)                  | MIT                           |
-| [@typescript-eslint/utils@8.44.1](https://github.com/typescript-eslint/typescript-eslint)                              | MIT                           |
-| [@typescript-eslint/visitor-keys@8.44.1](https://github.com/typescript-eslint/typescript-eslint)                       | MIT                           |
+| [@typescript-eslint/eslint-plugin@8.45.0](https://github.com/typescript-eslint/typescript-eslint)                      | MIT                           |
+| [@typescript-eslint/parser@8.45.0](https://github.com/typescript-eslint/typescript-eslint)                             | MIT                           |
+| [@typescript-eslint/project-service@8.45.0](https://github.com/typescript-eslint/typescript-eslint)                    | MIT                           |
+| [@typescript-eslint/scope-manager@8.45.0](https://github.com/typescript-eslint/typescript-eslint)                      | MIT                           |
+| [@typescript-eslint/tsconfig-utils@8.45.0](https://github.com/typescript-eslint/typescript-eslint)                     | MIT                           |
+| [@typescript-eslint/type-utils@8.45.0](https://github.com/typescript-eslint/typescript-eslint)                         | MIT                           |
+| [@typescript-eslint/types@8.45.0](https://github.com/typescript-eslint/typescript-eslint)                              | MIT                           |
+| [@typescript-eslint/typescript-estree@8.45.0](https://github.com/typescript-eslint/typescript-eslint)                  | MIT                           |
+| [@typescript-eslint/utils@8.45.0](https://github.com/typescript-eslint/typescript-eslint)                              | MIT                           |
+| [@typescript-eslint/visitor-keys@8.45.0](https://github.com/typescript-eslint/typescript-eslint)                       | MIT                           |
 | [@webassemblyjs/ast@1.14.1](https://github.com/xtuc/webassemblyjs)                                                     | MIT                           |
 | [@webassemblyjs/floating-point-hex-parser@1.13.2](https://github.com/xtuc/webassemblyjs)                               | MIT                           |
 | [@webassemblyjs/helper-api-error@1.13.2](https://github.com/xtuc/webassemblyjs)                                        | MIT                           |
@@ -186,6 +208,7 @@
 | [connect-history-api-fallback@2.0.0](https://github.com/bripkens/connect-history-api-fallback)                         | MIT                           |
 | [content-disposition@0.5.4](https://github.com/jshttp/content-disposition)                                             | MIT                           |
 | [content-type@1.0.5](https://github.com/jshttp/content-type)                                                           | MIT                           |
+| [convert-source-map@2.0.0](https://github.com/thlorenz/convert-source-map)                                             | MIT                           |
 | [cookie-signature@1.0.6](https://github.com/visionmedia/node-cookie-signature)                                         | MIT                           |
 | [cookie@0.7.1](https://github.com/jshttp/cookie)                                                                       | MIT                           |
 | [copy-webpack-plugin@13.0.1](https://github.com/webpack-contrib/copy-webpack-plugin)                                   | MIT                           |
@@ -254,7 +277,7 @@
 | [eslint-module-utils@2.12.1](https://github.com/import-js/eslint-plugin-import)                                        | MIT                           |
 | [eslint-plugin-import@2.32.0](https://github.com/import-js/eslint-plugin-import)                                       | MIT                           |
 | [eslint-plugin-jsx-a11y@6.10.2](https://github.com/jsx-eslint/eslint-plugin-jsx-a11y)                                  | MIT                           |
-| [eslint-plugin-react-hooks@5.2.0](https://github.com/facebook/react)                                                   | MIT                           |
+| [eslint-plugin-react-hooks@6.1.0](https://github.com/facebook/react)                                                   | MIT                           |
 | [eslint-plugin-react@7.37.5](https://github.com/jsx-eslint/eslint-plugin-react)                                        | MIT                           |
 | [eslint-scope@5.1.1](https://github.com/eslint/eslint-scope)                                                           | BSD-2-Clause                  |
 | [eslint-scope@8.4.0](https://github.com/eslint/js)                                                                     | BSD-2-Clause                  |
@@ -298,6 +321,7 @@
 | [function.prototype.name@1.1.8](https://github.com/es-shims/Function.prototype.name)                                   | MIT                           |
 | [functions-have-names@1.2.3](https://github.com/inspect-js/functions-have-names)                                       | MIT                           |
 | [fuse.js@7.1.0](https://github.com/krisk/Fuse)                                                                         | Apache-2.0                    |
+| [gensync@1.0.0-beta.2](https://github.com/loganfsmyth/gensync)                                                         | MIT                           |
 | [get-intrinsic@1.3.0](https://github.com/ljharb/get-intrinsic)                                                         | MIT                           |
 | [get-proto@1.0.1](https://github.com/ljharb/get-proto)                                                                 | MIT                           |
 | [get-symbol-description@1.1.0](https://github.com/inspect-js/get-symbol-description)                                   | MIT                           |
@@ -322,6 +346,8 @@
 | [has-tostringtag@1.0.2](https://github.com/inspect-js/has-tostringtag)                                                 | MIT                           |
 | [hasown@2.0.2](https://github.com/inspect-js/hasOwn)                                                                   | MIT                           |
 | [he@1.2.0](https://github.com/mathiasbynens/he)                                                                        | MIT                           |
+| [hermes-estree@0.25.1](https://github.com/facebook/hermes)                                                             | MIT                           |
+| [hermes-parser@0.25.1](https://github.com/facebook/hermes)                                                             | MIT                           |
 | [hosted-git-info@6.1.3](https://github.com/npm/hosted-git-info)                                                        | ISC                           |
 | [hpack.js@2.1.6](https://github.com/indutny/hpack.js)                                                                  | MIT                           |
 | [html-loader@5.1.0](https://github.com/webpack-contrib/html-loader)                                                    | MIT                           |
@@ -399,6 +425,7 @@
 | [jiti@2.6.0](https://github.com/unjs/jiti)                                                                             | MIT                           |
 | [js-tokens@4.0.0](https://github.com/lydell/js-tokens)                                                                 | MIT                           |
 | [js-yaml@4.1.0](https://github.com/nodeca/js-yaml)                                                                     | MIT                           |
+| [jsesc@3.1.0](https://github.com/mathiasbynens/jsesc)                                                                  | MIT                           |
 | [json-buffer@3.0.1](https://github.com/dominictarr/json-buffer)                                                        | MIT                           |
 | [json-parse-even-better-errors@2.3.1](https://github.com/npm/json-parse-even-better-errors)                            | MIT                           |
 | [json-parse-even-better-errors@3.0.2](https://github.com/npm/json-parse-even-better-errors)                            | MIT                           |
@@ -406,6 +433,7 @@
 | [json-schema-traverse@1.0.0](https://github.com/epoberezkin/json-schema-traverse)                                      | MIT                           |
 | [json-stable-stringify-without-jsonify@1.0.1](https://github.com/samn/json-stable-stringify)                           | MIT                           |
 | [json5@1.0.2](https://github.com/json5/json5)                                                                          | MIT                           |
+| [json5@2.2.3](https://github.com/json5/json5)                                                                          | MIT                           |
 | [jsx-ast-utils@3.3.5](https://github.com/jsx-eslint/jsx-ast-utils)                                                     | MIT                           |
 | [keyv@4.5.4](https://github.com/jaredwray/keyv)                                                                        | MIT                           |
 | [kind-of@6.0.3](https://github.com/jonschlinkert/kind-of)                                                              | MIT                           |
@@ -425,6 +453,7 @@
 | [loose-envify@1.4.0](https://github.com/zertosh/loose-envify)                                                          | MIT                           |
 | [lower-case@2.0.2](https://github.com/blakeembrey/change-case)                                                         | MIT                           |
 | [lru-cache@10.4.3](https://github.com/isaacs/node-lru-cache)                                                           | ISC                           |
+| [lru-cache@5.1.1](https://github.com/isaacs/node-lru-cache)                                                            | ISC                           |
 | [lru-cache@7.18.3](https://github.com/isaacs/node-lru-cache)                                                           | ISC                           |
 | [magic-string@0.30.19](https://github.com/rich-harris/magic-string)                                                    | MIT                           |
 | [math-intrinsics@1.1.0](https://github.com/es-shims/math-intrinsics)                                                   | MIT                           |
@@ -529,9 +558,9 @@
 | [randombytes@2.1.0](https://github.com/crypto-browserify/randombytes)                                                  | MIT                           |
 | [range-parser@1.2.1](https://github.com/jshttp/range-parser)                                                           | MIT                           |
 | [raw-body@2.5.2](https://github.com/stream-utils/raw-body)                                                             | MIT                           |
-| [react-dom@19.1.1](https://github.com/facebook/react)                                                                  | MIT                           |
+| [react-dom@19.2.0](https://github.com/facebook/react)                                                                  | MIT                           |
 | [react-is@16.13.1](https://github.com/facebook/react)                                                                  | MIT                           |
-| [react@19.1.1](https://github.com/facebook/react)                                                                      | MIT                           |
+| [react@19.2.0](https://github.com/facebook/react)                                                                      | MIT                           |
 | [read-installed-packages@2.0.1](https://github.com/Semigradsky/read-installed)                                         | ISC                           |
 | [read-package-json@6.0.4](https://github.com/npm/read-package-json)                                                    | ISC                           |
 | [readable-stream@2.3.8](https://github.com/nodejs/readable-stream)                                                     | MIT                           |
@@ -562,7 +591,7 @@
 | [safer-buffer@2.1.2](https://github.com/ChALkeR/safer-buffer)                                                          | MIT                           |
 | [sass-embedded@1.93.2](https://github.com/sass/embedded-host-node)                                                     | MIT                           |
 | [sass-loader@16.0.5](https://github.com/webpack-contrib/sass-loader)                                                   | MIT                           |
-| [scheduler@0.26.0](https://github.com/facebook/react)                                                                  | MIT                           |
+| [scheduler@0.27.0](https://github.com/facebook/react)                                                                  | MIT                           |
 | [schema-utils@4.3.2](https://github.com/webpack/schema-utils)                                                          | MIT                           |
 | [select-hose@2.0.0](https://github.com/indutny/select-hose)                                                            | MIT                           |
 | [selfsigned@2.4.1](https://github.com/jfromaniello/selfsigned)                                                         | MIT                           |
@@ -624,7 +653,7 @@
 | [supports-preserve-symlinks-flag@1.0.0](https://github.com/inspect-js/node-supports-preserve-symlinks-flag)            | MIT                           |
 | [sync-child-process@1.0.2](https://github.com/sass/sync-child-process)                                                 | MIT                           |
 | [sync-message-port@1.1.3](https://github.com/sass/sync-message-port)                                                   | MIT                           |
-| [tailwindcss@4.1.13](https://github.com/tailwindlabs/tailwindcss)                                                      | MIT                           |
+| [tailwindcss@4.1.14](https://github.com/tailwindlabs/tailwindcss)                                                      | MIT                           |
 | [tapable@2.2.3](https://github.com/webpack/tapable)                                                                    | MIT                           |
 | [tar@7.5.1](https://github.com/isaacs/node-tar)                                                                        | ISC                           |
 | [terser-webpack-plugin@5.3.14](https://github.com/webpack-contrib/terser-webpack-plugin)                               | MIT                           |
@@ -646,7 +675,7 @@
 | [typed-array-byte-length@1.0.3](https://github.com/inspect-js/typed-array-byte-length)                                 | MIT                           |
 | [typed-array-byte-offset@1.0.4](https://github.com/inspect-js/typed-array-byte-offset)                                 | MIT                           |
 | [typed-array-length@1.0.7](https://github.com/inspect-js/typed-array-length)                                           | MIT                           |
-| [typescript@5.9.2](https://github.com/microsoft/TypeScript)                                                            | Apache-2.0                    |
+| [typescript@5.9.3](https://github.com/microsoft/TypeScript)                                                            | Apache-2.0                    |
 | [unbox-primitive@1.1.0](https://github.com/ljharb/unbox-primitive)                                                     | MIT                           |
 | [undici-types@7.12.0](https://github.com/nodejs/undici)                                                                | MIT                           |
 | [unpipe@1.0.0](https://github.com/stream-utils/unpipe)                                                                 | MIT                           |
@@ -668,7 +697,7 @@
 | [webpack-dev-server@5.2.2](https://github.com/webpack/webpack-dev-server)                                              | MIT                           |
 | [webpack-merge@6.0.1](https://github.com/survivejs/webpack-merge)                                                      | MIT                           |
 | [webpack-sources@3.3.3](https://github.com/webpack/webpack-sources)                                                    | MIT                           |
-| [webpack@5.101.3](https://github.com/webpack/webpack)                                                                  | MIT                           |
+| [webpack@5.102.0](https://github.com/webpack/webpack)                                                                  | MIT                           |
 | [websocket-driver@0.7.4](https://github.com/faye/websocket-driver-node)                                                | Apache-2.0                    |
 | [websocket-extensions@0.1.4](https://github.com/faye/websocket-extensions-node)                                        | Apache-2.0                    |
 | [which-boxed-primitive@1.1.1](https://github.com/inspect-js/which-boxed-primitive)                                     | MIT                           |
@@ -683,5 +712,8 @@
 | [wrappy@1.0.2](https://github.com/npm/wrappy)                                                                          | ISC                           |
 | [ws@8.18.3](https://github.com/websockets/ws)                                                                          | MIT                           |
 | [wsl-utils@0.1.0](https://github.com/sindresorhus/wsl-utils)                                                           | MIT                           |
+| [yallist@3.1.1](https://github.com/isaacs/yallist)                                                                     | ISC                           |
 | [yallist@5.0.0](https://github.com/isaacs/yallist)                                                                     | BlueOak-1.0.0                 |
 | [yocto-queue@0.1.0](https://github.com/sindresorhus/yocto-queue)                                                       | MIT                           |
+| [zod-validation-error@3.5.3](https://github.com/causaly/zod-validation-error)                                          | MIT                           |
+| [zod@3.25.76](https://github.com/colinhacks/zod)                                                                       | MIT                           |
