@@ -78,7 +78,3 @@ Note: the following console commands are to be executed from the root directory 
 | 5 | Compress productionized artifact | `zip build.zip ./build/*` | `web-ext -s build build` |
 | 6 | Publish | [Chrome Web Store developer console](https://chrome.google.com/webstore/devconsole/) | [Mozilla Add-on Developer Hub](https://addons.mozilla.org/en-US/developers/addon/icloud-hide-my-email/versions/submit/) |
 <!-- prettier-ignore-end -->
-
-### TODOs
-
-- [ ] Continuous Deployment
