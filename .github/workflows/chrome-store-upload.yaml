@@ -1,4 +1,4 @@
-name: chrome-store-upload
+name: Upload to Chrome Web Store
 
 permissions:
   contents: read
