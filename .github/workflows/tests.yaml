@@ -70,12 +70,12 @@ jobs:
       - name: Zip Chrome build output
         run: |
           cd build
-          zip -r ../icloud-hide-my-email-chrome-extension.zip .
+          zip -r ../icloud-hide-my-email-plus-chrome-extension.zip .
       - name: Upload Chrome artifact
         uses: actions/upload-artifact@v4
         with:
-          name: icloud-hide-my-email-chrome-extension
-          path: icloud-hide-my-email-chrome-extension.zip
+          name: icloud-hide-my-email-plus-chrome-extension
+          path: icloud-hide-my-email-plus-chrome-extension.zip
 
   build-firefox:
     runs-on: ubuntu-latest
@@ -95,12 +95,12 @@ jobs:
         run: |
           npm run build:firefox
           npx web-ext lint --source-dir build
-          npx web-ext build --source-dir build --artifacts-dir . --filename icloud-hide-my-email-firefox-extension.zip
+          npx web-ext build --source-dir build --artifacts-dir . --filename icloud-hide-my-email-plus-firefox-extension.zip
       - name: Upload Firefox artifact
         uses: actions/upload-artifact@v4
         with:
-          name: icloud-hide-my-email-firefox-extension
-          path: icloud-hide-my-email-firefox-extension.zip
+          name: icloud-hide-my-email-plus-firefox-extension
+          path: icloud-hide-my-email-plus-firefox-extension.zip
 
   license-audit:
     needs: detect-license-changes
