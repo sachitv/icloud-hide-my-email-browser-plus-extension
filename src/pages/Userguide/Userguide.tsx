@@ -1,11 +1,10 @@
 import React, { InputHTMLAttributes, useState } from 'react';
 import { TitledComponent, Link } from '../../commonComponents';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faInfoCircle,
-  faCheckCircle,
-  faWarning,
-} from '@fortawesome/free-solid-svg-icons';
+  InfoCircleIcon,
+  CheckCircleIcon,
+  WarningIcon,
+} from '../../icons';
 import { isFirefox } from '../../browserUtils';
 
 const Notice = (props: {
@@ -19,14 +18,17 @@ const Notice = (props: {
     ? 'border border-rainbow-yellow/50 bg-rainbow-yellow/10 text-amber-100'
     : 'border border-slate-800/60 bg-slate-950/60 text-slate-200';
 
+  const IconComponent = isAlert ? WarningIcon : InfoCircleIcon;
+
   return (
     <div
       className={`flex items-start gap-3 rounded-2xl px-4 py-3 text-sm shadow-inner shadow-slate-900/30 ${basePalette}`}
       role={isAlert ? 'alert' : 'info'}
     >
-      <FontAwesomeIcon
-        icon={isAlert ? faWarning : faInfoCircle}
-        className={`mt-1 ${isAlert ? 'text-rainbow-yellow' : 'text-rainbow-blue'}`}
+      <IconComponent
+        className={`mt-1 h-5 w-5 ${
+          isAlert ? 'text-rainbow-yellow' : 'text-rainbow-blue'
+        }`}
       />
       <span className="sr-only">Info</span>
       <div className="space-y-1">
@@ -112,7 +114,7 @@ const AutofillableDemoInput = (props: {
       >
         {props.label}{' '}
         {autofillableInputValue?.endsWith('@icloud.com') && (
-          <FontAwesomeIcon icon={faCheckCircle} className="ml-1 text-success" />
+          <CheckCircleIcon className="ml-1 h-4 w-4 text-success" />
         )}
       </label>
       <input
