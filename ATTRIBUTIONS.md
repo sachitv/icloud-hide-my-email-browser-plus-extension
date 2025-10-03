@@ -36,11 +36,6 @@
 | [@eslint/js@9.36.0](https://github.com/eslint/eslint)                                                                  | MIT                           |
 | [@eslint/object-schema@2.1.6](https://github.com/eslint/rewrite)                                                       | Apache-2.0                    |
 | [@eslint/plugin-kit@0.3.5](https://github.com/eslint/rewrite)                                                          | Apache-2.0                    |
-| [@fortawesome/fontawesome-common-types@7.1.0](https://github.com/FortAwesome/Font-Awesome)                             | MIT                           |
-| [@fortawesome/fontawesome-svg-core@7.1.0](https://github.com/FortAwesome/Font-Awesome)                                 | MIT                           |
-| [@fortawesome/free-brands-svg-icons@7.1.0](https://github.com/FortAwesome/Font-Awesome)                                | (CC-BY-4.0 AND MIT)           |
-| [@fortawesome/free-solid-svg-icons@7.1.0](https://github.com/FortAwesome/Font-Awesome)                                 | (CC-BY-4.0 AND MIT)           |
-| [@fortawesome/react-fontawesome@3.1.0](https://github.com/FortAwesome/react-fontawesome)                               | MIT                           |
 | [@humanfs/core@0.19.1](https://github.com/humanwhocodes/humanfs)                                                       | Apache-2.0                    |
 | [@humanfs/node@0.16.7](https://github.com/humanwhocodes/humanfs)                                                       | Apache-2.0                    |
 | [@humanwhocodes/module-importer@1.0.1](https://github.com/humanwhocodes/module-importer)                               | Apache-2.0                    |
@@ -70,7 +65,7 @@
 | [@tailwindcss/postcss@4.1.14](https://github.com/tailwindlabs/tailwindcss)                                             | MIT                           |
 | [@types/body-parser@1.19.6](https://github.com/DefinitelyTyped/DefinitelyTyped)                                        | MIT                           |
 | [@types/bonjour@3.5.13](https://github.com/DefinitelyTyped/DefinitelyTyped)                                            | MIT                           |
-| [@types/chrome@0.1.19](https://github.com/DefinitelyTyped/DefinitelyTyped)                                             | MIT                           |
+| [@types/chrome@0.1.21](https://github.com/DefinitelyTyped/DefinitelyTyped)                                             | MIT                           |
 | [@types/connect-history-api-fallback@1.5.4](https://github.com/DefinitelyTyped/DefinitelyTyped)                        | MIT                           |
 | [@types/connect@3.4.38](https://github.com/DefinitelyTyped/DefinitelyTyped)                                            | MIT                           |
 | [@types/eslint-scope@3.7.7](https://github.com/DefinitelyTyped/DefinitelyTyped)                                        | MIT                           |

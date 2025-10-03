@@ -1,10 +1,6 @@
 import React, { InputHTMLAttributes, useState } from 'react';
 import { TitledComponent, Link } from '../../commonComponents';
-import {
-  InfoCircleIcon,
-  CheckCircleIcon,
-  WarningIcon,
-} from '../../icons';
+import { InfoCircleIcon, CheckCircleIcon, WarningIcon } from '../../icons';
 import { isFirefox } from '../../browserUtils';
 
 const Notice = (props: {

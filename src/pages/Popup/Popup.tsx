@@ -716,10 +716,7 @@ const HmeManager = (props: {
         {hme.isActive ? (
           hme.label
         ) : (
-          <span
-            title="Deactivated"
-            className="inline-flex items-center gap-1"
-          >
+          <span title="Deactivated" className="inline-flex items-center gap-1">
             <BanIcon className="h-4 w-4 text-rainbow-red" />
             {hme.label}
           </span>
