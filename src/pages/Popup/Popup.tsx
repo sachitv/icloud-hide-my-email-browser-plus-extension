@@ -13,23 +13,22 @@ import ICloudClient, {
 } from '../../iCloudClient';
 import './Popup.css';
 import { useBrowserStorageState } from '../../hooks';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import type { IconProps } from '../../icons';
 import {
-  faRefresh,
-  faClipboard,
-  faCheck,
-  faList,
-  faSignOut,
-  IconDefinition,
-  faPlus,
-  faTrashAlt,
-  faBan,
-  faSearch,
-  faInfoCircle,
-  faExternalLink,
-  faQuestionCircle,
-} from '@fortawesome/free-solid-svg-icons';
-import { faFirefoxBrowser } from '@fortawesome/free-brands-svg-icons';
+  RefreshIcon,
+  ClipboardIcon,
+  CheckIcon,
+  ListIcon,
+  SignOutIcon,
+  PlusIcon,
+  TrashIcon,
+  BanIcon,
+  SearchIcon,
+  InfoCircleIcon,
+  ExternalLinkIcon,
+  QuestionCircleIcon,
+  FirefoxIcon,
+} from '../../icons';
 import { MessageType, sendMessageToTab } from '../../messages';
 import {
   ErrorMessage,
@@ -83,10 +82,7 @@ const SignInInstructions = () => {
           className="flex items-start gap-3 rounded-2xl border border-rainbow-blue/40 bg-rainbow-blue/10 px-4 py-3 text-sm text-slate-100"
           role="alert"
         >
-          <FontAwesomeIcon
-            icon={faInfoCircle}
-            className="mt-1 text-rainbow-blue"
-          />
+          <InfoCircleIcon className="mt-1 h-5 w-5 text-rainbow-blue" />
           <div>
             <p className="font-semibold text-white">Pro tip</p>
             <p>
@@ -103,7 +99,7 @@ const SignInInstructions = () => {
             className="flex items-start gap-3 rounded-2xl border border-rainbow-orange/50 bg-rainbow-orange/10 px-4 py-3 text-sm text-amber-100"
             role="alert"
           >
-            <FontAwesomeIcon icon={faFirefoxBrowser} className="mt-1" />
+            <FirefoxIcon className="mt-1 h-5 w-5" />
             <div>
               If you use{' '}
               <Link
@@ -124,7 +120,7 @@ const SignInInstructions = () => {
             className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#34a853] via-success to-[#4285f4] px-5 py-3 text-sm font-semibold text-slate-900 shadow-[0_18px_35px_-18px_rgba(52,211,153,0.7)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_46px_-18px_rgba(37,211,174,0.75)] focus:outline-none focus:ring-2 focus:ring-emerald-200/70"
             aria-label="Help"
           >
-            <FontAwesomeIcon icon={faQuestionCircle} />
+            <QuestionCircleIcon className="h-5 w-5" />
             Help
           </a>
           <a
@@ -134,7 +130,7 @@ const SignInInstructions = () => {
             className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-200 via-rose-200 to-pink-300 px-5 py-3 text-sm font-semibold text-slate-900 shadow-[0_18px_35px_-18px_rgba(249,168,212,0.75)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_46px_-18px_rgba(249,168,212,0.85)] focus:outline-none focus:ring-2 focus:ring-amber-200/70"
             aria-label="Go to iCloud.com"
           >
-            <FontAwesomeIcon icon={faExternalLink} />
+            <ExternalLinkIcon className="h-5 w-5" />
             Open icloud.com
           </a>
         </div>
@@ -172,7 +168,7 @@ const ReservationResult = (props: { hme: HmeEmail }) => {
           className={btnClassName}
           onClick={onCopyToClipboardClick}
         >
-          <FontAwesomeIcon icon={faClipboard} className="mr-1" />
+          <ClipboardIcon className="mr-1 h-4 w-4" />
           Copy to clipboard
         </button>
         <button
@@ -180,7 +176,7 @@ const ReservationResult = (props: { hme: HmeEmail }) => {
           className={btnClassName}
           onClick={onAutofillClick}
         >
-          <FontAwesomeIcon icon={faCheck} className="mr-1" />
+          <CheckIcon className="mr-1 h-4 w-4" />
           Autofill
         </button>
       </div>
@@ -189,7 +185,10 @@ const ReservationResult = (props: { hme: HmeEmail }) => {
 };
 
 const FooterButton = (
-  props: { label: string; icon: IconDefinition } & DetailedHTMLProps<
+  props: {
+    label: string;
+    icon: React.ComponentType<IconProps>;
+  } & DetailedHTMLProps<
     ButtonHTMLAttributes<HTMLButtonElement>,
     HTMLButtonElement
   >
@@ -200,9 +199,10 @@ const FooterButton = (
   const composedClassName = [baseClassName, className]
     .filter(Boolean)
     .join(' ');
+  const Icon = icon;
   return (
     <button className={composedClassName} {...rest}>
-      <FontAwesomeIcon icon={icon} />
+      <Icon className="h-4 w-4" />
       {label}
     </button>
   );
@@ -232,7 +232,7 @@ const SignOutButton = (props: {
         props.callback('SIGN_OUT');
       }}
       label="Sign out"
-      icon={faSignOut}
+      icon={SignOutIcon}
     />
   );
 };
@@ -356,10 +356,10 @@ const HmeGenerator = (props: {
               onClick={onEmailRefreshClick}
               aria-label="Refresh email"
             >
-              <FontAwesomeIcon
-                className="align-middle"
-                icon={faRefresh}
-                spin={isEmailRefreshSubmitting}
+              <RefreshIcon
+                className={`align-middle h-4 w-4 ${
+                  isEmailRefreshSubmitting ? 'animate-spin' : ''
+                }`}
               />
             </button>
             <span className="max-w-[260px] break-all text-left">
@@ -431,7 +431,7 @@ const HmeGenerator = (props: {
         <div>
           <FooterButton
             onClick={() => props.callback('MANAGE')}
-            icon={faList}
+            icon={ListIcon}
             label="Manage emails"
             className="bg-slate-800/80 text-slate-200 hover:bg-slate-700"
           />
@@ -533,11 +533,7 @@ const HmeDetails = (props: {
         <p className={labelClassName}>Email</p>
         <p title={props.hme.hme} className={valueClassName}>
           {props.hme.isActive || (
-            <FontAwesomeIcon
-              title="Deactivated"
-              icon={faBan}
-              className="mr-2 text-rainbow-red"
-            />
+            <BanIcon className="mr-2 inline h-4 w-4 text-rainbow-red" />
           )}
           {props.hme.hme}
         </p>
@@ -575,14 +571,14 @@ const HmeDetails = (props: {
           className={`${buttonBaseClass} bg-slate-800 text-white hover:bg-slate-700 focus:ring-slate-500`}
           onClick={onCopyClick}
         >
-          <FontAwesomeIcon icon={faClipboard} />
+          <ClipboardIcon className="h-4 w-4" />
         </button>
         <button
           title="Autofill"
           className={`${buttonBaseClass} bg-emerald-500 text-white hover:bg-emerald-400 focus:ring-emerald-300`}
           onClick={onAutofillClick}
         >
-          <FontAwesomeIcon icon={faCheck} />
+          <CheckIcon className="h-4 w-4" />
         </button>
         <LoadingButton
           title={props.hme.isActive ? 'Deactivate' : 'Reactivate'}
@@ -594,7 +590,11 @@ const HmeDetails = (props: {
           onClick={onActivationClick}
           loading={isActivateSubmitting}
         >
-          <FontAwesomeIcon icon={props.hme.isActive ? faBan : faRefresh} />
+          {props.hme.isActive ? (
+            <BanIcon className="h-4 w-4" />
+          ) : (
+            <RefreshIcon className="h-4 w-4" />
+          )}
         </LoadingButton>
         {!props.hme.isActive && (
           <LoadingButton
@@ -603,7 +603,7 @@ const HmeDetails = (props: {
             onClick={onDeletionClick}
             loading={isDeleteSubmitting}
           >
-            <FontAwesomeIcon icon={faTrashAlt} className="mr-1" /> Delete
+            <TrashIcon className="mr-1 h-4 w-4" /> Delete
           </LoadingButton>
         )}
       </div>
@@ -685,7 +685,7 @@ const HmeManager = (props: {
     const searchBox = (
       <div className="relative p-3 rounded-tl-3xl border-b border-slate-800/60 bg-slate-950">
         <div className="pointer-events-none absolute inset-y-0 flex items-center pl-3">
-          <FontAwesomeIcon className="text-slate-500" icon={faSearch} />
+          <SearchIcon className="h-4 w-4 text-slate-500" />
         </div>
         <input
           type="search"
@@ -716,10 +716,10 @@ const HmeManager = (props: {
         {hme.isActive ? (
           hme.label
         ) : (
-          <div title="Deactivated">
-            <FontAwesomeIcon icon={faBan} className="text-rainbow-red mr-1" />
+          <span title="Deactivated" className="inline-flex items-center gap-1">
+            <BanIcon className="h-4 w-4 text-rainbow-red" />
             {hme.label}
-          </div>
+          </span>
         )}
       </button>
     ));
@@ -782,7 +782,7 @@ const HmeManager = (props: {
         <div>
           <FooterButton
             onClick={() => props.callback('GENERATE')}
-            icon={faPlus}
+            icon={PlusIcon}
             label="Generate new email"
             className="bg-slate-800/80 text-slate-200 hover:bg-slate-700"
           />

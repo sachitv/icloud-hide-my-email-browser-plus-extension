@@ -3,17 +3,12 @@ import React, {
   DetailedHTMLProps,
   ReactNode,
 } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { SpinnerIcon } from './icons';
 
 export const Spinner = () => {
   return (
     <div className="flex items-center justify-center py-6">
-      <FontAwesomeIcon
-        icon={faSpinner}
-        spin={true}
-        className="text-3xl text-rainbow-purple drop-shadow-[0_0_12px_rgba(139,92,246,0.45)]"
-      />
+      <SpinnerIcon className="h-8 w-8 animate-spin text-rainbow-purple drop-shadow-[0_0_12px_rgba(139,92,246,0.45)]" />
     </div>
   );
 };
@@ -47,7 +42,7 @@ export const LoadingButton = (
       {...btnHtmlAttrs}
     >
       {loading && !disabled && (
-        <FontAwesomeIcon icon={faSpinner} spin={true} className="mr-1" />
+        <SpinnerIcon className="mr-1 h-4 w-4 animate-spin" />
       )}
       {props.children}
     </button>
