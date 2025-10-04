@@ -4,11 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       dry-run:
-        description: 'Whether to run the release in dry-run mode. This will not publish the extension to the stores.'
+        description: 'Run the release in dry-run mode. This will not publish the extension to the stores.'
         type: boolean
         default: false
       draft-release:
-        description: 'Whether to create a draft release instead of a full release.'
+        description: 'Create a draft release instead of a full release.'
         type: boolean
         default: false
 
@@ -196,19 +196,19 @@ jobs:
           CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
           CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
           CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
-          CHROME_PUBLISH_TARGET: trustedTesters
-          CHROME_SKIP_SUBMIT_REVIEW: 'false'
+          CHROME_PUBLISH_TARGET: default
+          CHROME_SKIP_SUBMIT_REVIEW: 'true'
           FIREFOX_ZIP: artifacts/icloud-hide-my-email-plus-browser-extension-${{ needs.version.outputs.extension_version }}-firefox.zip
           FIREFOX_SOURCES_ZIP: artifacts/icloud-hide-my-email-plus-browser-extension-${{ needs.version.outputs.extension_version }}-sources.zip
           FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_ADDON_GUID }}
           FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
           FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
-          FIREFOX_CHANNEL: unlisted
+          FIREFOX_CHANNEL: listed
           EDGE_ZIP: artifacts/icloud-hide-my-email-plus-browser-extension-${{ needs.version.outputs.extension_version }}-edge.zip
           EDGE_PRODUCT_ID: ${{ secrets.MICROSOFT_PRODUCT_ID }}
           EDGE_CLIENT_ID: ${{ secrets.MICROSOFT_CLIENT_ID }}
           EDGE_API_KEY: ${{ secrets.MICROSOFT_API_KEY }}
-          EDGE_SKIP_SUBMIT_REVIEW: 'false'
+          EDGE_SKIP_SUBMIT_REVIEW: 'true'
         run: npm run publish
 
   create-release:
