@@ -71,7 +71,7 @@ Note: the following console commands are to be executed from the root directory 
 | # | Description | Chromium | Firefox |
 | - | - | - | - |
 | 0 | Install deps | `npm ci` | `npm ci && npm i -g web-ext` |
-| 1 | Spin up the dev server. The server generates the `build` dir. | `npm run start` | `npm run start:firefox` |
+| 1 | Spin up the WXT dev server. The server generates the `build` dir. | `npm run start` | `npm run start:firefox` |
 | 2 | Load the unpacked extension on the browser |  The `build` dir can be loaded as an unpacked extension through the browser's UI. See the relevant [Google Chrome guide](https://developer.chrome.com/docs/extensions/mv3/getstarted/development-basics/#load-unpacked). | `web-ext -s build run` |
 | 3 | Develop against the local browser instance on which the `build` dir is loaded | N/A | N/A |
 | 4 | Build productionized artifact | `npm run build` | `npm run build:firefox` |

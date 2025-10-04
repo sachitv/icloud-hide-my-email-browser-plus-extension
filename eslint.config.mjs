@@ -44,7 +44,7 @@ const importConfigs = importPlugin.configs;
 
 export default [
   {
-    ignores: ['build/**', '.brave-debug-profile/**'],
+    ignores: ['build/**', '.brave-debug-profile/**', '.wxt/**'],
   },
   {
     files: jsFiles,
