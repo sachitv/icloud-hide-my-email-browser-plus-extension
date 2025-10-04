@@ -2,6 +2,15 @@ name: Release for Brave, Chrome, Firefox, and Edge
 
 on:
   workflow_dispatch:
+    inputs:
+      dry-run:
+        description: 'Whether to run the release in dry-run mode. This will not publish the extension to the stores.'
+        type: boolean
+        default: false
+      draft-release:
+        description: 'Whether to create a draft release instead of a full release.'
+        type: boolean
+        default: false
 
 jobs:
   version:
@@ -181,7 +190,7 @@ jobs:
           path: artifacts
       - name: Publish browser extensions
         env:
-          DRY_RUN: 'true'
+          DRY_RUN: ${{ github.event.inputs.dry-run }}
           CHROME_ZIP: artifacts/icloud-hide-my-email-plus-browser-extension-${{ needs.version.outputs.extension_version }}-chrome.zip
           CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
           CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
@@ -244,6 +253,7 @@ jobs:
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
+          draft: ${{ github.event.inputs.draft-release }}
           tag_name: v${{ needs.version.outputs.extension_version }}
           name: v${{ needs.version.outputs.extension_version }}
           body: |
