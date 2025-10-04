@@ -156,7 +156,7 @@ jobs:
           fi
           mv "$ZIP_WITH_VERSION" build/icloud-hide-my-email-plus-browser-extension-firefox.zip
       - name: Lint Firefox bundle
-        run: npx web-ext lint --source-dir build
+        run: npx web-ext lint --source-dir build/firefox-mv3
       - name: Upload Firefox artifact
         uses: actions/upload-artifact@v4
         with:

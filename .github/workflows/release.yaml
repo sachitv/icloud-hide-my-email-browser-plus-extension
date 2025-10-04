@@ -108,7 +108,7 @@ jobs:
       - name: Package extension for Firefox
         run: npm run package:firefox
       - name: Lint Firefox package
-        run: npx web-ext lint --source-dir build
+        run: npx web-ext lint --source-dir build/firefox-mv3
       - name: Upload Firefox artifact
         uses: actions/upload-artifact@v4
         with:
