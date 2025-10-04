@@ -29,6 +29,16 @@ const allowedLicenses = new Set([
   'Zlib',
 ]);
 
+const licenseOverrides = new Map([
+  [
+    'winreg@0.0.12',
+    {
+      expectedLicense: 'BSD*',
+      note: 'Non-standard SPDX tag, upstream repo clarifies BSD 2 clause license',
+    },
+  ],
+]);
+
 // Wrap the callback API so we can await license-checker results.
 const initAsync = promisify(licenseCheckerInit);
 
@@ -142,11 +152,26 @@ async function main() {
 
   for (const [dependency, info] of Object.entries(results)) {
     const licenses = licenseValueToString(info.licenses);
+    const override = licenseOverrides.get(dependency);
 
     tableRows.push({
       dependency,
       license: licenses,
+      override: override?.note ?? '',
     });
+
+    if (override) {
+      const expected = override.expectedLicense;
+      if (expected && expected !== licenses) {
+        failures.push({
+          dependency,
+          licenses,
+          repository: info.repository,
+          message: `Override expected license "${expected}" but found "${licenses}"`,
+        });
+      }
+      continue;
+    }
 
     if (!licenseValueIsPermissive(info.licenses)) {
       failures.push({
@@ -171,6 +196,9 @@ async function main() {
       console.error(`  license: ${failure.licenses || 'UNKNOWN'}`);
       if (failure.repository) {
         console.error(`  repo: ${failure.repository}`);
+      }
+      if (failure.message) {
+        console.error(`  note: ${failure.message}`);
       }
       console.error('');
     });

@@ -71,10 +71,9 @@ Note: the following console commands are to be executed from the root directory 
 | # | Description | Chromium | Firefox |
 | - | - | - | - |
 | 0 | Install deps | `npm ci` | `npm ci && npm i -g web-ext` |
-| 1 | Spin up the WXT dev server. The server generates the `build` dir. | `npm run start` | `npm run start:firefox` |
-| 2 | Load the unpacked extension on the browser |  The `build` dir can be loaded as an unpacked extension through the browser's UI. See the relevant [Google Chrome guide](https://developer.chrome.com/docs/extensions/mv3/getstarted/development-basics/#load-unpacked). | `web-ext -s build run` |
-| 3 | Develop against the local browser instance on which the `build` dir is loaded | N/A | N/A |
-| 4 | Build productionized artifact | `npm run build` | `npm run build:firefox` |
-| 5 | Compress productionized artifact | `zip build.zip ./build/*` | `web-ext -s build build` |
-| 6 | Publish | [Chrome Web Store developer console](https://chrome.google.com/webstore/devconsole/) | [Mozilla Add-on Developer Hub](https://addons.mozilla.org/en-US/developers/addon/icloud-hide-my-email/versions/submit/) |
+| 1 | Spin up the WXT dev server. The server generates the `build` dir and opens the browser. | `npm run start` (Brave), `npm run start:chromium` | `npm run start:firefox` |
+| 2 | Build productionized artifact | `npm run build` | `npm run build:firefox` |
+| 3 | Create store-ready ZIP | `npm run package:chromium` | `npm run package:firefox` |
+| 4 | Publish | [Chrome Web Store developer console](https://chrome.google.com/webstore/devconsole/) | [Mozilla Add-on Developer Hub](https://addons.mozilla.org/en-US/developers/addon/icloud-hide-my-email/versions/submit/) |
+| 5 | Publish | [Chrome Web Store developer console](https://chrome.google.com/webstore/devconsole/) | [Mozilla Add-on Developer Hub](https://addons.mozilla.org/en-US/developers/addon/icloud-hide-my-email/versions/submit/) |
 <!-- prettier-ignore-end -->

@@ -1,14 +1,73 @@
 import { defineConfig } from 'wxt';
+import { existsSync } from 'node:fs';
+import path from 'node:path';
+
+const braveBinaryCandidates = [
+  process.env.BRAVE_BROWSER_BINARY,
+  process.env.BRAVE_BINARY,
+];
+
+if (process.platform === 'darwin') {
+  braveBinaryCandidates.push(
+    '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser'
+  );
+} else if (process.platform === 'win32') {
+  const programFiles = process.env.PROGRAMFILES;
+  const programFilesX86 = process.env['PROGRAMFILES(X86)'];
+  if (programFiles) {
+    braveBinaryCandidates.push(
+      path.join(
+        programFiles,
+        'BraveSoftware',
+        'Brave-Browser',
+        'Application',
+        'brave.exe'
+      )
+    );
+  }
+  if (programFilesX86) {
+    braveBinaryCandidates.push(
+      path.join(
+        programFilesX86,
+        'BraveSoftware',
+        'Brave-Browser',
+        'Application',
+        'brave.exe'
+      )
+    );
+  }
+} else {
+  braveBinaryCandidates.push(
+    '/usr/bin/brave-browser',
+    '/usr/bin/brave',
+    '/snap/bin/brave'
+  );
+}
+
+const braveBinary = braveBinaryCandidates.find(
+  (candidate) => candidate && existsSync(candidate)
+);
 
 export default defineConfig({
+  root: '.',
+  srcDir: '.',
+  entrypointsDir: 'entrypoints',
   outDir: 'build',
+  manifestVersion: 2,
+  browser: 'brave',
+  runner: braveBinary
+    ? {
+        binaries: {
+          brave: braveBinary,
+        },
+      }
+    : undefined,
   manifest: ({ browser }) => {
     const baseManifest = {
       name: 'Hide My Email+',
       description:
         "Use iCloud's Hide My Email service in your browser with Hide My Email+.",
       version: process.env.npm_package_version ?? '1.0.0',
-      manifest_version: 3,
       background: {
         service_worker: 'background.js',
         type: 'module' as const,
@@ -21,7 +80,7 @@ export default defineConfig({
         {
           matches: ['http://*/*', 'https://*/*', '<all_urls>'],
           js: ['content-script.js'],
-          css: ['content-script.css'],
+          css: ['assets/content-script.css'],
         },
       ],
       options_page: 'options.html',
