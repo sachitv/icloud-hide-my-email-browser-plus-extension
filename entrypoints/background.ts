@@ -1,8 +1,9 @@
 import { defineBackground } from 'wxt/sandbox';
+import '../src/pages/Background';
 
 export default defineBackground({
   type: 'module',
   main() {
-    void import('../src/pages/Background');
+    // All background logic is executed via the side-effectful import above.
   },
 });

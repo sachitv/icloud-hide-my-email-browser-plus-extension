@@ -2,66 +2,125 @@ import { defineConfig } from 'wxt';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 
-const braveBinaryCandidates = [
-  process.env.BRAVE_BROWSER_BINARY,
-  process.env.BRAVE_BINARY,
-];
+const detectBinary = (...candidates: Array<string | undefined>) =>
+  candidates.find((candidate) => candidate && existsSync(candidate));
 
-if (process.platform === 'darwin') {
-  braveBinaryCandidates.push(
-    '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser'
-  );
-} else if (process.platform === 'win32') {
-  const programFiles = process.env.PROGRAMFILES;
-  const programFilesX86 = process.env['PROGRAMFILES(X86)'];
-  if (programFiles) {
-    braveBinaryCandidates.push(
-      path.join(
-        programFiles,
-        'BraveSoftware',
-        'Brave-Browser',
-        'Application',
-        'brave.exe'
-      )
+const resolveBraveBinary = () => {
+  const candidates: Array<string | undefined> = [
+    process.env.BRAVE_BROWSER_BINARY,
+    process.env.BRAVE_BINARY,
+  ];
+
+  if (process.platform === 'darwin') {
+    candidates.push(
+      '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser'
+    );
+  } else if (process.platform === 'win32') {
+    const programFiles = process.env.PROGRAMFILES;
+    const programFilesX86 = process.env['PROGRAMFILES(X86)'];
+    if (programFiles) {
+      candidates.push(
+        path.join(
+          programFiles,
+          'BraveSoftware',
+          'Brave-Browser',
+          'Application',
+          'brave.exe'
+        )
+      );
+    }
+    if (programFilesX86) {
+      candidates.push(
+        path.join(
+          programFilesX86,
+          'BraveSoftware',
+          'Brave-Browser',
+          'Application',
+          'brave.exe'
+        )
+      );
+    }
+  } else {
+    candidates.push(
+      '/usr/bin/brave-browser',
+      '/usr/bin/brave',
+      '/snap/bin/brave'
     );
   }
-  if (programFilesX86) {
-    braveBinaryCandidates.push(
-      path.join(
-        programFilesX86,
-        'BraveSoftware',
-        'Brave-Browser',
-        'Application',
-        'brave.exe'
-      )
+
+  return detectBinary(...candidates);
+};
+
+const resolveEdgeBinary = () => {
+  const candidates: Array<string | undefined> = [
+    process.env.EDGE_BROWSER_BINARY,
+    process.env.EDGE_BINARY,
+  ];
+
+  if (process.platform === 'darwin') {
+    candidates.push(
+      '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge'
+    );
+  } else if (process.platform === 'win32') {
+    const programFiles = process.env.PROGRAMFILES;
+    const programFilesX86 = process.env['PROGRAMFILES(X86)'];
+    if (programFiles) {
+      candidates.push(
+        path.join(
+          programFiles,
+          'Microsoft',
+          'Edge',
+          'Application',
+          'msedge.exe'
+        )
+      );
+    }
+    if (programFilesX86) {
+      candidates.push(
+        path.join(
+          programFilesX86,
+          'Microsoft',
+          'Edge',
+          'Application',
+          'msedge.exe'
+        )
+      );
+    }
+  } else {
+    candidates.push(
+      '/usr/bin/microsoft-edge',
+      '/usr/bin/microsoft-edge-stable',
+      '/usr/bin/microsoft-edge-beta',
+      '/usr/bin/microsoft-edge-dev'
     );
   }
-} else {
-  braveBinaryCandidates.push(
-    '/usr/bin/brave-browser',
-    '/usr/bin/brave',
-    '/snap/bin/brave'
-  );
+
+  return detectBinary(...candidates);
+};
+
+const braveBinary = resolveBraveBinary();
+const edgeBinary = resolveEdgeBinary();
+
+const runnerBinaries: Record<string, string> = {};
+if (braveBinary) {
+  runnerBinaries.brave = braveBinary;
+}
+if (edgeBinary) {
+  runnerBinaries.edge = edgeBinary;
 }
 
-const braveBinary = braveBinaryCandidates.find(
-  (candidate) => candidate && existsSync(candidate)
-);
+const runnerConfig = Object.keys(runnerBinaries).length
+  ? { binaries: runnerBinaries }
+  : undefined;
 
 export default defineConfig({
   root: '.',
   srcDir: '.',
   entrypointsDir: 'entrypoints',
   outDir: 'build',
-  manifestVersion: 2,
+  manifestVersion: 3,
   browser: 'brave',
-  runner: braveBinary
-    ? {
-        binaries: {
-          brave: braveBinary,
-        },
-      }
-    : undefined,
+  runner: runnerConfig,
   manifest: ({ browser }) => {
     const baseManifest = {
       name: 'Hide My Email+',

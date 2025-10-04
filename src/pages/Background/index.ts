@@ -39,9 +39,11 @@ const constructClient = async (): Promise<ICloudClient> => {
   return new ICloudClient(clientState.setupUrl, clientState.webservices);
 };
 
-const performDeauthSideEffects = () => {
-  setBrowserStorageValue('popupState', DEFAULT_STORE.popupState);
-  setBrowserStorageValue('clientState', DEFAULT_STORE.clientState);
+const performDeauthSideEffects = async () => {
+  await Promise.all([
+    setBrowserStorageValue('popupState', DEFAULT_STORE.popupState),
+    setBrowserStorageValue('clientState', DEFAULT_STORE.clientState),
+  ]);
 
   browser.contextMenus
     .update(CONTEXT_MENU_ITEM_ID, {
@@ -51,13 +53,13 @@ const performDeauthSideEffects = () => {
     .catch(console.debug);
 };
 
-const performAuthSideEffects = (
+const performAuthSideEffects = async (
   client: ICloudClient,
   options: { notification?: boolean } = {}
 ) => {
   const { notification = false } = options;
 
-  setBrowserStorageValue('clientState', {
+  await setBrowserStorageValue('clientState', {
     setupUrl: client.setupUrl,
     webservices: client.webservices,
   });
@@ -69,7 +71,7 @@ const performAuthSideEffects = (
     })
     .catch(console.debug);
 
-  notification &&
+  if (notification) {
     browser.notifications
       .create({
         type: 'basic',
@@ -78,6 +80,7 @@ const performAuthSideEffects = (
         iconUrl: 'icon-128.png',
       })
       .catch(console.debug);
+  }
 };
 
 // ===== Message handling =====
@@ -93,7 +96,7 @@ browser.runtime.onMessage.addListener(async (uncastedMessage: unknown) => {
             error: SIGNED_OUT_CTA_COPY,
             elementId,
           });
-          performDeauthSideEffects();
+          await performDeauthSideEffects();
         };
 
         const elementId = message.data;
@@ -177,9 +180,9 @@ const setupContextMenu = async () => {
       const client = await constructClient();
       const isAuthenticated = await client.isAuthenticated();
       if (isAuthenticated) {
-        performAuthSideEffects(client);
+        await performAuthSideEffects(client);
       } else {
-        performDeauthSideEffects();
+        await performDeauthSideEffects();
       }
     }
   );
@@ -253,7 +256,7 @@ browser.contextMenus.onClicked.addListener(async (info, tab) => {
       } as ActiveInputElementWriteData,
       tab
     );
-    performDeauthSideEffects();
+    await performDeauthSideEffects();
     return;
   }
 
@@ -295,7 +298,7 @@ browser.webRequest.onResponseStarted.addListener(
     const client = new ICloudClient(setupUrl);
     const isAuthenticated = await client.isAuthenticated();
     if (isAuthenticated) {
-      performAuthSideEffects(client, { notification: true });
+      await performAuthSideEffects(client, { notification: true });
     }
   },
   {
@@ -317,7 +320,7 @@ browser.webRequest.onResponseStarted.addListener(
       return;
     }
 
-    performDeauthSideEffects();
+    await performDeauthSideEffects();
   },
   {
     urls: [`${DEFAULT_SETUP_URL}/logout*`, `${CN_SETUP_URL}/logout*`],
@@ -336,9 +339,9 @@ browser.runtime.onInstalled.addListener(
       const client = await constructClient();
       const isAuthenticated = await client.isAuthenticated();
       if (isAuthenticated) {
-        performAuthSideEffects(client, { notification: true });
+        await performAuthSideEffects(client, { notification: true });
       } else {
-        performDeauthSideEffects();
+        await performDeauthSideEffects();
       }
     }
   }
@@ -358,4 +361,6 @@ browser.runtime.onInstalled.addListener(
 // On Firefox the context menu state is not persisted across browser restarts, meaning that the menu item
 // will disappear once the user quits their browser. Hence on Firefox, we create the context
 // menu item each time the background script is loaded.
-isFirefox && setupContextMenu();
+if (isFirefox) {
+  void setupContextMenu();
+}
