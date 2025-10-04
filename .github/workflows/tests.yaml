@@ -53,6 +53,33 @@ jobs:
       - name: Lint
         run: npm run lint
 
+  build-brave:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v5
+      - name: Use Node.js 22.x
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: 'npm'
+      - name: Install npm deps
+        run: npm ci
+      - name: Package Brave bundle
+        run: |
+          npm run package:brave
+          ZIP_WITH_VERSION=$(find build -maxdepth 1 -name 'icloud-hide-my-email-plus-browser-extension-*-brave.zip' -print -quit)
+          if [ -z "$ZIP_WITH_VERSION" ]; then
+            echo "::error::Unable to find Brave package output";
+            exit 1;
+          fi
+          mv "$ZIP_WITH_VERSION" build/icloud-hide-my-email-plus-browser-extension-brave.zip
+      - name: Upload Brave artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: icloud-hide-my-email-plus-browser-extension-brave
+          path: build/icloud-hide-my-email-plus-browser-extension-brave.zip
+
   build-chrome:
     runs-on: ubuntu-latest
     needs: lint
@@ -65,21 +92,24 @@ jobs:
           cache: 'npm'
       - name: Install npm deps
         run: npm ci
-      - name: Build extension for Chrome
-        run: npm run build
-      - name: Zip Chrome build output
+      - name: Package Chrome bundle
         run: |
-          cd build
-          zip -r ../icloud-hide-my-email-plus-chrome-extension.zip .
+          npm run package:chrome
+          ZIP_WITH_VERSION=$(find build -maxdepth 1 -name 'icloud-hide-my-email-plus-browser-extension-*-chrome.zip' -print -quit)
+          if [ -z "$ZIP_WITH_VERSION" ]; then
+            echo "::error::Unable to find Chrome package output";
+            exit 1;
+          fi
+          mv "$ZIP_WITH_VERSION" build/icloud-hide-my-email-plus-browser-extension-chrome.zip
       - name: Upload Chrome artifact
         uses: actions/upload-artifact@v4
         with:
-          name: icloud-hide-my-email-plus-chrome-extension
-          path: icloud-hide-my-email-plus-chrome-extension.zip
+          name: icloud-hide-my-email-plus-browser-extension-chrome
+          path: build/icloud-hide-my-email-plus-browser-extension-chrome.zip
 
-  build-firefox:
+  build-edge:
     runs-on: ubuntu-latest
-    needs: build-chrome
+    needs: lint
     steps:
       - uses: actions/checkout@v5
       - name: Use Node.js 22.x
@@ -89,18 +119,49 @@ jobs:
           cache: 'npm'
       - name: Install npm deps
         run: npm ci
-      - name: Build extension for Firefox
-        # This also lints the Firefox build using web-ext.
-        # In the future add -w to the lint to treat warnings as errors.
+      - name: Package Edge bundle
         run: |
-          npm run build:firefox
-          npx web-ext lint --source-dir build
-          npx web-ext build --source-dir build --artifacts-dir . --filename icloud-hide-my-email-plus-firefox-extension.zip
+          npm run package:edge
+          ZIP_WITH_VERSION=$(find build -maxdepth 1 -name 'icloud-hide-my-email-plus-browser-extension-*-edge.zip' -print -quit)
+          if [ -z "$ZIP_WITH_VERSION" ]; then
+            echo "::error::Unable to find Edge package output";
+            exit 1;
+          fi
+          mv "$ZIP_WITH_VERSION" build/icloud-hide-my-email-plus-browser-extension-edge.zip
+      - name: Upload Edge artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: icloud-hide-my-email-plus-browser-extension-edge
+          path: build/icloud-hide-my-email-plus-browser-extension-edge.zip
+
+  build-firefox:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v5
+      - name: Use Node.js 22.x
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: 'npm'
+      - name: Install npm deps
+        run: npm ci
+      - name: Package Firefox bundle
+        run: |
+          npm run package:firefox
+          ZIP_WITH_VERSION=$(find build -maxdepth 1 -name 'icloud-hide-my-email-plus-browser-extension-*-firefox.zip' -print -quit)
+          if [ -z "$ZIP_WITH_VERSION" ]; then
+            echo "::error::Unable to find Firefox package output";
+            exit 1;
+          fi
+          mv "$ZIP_WITH_VERSION" build/icloud-hide-my-email-plus-browser-extension-firefox.zip
+      - name: Lint Firefox bundle
+        run: npx web-ext lint --source-dir build/firefox-mv3
       - name: Upload Firefox artifact
         uses: actions/upload-artifact@v4
         with:
-          name: icloud-hide-my-email-plus-firefox-extension
-          path: icloud-hide-my-email-plus-firefox-extension.zip
+          name: icloud-hide-my-email-plus-browser-extension-firefox
+          path: build/icloud-hide-my-email-plus-browser-extension-firefox.zip
 
   license-audit:
     needs: detect-license-changes

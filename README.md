@@ -2,16 +2,16 @@
 
 This is a fork of the [icloud-hide-my-email-browser-extension](https://github.com/dedoussis/icloud-hide-my-email-browser-extension) by Dimitrios Dedoussis, with some modifications by Sachit Vithaldas.
 
-[![Tests Status](https://github.com/sachitv/icloud-hide-my-email-browser-extension/workflows/tests/badge.svg)](https://github.com/sachitv/icloud-hide-my-email-browser-extension/actions/workflows/tests.yml)
+Hide My Email+ builds on iCloud's [Hide My Email](https://support.apple.com/en-us/HT210425) privacy service. Safari offers a native integration with Hide My Email, whereby users are prompted to generate a Hide My Email address upon registration to any website. This extension aims to bring a similar UX into a wider variety of browsers.
 
-Hide My Email+ builds on iCloud's [Hide My Email](https://support.apple.com/en-us/HT210425) privacy service. Safari offers a native integration with Hide My Email, whereby users are prompted to generate a Hide My Email address upon registration to any website. This extension aims to bring a similar UX into a wider variety of browsers. In particular, it has been explicitly tested to work on:
+## Supported Browsers
 
-- [Chrome](https://chrome.google.com/webstore/detail/icloud-hide-my-email/omiaekblhgfopjkjnenhahfgcgnbohlk)
-- [Firefox](https://addons.mozilla.org/en-US/firefox/addon/icloud-hide-my-email/)
-- [Brave](https://chrome.google.com/webstore/detail/icloud-hide-my-email/omiaekblhgfopjkjnenhahfgcgnbohlk)
+- [Chrome](https://chromewebstore.google.com/detail/hide-my-email+/olkpkcclmmjmmknlhdggcjiefbdgjfke?hl=en)
+- [Firefox](https://addons.mozilla.org/en-GB/firefox/addon/hide-my-email-plus/)
+- [Brave](https://chromewebstore.google.com/detail/hide-my-email+/olkpkcclmmjmmknlhdggcjiefbdgjfke?hl=en)
 - Microsoft Edge
 
-Note that the extension _should_ work on any browser that implements the [extension API](https://developer.chrome.com/docs/extensions/reference/) supported by Chromium-based browsers.
+The extension _should_ work on any browser that implements the [Manifest V3 extension API](https://developer.chrome.com/docs/extensions/reference/) supported by Chromium-based browsers.
 
 _Disclaimer: This extension is not endorsed by, directly affiliated with, maintained, authorized, or sponsored by Apple._
 
@@ -68,13 +68,11 @@ The table below outlines the sequence of steps that need to be followed in order
 Note: the following console commands are to be executed from the root directory of this repo
 
 <!-- prettier-ignore-start -->
-| # | Description | Chromium | Firefox |
-| - | - | - | - |
-| 0 | Install deps | `npm ci` | `npm ci && npm i -g web-ext` |
-| 1 | Spin up the dev server. The server generates the `build` dir. | `npm run start` | `npm run start:firefox` |
-| 2 | Load the unpacked extension on the browser |  The `build` dir can be loaded as an unpacked extension through the browser's UI. See the relevant [Google Chrome guide](https://developer.chrome.com/docs/extensions/mv3/getstarted/development-basics/#load-unpacked). | `web-ext -s build run` |
-| 3 | Develop against the local browser instance on which the `build` dir is loaded | N/A | N/A |
-| 4 | Build productionized artifact | `npm run build` | `npm run build:firefox` |
-| 5 | Compress productionized artifact | `zip build.zip ./build/*` | `web-ext -s build build` |
-| 6 | Publish | [Chrome Web Store developer console](https://chrome.google.com/webstore/devconsole/) | [Mozilla Add-on Developer Hub](https://addons.mozilla.org/en-US/developers/addon/icloud-hide-my-email/versions/submit/) |
+| # | Description | Brave | Chrome | Edge | Firefox |
+| - | - | - | - | - | - |
+| 0 | Install deps | `npm ci` | `npm ci` | `npm ci` | `npm ci && npm i -g web-ext` |
+| 1 | Spin up the WXT dev server. The server generates the `build` dir and opens the browser. | `npm run start:brave` | `npm run start:chrome` | `npm run start:edge` | `npm run start:firefox`<br/>**Important**: Firefox dev tooling still runs MV2, so confirm MV3 behaviour with a production build before shipping. |
+| 2 | Build productionized artifact | `npm run build:brave` | `npm run build:chrome` | `npm run build:edge` | `npm run build:firefox` |
+| 3 | Create store-ready ZIP | `npm run package:brave` | `npm run package:chrome` | `npm run package:edge` | `npm run package:firefox` |
+| 4 | Publish | [Chrome Web Store developer console](https://chrome.google.com/webstore/devconsole/) | [Chrome Web Store developer console](https://chrome.google.com/webstore/devconsole/) | [Microsoft Partner Center](https://partner.microsoft.com/en-us/dashboard/microsoftedge/overview) | [Mozilla Add-on Developer Hub](https://addons.mozilla.org/en-US/developers/addon/icloud-hide-my-email/versions/submit/) |
 <!-- prettier-ignore-end -->
