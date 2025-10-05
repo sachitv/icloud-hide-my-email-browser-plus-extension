@@ -60,6 +60,12 @@ function markdownLink(identifier, repository) {
 async function main() {
   const start = path.resolve(process.cwd());
 
+  // Exclude this repository from the generated list.
+  const pkg = JSON.parse(
+    fs.readFileSync(path.join(start, 'package.json'), 'utf8'),
+  );
+  const ownPackageIdentifier = `${pkg.name}@${pkg.version}`;
+
   // Collect package names that are marked optional in package-lock.json to keep
   // platform-specific binaries out of the final attribution list.
   const optionalPackages = (() => {
@@ -101,11 +107,20 @@ async function main() {
       repository: info.repository,
       optional: optionalPackages.has(packageNameFromIdentifier(dependency)),
     }))
-    .filter((row) => !row.optional)
+    .filter(
+      (row) => !row.optional && row.dependency !== ownPackageIdentifier,
+    )
     .sort((a, b) => a.dependency.localeCompare(b.dependency));
 
   // Markdown header for the generated table.
-  const lines = ['| Package | License |', '| --- | --- |'];
+  const lines = [
+    'This extension is based on the [Hide My Email browser extension](https://github.com/dedoussis/icloud-hide-my-email-browser-extension) by [Dimitris Dedoussis](https://github.com/dedoussis) and licensed under the MIT License.',
+    '',
+    '---',
+    '',
+    '| Package | License |',
+    '| --- | --- |',
+  ];
 
   rows.forEach((row) => {
     const link = markdownLink(row.dependency, row.repository);
