@@ -49,7 +49,10 @@ describe('ICloudClient', () => {
 
   it('provides the webservice URL once webservices are initialised', () => {
     const client = new ICloudClient(DEFAULT_SETUP_URL, {
-      premiummailsettings: { url: 'https://service.example.com', status: 'active' },
+      premiummailsettings: {
+        url: 'https://service.example.com',
+        status: 'active',
+      },
     });
 
     expect(client.webserviceUrl('premiummailsettings')).toBe(
@@ -114,9 +117,13 @@ describe('ICloudClient', () => {
     const debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
 
     await expect(client.signOut()).resolves.toBeUndefined();
-    expect(client.request).toHaveBeenCalledWith('POST', `${DEFAULT_SETUP_URL}/logout`, {
-      data: { trustBrowsers: false, allBrowsers: false },
-    });
+    expect(client.request).toHaveBeenCalledWith(
+      'POST',
+      `${DEFAULT_SETUP_URL}/logout`,
+      {
+        data: { trustBrowsers: false, allBrowsers: false },
+      }
+    );
     expect(debugSpy).toHaveBeenCalled();
   });
 
@@ -127,8 +134,12 @@ describe('ICloudClient', () => {
 
     await client.signOut({ trust: true });
 
-    expect(requestSpy).toHaveBeenCalledWith('POST', `${DEFAULT_SETUP_URL}/logout`, {
-      data: { trustBrowsers: true, allBrowsers: true },
-    });
+    expect(requestSpy).toHaveBeenCalledWith(
+      'POST',
+      `${DEFAULT_SETUP_URL}/logout`,
+      {
+        data: { trustBrowsers: true, allBrowsers: true },
+      }
+    );
   });
 });

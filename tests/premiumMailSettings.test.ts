@@ -13,7 +13,10 @@ import ICloudClient, {
 describe('PremiumMailSettings', () => {
   const createClient = () =>
     new ICloudClient('https://setup.example.com', {
-      premiummailsettings: { url: 'https://icloud.example.com', status: 'active' },
+      premiummailsettings: {
+        url: 'https://icloud.example.com',
+        status: 'active',
+      },
     });
 
   afterEach(() => {
@@ -68,7 +71,9 @@ describe('PremiumMailSettings', () => {
 
     const settings = new PremiumMailSettings(client);
 
-    await expect(settings.generateHme()).rejects.toThrowError(GenerateHmeException);
+    await expect(settings.generateHme()).rejects.toThrowError(
+      GenerateHmeException
+    );
   });
 
   it('reserves generated alias and returns the HME payload', async () => {
@@ -91,11 +96,19 @@ describe('PremiumMailSettings', () => {
     });
 
     const settings = new PremiumMailSettings(client);
-    const result = await settings.reserveHme('alias@example.com', 'Label', 'Note');
+    const result = await settings.reserveHme(
+      'alias@example.com',
+      'Label',
+      'Note'
+    );
 
-    expect(client.request).toHaveBeenCalledWith('POST', 'https://icloud.example.com/v1/hme/reserve', {
-      data: { hme: 'alias@example.com', label: 'Label', note: 'Note' },
-    });
+    expect(client.request).toHaveBeenCalledWith(
+      'POST',
+      'https://icloud.example.com/v1/hme/reserve',
+      {
+        data: { hme: 'alias@example.com', label: 'Label', note: 'Note' },
+      }
+    );
     expect(result).toEqual(aliasPayload);
   });
 
@@ -122,13 +135,17 @@ describe('PremiumMailSettings', () => {
     const settings = new PremiumMailSettings(client);
     await settings.reserveHme('alias@example.com', 'Label');
 
-    expect(client.request).toHaveBeenCalledWith('POST', 'https://icloud.example.com/v1/hme/reserve', {
-      data: {
-        hme: 'alias@example.com',
-        label: 'Label',
-        note: 'Generated through the Hide My Email+ browser extension',
-      },
-    });
+    expect(client.request).toHaveBeenCalledWith(
+      'POST',
+      'https://icloud.example.com/v1/hme/reserve',
+      {
+        data: {
+          hme: 'alias@example.com',
+          label: 'Label',
+          note: 'Generated through the Hide My Email+ browser extension',
+        },
+      }
+    );
   });
 
   it('throws ReserveHmeException when reservation fails', async () => {
@@ -151,7 +168,9 @@ describe('PremiumMailSettings', () => {
     expect(client.request).toHaveBeenCalledWith(
       'POST',
       'https://icloud.example.com/v1/hme/updateMetaData',
-      { data: { anonymousId: 'anon-123', label: 'New Label', note: 'New Note' } }
+      {
+        data: { anonymousId: 'anon-123', label: 'New Label', note: 'New Note' },
+      }
     );
   });
 
@@ -219,8 +238,8 @@ describe('PremiumMailSettings', () => {
     await expect(settings.deleteHme('anon-123')).rejects.toBeInstanceOf(
       DeleteHmeException
     );
-    await expect(settings.updateForwardToHme('user@example.com')).rejects.toBeInstanceOf(
-      UpdateFwdToHmeException
-    );
+    await expect(
+      settings.updateForwardToHme('user@example.com')
+    ).rejects.toBeInstanceOf(UpdateFwdToHmeException);
   });
 });

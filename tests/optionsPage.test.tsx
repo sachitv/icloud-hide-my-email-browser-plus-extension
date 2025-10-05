@@ -34,15 +34,13 @@ const {
       const isLoading = entry.isLoading ?? false;
 
       const setStateWithSpy = React.useMemo(
-        () =>
-          (value: unknown) => {
-            setState((prev) => {
-              const nextValue =
-                typeof value === 'function' ? value(prev) : value;
-              spy(nextValue);
-              return nextValue;
-            });
-          },
+        () => (value: unknown) => {
+          setState((prev) => {
+            const nextValue = typeof value === 'function' ? value(prev) : value;
+            spy(nextValue);
+            return nextValue;
+          });
+        },
         [setState, spy]
       );
 
@@ -56,11 +54,12 @@ const {
   const isAuthenticatedMock = vi.fn();
   const listHmeMock = vi.fn();
   const updateForwardToHmeMock = vi.fn();
-  const ICloudClientConstructorMock = vi
-    .fn<[], { isAuthenticated: typeof isAuthenticatedMock }>
-    (() => ({
-      isAuthenticated: isAuthenticatedMock,
-    }));
+  const ICloudClientConstructorMock = vi.fn<
+    [],
+    { isAuthenticated: typeof isAuthenticatedMock }
+  >(() => ({
+    isAuthenticated: isAuthenticatedMock,
+  }));
   const PremiumMailSettingsMock = vi.fn(() => ({
     listHme: listHmeMock,
     updateForwardToHme: updateForwardToHmeMock,
