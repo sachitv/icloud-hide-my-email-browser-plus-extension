@@ -65,6 +65,7 @@
     "spdx-expression-parse": "^4.0.0",
     "tailwindcss": "^4.1.14",
     "typescript": "^5.9.3",
+    "web-ext": "^8.10.0",
     "wxt": "^0.20.11"
   }
 }
