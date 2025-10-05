@@ -38,6 +38,7 @@
     "start": "wxt --browser=brave --debug"
   },
   "dependencies": {
+    "@wxt-dev/webextension-polyfill": "^1.0.0",
     "fuse.js": "^7.1.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
@@ -64,6 +65,6 @@
     "spdx-expression-parse": "^4.0.0",
     "tailwindcss": "^4.1.14",
     "typescript": "^5.9.3",
-    "wxt": "^0.19.29"
+    "wxt": "^0.20.11"
   }
 }

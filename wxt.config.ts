@@ -114,6 +114,7 @@ const runnerConfig = Object.keys(runnerBinaries).length
   : undefined;
 
 export default defineConfig({
+  modules: ['@wxt-dev/webextension-polyfill'],
   root: '.',
   srcDir: '.',
   entrypointsDir: 'entrypoints',
