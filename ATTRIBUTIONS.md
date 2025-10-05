@@ -166,8 +166,6 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [color-convert@2.0.1](https://github.com/Qix-/color-convert)                                                | MIT                                 |
 | [color-name@1.1.4](https://github.com/colorjs/color-name)                                                   | MIT                                 |
 | [colorette@2.0.20](https://github.com/jorgebucaran/colorette)                                               | MIT                                 |
-| [commander@2.9.0](https://github.com/tj/commander.js)                                                       | MIT                                 |
-| [commander@9.5.0](https://github.com/tj/commander.js)                                                       | MIT                                 |
 | [concat-map@0.0.1](https://github.com/substack/node-concat-map)                                             | MIT                                 |
 | [concat-stream@1.6.2](https://github.com/maxogden/concat-stream)                                            | MIT                                 |
 | [confbox@0.1.8](https://github.com/unjs/confbox)                                                            | MIT                                 |
@@ -202,7 +200,6 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [defu@6.1.4](https://github.com/unjs/defu)                                                                  | MIT                                 |
 | [dequal@2.0.3](https://github.com/lukeed/dequal)                                                            | MIT                                 |
 | [destr@2.0.5](https://github.com/unjs/destr)                                                                | MIT                                 |
-| [detect-libc@2.1.1](https://github.com/lovell/detect-libc)                                                  | Apache-2.0                          |
 | [doctrine@2.1.0](https://github.com/eslint/doctrine)                                                        | Apache-2.0                          |
 | [dom-serializer@2.0.0](https://github.com/cheeriojs/dom-serializer)                                         | MIT                                 |
 | [domelementtype@2.3.0](https://github.com/fb55/domelementtype)                                              | BSD-2-Clause                        |
@@ -636,7 +633,6 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [strip-json-comments@5.0.2](https://github.com/sindresorhus/strip-json-comments)                            | MIT                                 |
 | [strip-literal@2.1.1](https://github.com/antfu/strip-literal)                                               | MIT                                 |
 | [stubborn-fs@1.2.5](https://github.com/fabiospampinato/stubborn-fs)                                         | MIT\*                               |
-| [supports-color@7.2.0](https://github.com/chalk/supports-color)                                             | MIT                                 |
 | [supports-preserve-symlinks-flag@1.0.0](https://github.com/inspect-js/node-supports-preserve-symlinks-flag) | MIT                                 |
 | [tailwindcss@4.1.14](https://github.com/tailwindlabs/tailwindcss)                                           | MIT                                 |
 | [tapable@2.2.3](https://github.com/webpack/tapable)                                                         | MIT                                 |
