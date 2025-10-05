@@ -101,16 +101,16 @@ const resolveEdgeBinary = () => {
 const braveBinary = resolveBraveBinary();
 const edgeBinary = resolveEdgeBinary();
 
-const broeserBinaries: Record<string, string> = {};
+const browserBinaries: Record<string, string> = {};
 if (braveBinary) {
-  broeserBinaries.brave = braveBinary;
+  browserBinaries.brave = braveBinary;
 }
 if (edgeBinary) {
-  broeserBinaries.edge = edgeBinary;
+  browserBinaries.edge = edgeBinary;
 }
 
-const webExtConfig = Object.keys(broeserBinaries).length
-  ? { binaries: broeserBinaries }
+const webExtConfig = Object.keys(browserBinaries).length
+  ? { binaries: browserBinaries }
   : undefined;
 
 export default defineConfig({
