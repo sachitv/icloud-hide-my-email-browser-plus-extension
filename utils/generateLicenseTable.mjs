@@ -62,7 +62,7 @@ async function main() {
 
   // Exclude this repository from the generated list.
   const pkg = JSON.parse(
-    fs.readFileSync(path.join(start, 'package.json'), 'utf8'),
+    fs.readFileSync(path.join(start, 'package.json'), 'utf8')
   );
   const ownPackageIdentifier = `${pkg.name}@${pkg.version}`;
 
@@ -107,9 +107,7 @@ async function main() {
       repository: info.repository,
       optional: optionalPackages.has(packageNameFromIdentifier(dependency)),
     }))
-    .filter(
-      (row) => !row.optional && row.dependency !== ownPackageIdentifier,
-    )
+    .filter((row) => !row.optional && row.dependency !== ownPackageIdentifier)
     .sort((a, b) => a.dependency.localeCompare(b.dependency));
 
   // Markdown header for the generated table.

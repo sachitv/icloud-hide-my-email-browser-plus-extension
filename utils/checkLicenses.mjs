@@ -191,7 +191,9 @@ async function main() {
   }
 
   if (failures.length > 0) {
-    console.error('Found dependencies that are not covered by the approved permissive licenses:\n');
+    console.error(
+      'Found dependencies that are not covered by the approved permissive licenses:\n'
+    );
     failures.forEach((failure) => {
       console.error(`- ${failure.dependency}`);
       console.error(`  license: ${failure.licenses || 'UNKNOWN'}`);
@@ -203,12 +205,16 @@ async function main() {
       }
       console.error('');
     });
-    console.error('Update the whitelist in utils/checkLicenses.mjs if additional permissive licenses should be allowed.');
+    console.error(
+      'Update the whitelist in utils/checkLicenses.mjs if additional permissive licenses should be allowed.'
+    );
     process.exitCode = 1;
     return;
   }
 
-  console.log('All dependencies use permissive licenses that allow for commercial use.');
+  console.log(
+    'All dependencies use permissive licenses that allow for commercial use.'
+  );
 }
 
 main().catch((error) => {
