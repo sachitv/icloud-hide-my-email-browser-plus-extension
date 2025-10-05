@@ -315,7 +315,7 @@
 | [html-escaper@3.0.3](https://github.com/WebReflection/html-escaper)                                                    | MIT                                 |
 | [htmlparser2@10.0.0](https://github.com/fb55/htmlparser2)                                                              | MIT                                 |
 | [human-signals@5.0.0](https://github.com/ehmicky/human-signals)                                                        | Apache-2.0                          |
-| [icloud-hide-my-email-plus-browser-extension@1.0.0](https://github.com/sachitv/icloud-hide-my-email-browser-extension) | MIT                                 |
+| [icloud-hide-my-email-plus-browser-extension@1.1.0](https://github.com/sachitv/icloud-hide-my-email-browser-extension) | MIT                                 |
 | [ieee754@1.2.1](https://github.com/feross/ieee754)                                                                     | BSD-3-Clause                        |
 | [ignore@5.3.2](https://github.com/kaelzhang/node-ignore)                                                               | MIT                                 |
 | [ignore@7.0.5](https://github.com/kaelzhang/node-ignore)                                                               | MIT                                 |
