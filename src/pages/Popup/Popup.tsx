@@ -6,14 +6,11 @@ import React, {
   DetailedHTMLProps,
   ReactNode,
   ReactElement,
-} from 'react';
-import ICloudClient, {
-  PremiumMailSettings,
-  HmeEmail,
-} from '../../iCloudClient';
-import './Popup.css';
-import { useBrowserStorageState } from '../../hooks';
-import type { IconProps } from '../../icons';
+} from 'react'
+import ICloudClient, { PremiumMailSettings, HmeEmail } from '../../iCloudClient'
+import './Popup.css'
+import { useBrowserStorageState } from '../../hooks'
+import type { IconProps } from '../../icons'
 import {
   RefreshIcon,
   ClipboardIcon,
@@ -28,37 +25,37 @@ import {
   ExternalLinkIcon,
   QuestionCircleIcon,
   FirefoxIcon,
-} from '../../icons';
-import { MessageType, sendMessageToTab } from '../../messages';
+} from '../../icons'
+import { MessageType, sendMessageToTab } from '../../messages'
 import {
   ErrorMessage,
   LoadingButton,
   Spinner,
   TitledComponent,
   Link,
-} from '../../commonComponents';
-import { setBrowserStorageValue, Store } from '../../storage';
+} from '../../commonComponents'
+import { setBrowserStorageValue, Store } from '../../storage'
 
-import browser from 'webextension-polyfill';
-import Fuse from 'fuse.js';
-import { deepEqual } from '../../utils/deepEqual';
+import browser from 'webextension-polyfill'
+import Fuse from 'fuse.js'
+import { deepEqual } from '../../utils/deepEqual'
 import {
   PopupAction,
   PopupState,
   AuthenticatedAction,
   STATE_MACHINE_TRANSITIONS,
   AuthenticatedAndManagingAction,
-} from './stateMachine';
+} from './stateMachine'
 import {
   CONTEXT_MENU_ITEM_ID,
   SIGNED_OUT_CTA_COPY,
-} from '../Background/constants';
-import { isFirefox } from '../../browserUtils';
+} from '../Background/constants'
+import { isFirefox } from '../../browserUtils'
 
-type TransitionCallback<T extends PopupAction> = (action: T) => void;
+type TransitionCallback<T extends PopupAction> = (action: T) => void
 
 const SignInInstructions = () => {
-  const userguideUrl = browser.runtime.getURL('userguide.html');
+  const userguideUrl = browser.runtime.getURL('userguide.html')
 
   return (
     <TitledComponent title="Hide My Email+" subtitle="Sign in to iCloud">
@@ -136,20 +133,20 @@ const SignInInstructions = () => {
         </div>
       </div>
     </TitledComponent>
-  );
-};
+  )
+}
 
 const ReservationResult = (props: { hme: HmeEmail }) => {
   const onCopyToClipboardClick = async () => {
-    await navigator.clipboard.writeText(props.hme.hme);
-  };
+    await navigator.clipboard.writeText(props.hme.hme)
+  }
 
   const onAutofillClick = async () => {
-    await sendMessageToTab(MessageType.Autofill, props.hme.hme);
-  };
+    await sendMessageToTab(MessageType.Autofill, props.hme.hme)
+  }
 
   const btnClassName =
-    'inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-semibold text-white shadow-[0_12px_28px_-16px_rgba(16,185,129,0.75)] transition hover:-translate-y-0.5 hover:bg-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200/80 focus:ring-offset-2 focus:ring-offset-slate-950';
+    'inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-semibold text-white shadow-[0_12px_28px_-16px_rgba(16,185,129,0.75)] transition hover:-translate-y-0.5 hover:bg-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200/80 focus:ring-offset-2 focus:ring-offset-slate-950'
 
   return (
     <div
@@ -181,32 +178,30 @@ const ReservationResult = (props: { hme: HmeEmail }) => {
         </button>
       </div>
     </div>
-  );
-};
+  )
+}
 
 const FooterButton = (
   props: {
-    label: string;
-    icon: React.ComponentType<IconProps>;
+    label: string
+    icon: React.ComponentType<IconProps>
   } & DetailedHTMLProps<
     ButtonHTMLAttributes<HTMLButtonElement>,
     HTMLButtonElement
   >
 ) => {
-  const { label, icon, className, ...rest } = props;
+  const { label, icon, className, ...rest } = props
   const baseClassName =
-    'inline-flex items-center gap-2 rounded-full bg-slate-800/70 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500/70 focus:ring-offset-2 focus:ring-offset-slate-950';
-  const composedClassName = [baseClassName, className]
-    .filter(Boolean)
-    .join(' ');
-  const Icon = icon;
+    'inline-flex items-center gap-2 rounded-full bg-slate-800/70 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500/70 focus:ring-offset-2 focus:ring-offset-slate-950'
+  const composedClassName = [baseClassName, className].filter(Boolean).join(' ')
+  const Icon = icon
   return (
     <button className={composedClassName} {...rest}>
       <Icon className="h-4 w-4" />
       {label}
     </button>
-  );
-};
+  )
+}
 
 async function performDeauthSideEffects(): Promise<void> {
   await browser.contextMenus
@@ -214,137 +209,137 @@ async function performDeauthSideEffects(): Promise<void> {
       title: SIGNED_OUT_CTA_COPY,
       enabled: false,
     })
-    .catch(console.debug);
+    .catch(console.debug)
 }
 
 const SignOutButton = (props: {
-  callback: TransitionCallback<'SIGN_OUT'>;
-  client: ICloudClient;
+  callback: TransitionCallback<'SIGN_OUT'>
+  client: ICloudClient
 }) => {
   return (
     <FooterButton
       className="bg-transparent text-rose-300 hover:bg-rose-500/10 hover:text-rose-200 focus:ring-rose-300/60"
       onClick={async () => {
-        await props.client.signOut();
+        await props.client.signOut()
         // TODO: call the react state setter instead
-        setBrowserStorageValue('clientState', undefined);
-        performDeauthSideEffects();
-        props.callback('SIGN_OUT');
+        setBrowserStorageValue('clientState', undefined)
+        performDeauthSideEffects()
+        props.callback('SIGN_OUT')
       }}
       label="Sign out"
       icon={SignOutIcon}
     />
-  );
-};
+  )
+}
 
 const HmeGenerator = (props: {
-  callback: TransitionCallback<AuthenticatedAction>;
-  client: ICloudClient;
+  callback: TransitionCallback<AuthenticatedAction>
+  client: ICloudClient
 }) => {
-  const [hmeEmail, setHmeEmail] = useState<string>();
-  const [hmeError, setHmeError] = useState<string>();
+  const [hmeEmail, setHmeEmail] = useState<string>()
+  const [hmeError, setHmeError] = useState<string>()
 
-  const [reservedHme, setReservedHme] = useState<HmeEmail>();
-  const [reserveError, setReserveError] = useState<string>();
+  const [reservedHme, setReservedHme] = useState<HmeEmail>()
+  const [reserveError, setReserveError] = useState<string>()
 
   const [isEmailRefreshSubmitting, setIsEmailRefreshSubmitting] =
-    useState(false);
-  const [isUseSubmitting, setIsUseSubmitting] = useState(false);
-  const [tabHost, setTabHost] = useState('');
-  const [fwdToEmail, setFwdToEmail] = useState<string>();
+    useState(false)
+  const [isUseSubmitting, setIsUseSubmitting] = useState(false)
+  const [tabHost, setTabHost] = useState('')
+  const [fwdToEmail, setFwdToEmail] = useState<string>()
 
-  const [note, setNote] = useState<string>();
-  const [label, setLabel] = useState<string>();
+  const [note, setNote] = useState<string>()
+  const [label, setLabel] = useState<string>()
 
   useEffect(() => {
     const fetchHmeList = async () => {
-      setHmeError(undefined);
+      setHmeError(undefined)
       try {
-        const pms = new PremiumMailSettings(props.client);
-        const result = await pms.listHme();
-        setFwdToEmail(result.selectedForwardTo);
+        const pms = new PremiumMailSettings(props.client)
+        const result = await pms.listHme()
+        setFwdToEmail(result.selectedForwardTo)
       } catch (e) {
-        setHmeError(e.toString());
+        setHmeError(e.toString())
       }
-    };
+    }
 
-    fetchHmeList();
-  }, [props.client]);
+    fetchHmeList()
+  }, [props.client])
 
   useEffect(() => {
     const fetchHmeEmail = async () => {
-      setHmeError(undefined);
-      setIsEmailRefreshSubmitting(true);
+      setHmeError(undefined)
+      setIsEmailRefreshSubmitting(true)
       try {
-        const pms = new PremiumMailSettings(props.client);
-        setHmeEmail(await pms.generateHme());
+        const pms = new PremiumMailSettings(props.client)
+        setHmeEmail(await pms.generateHme())
       } catch (e) {
-        setHmeError(e.toString());
+        setHmeError(e.toString())
       } finally {
-        setIsEmailRefreshSubmitting(false);
+        setIsEmailRefreshSubmitting(false)
       }
-    };
+    }
 
-    fetchHmeEmail();
-  }, [props.client]);
+    fetchHmeEmail()
+  }, [props.client])
 
   useEffect(() => {
     const getTabHost = async () => {
       const [tab] = await browser.tabs.query({
         active: true,
         lastFocusedWindow: true,
-      });
-      const tabUrl = tab?.url;
+      })
+      const tabUrl = tab?.url
       if (tabUrl !== undefined) {
-        const { hostname } = new URL(tabUrl);
-        setTabHost(hostname);
-        setLabel(hostname);
+        const { hostname } = new URL(tabUrl)
+        setTabHost(hostname)
+        setLabel(hostname)
       }
-    };
+    }
 
-    getTabHost().catch(console.error);
-  }, []);
+    getTabHost().catch(console.error)
+  }, [])
 
   const onEmailRefreshClick = async () => {
-    setIsEmailRefreshSubmitting(true);
-    setReservedHme(undefined);
-    setHmeError(undefined);
-    setReserveError(undefined);
+    setIsEmailRefreshSubmitting(true)
+    setReservedHme(undefined)
+    setHmeError(undefined)
+    setReserveError(undefined)
     try {
-      const pms = new PremiumMailSettings(props.client);
-      setHmeEmail(await pms.generateHme());
+      const pms = new PremiumMailSettings(props.client)
+      setHmeEmail(await pms.generateHme())
     } catch (e) {
-      setHmeError(e.toString());
+      setHmeError(e.toString())
     }
-    setIsEmailRefreshSubmitting(false);
-  };
+    setIsEmailRefreshSubmitting(false)
+  }
 
   const onUseSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setIsUseSubmitting(true);
-    setReservedHme(undefined);
-    setReserveError(undefined);
+    event.preventDefault()
+    setIsUseSubmitting(true)
+    setReservedHme(undefined)
+    setReserveError(undefined)
 
     if (hmeEmail !== undefined) {
       try {
-        const pms = new PremiumMailSettings(props.client);
+        const pms = new PremiumMailSettings(props.client)
         setReservedHme(
           await pms.reserveHme(hmeEmail, label || tabHost, note || undefined)
-        );
-        setLabel(undefined);
-        setNote(undefined);
+        )
+        setLabel(undefined)
+        setNote(undefined)
       } catch (e) {
-        setReserveError(e.toString());
+        setReserveError(e.toString())
       }
     }
-    setIsUseSubmitting(false);
-  };
+    setIsUseSubmitting(false)
+  }
 
   const isReservationFormDisabled =
-    isEmailRefreshSubmitting || hmeEmail == reservedHme?.hme;
+    isEmailRefreshSubmitting || hmeEmail == reservedHme?.hme
 
   const reservationFormInputClassName =
-    'w-full rounded-2xl border border-slate-800/70 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 transition focus:border-rainbow-purple focus:outline-none focus:ring-2 focus:ring-rainbow-purple/70';
+    'w-full rounded-2xl border border-slate-800/70 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 transition focus:border-rainbow-purple focus:outline-none focus:ring-2 focus:ring-rainbow-purple/70'
 
   return (
     <TitledComponent hideHeader>
@@ -461,71 +456,71 @@ const HmeGenerator = (props: {
         </p>
       </div>
     </TitledComponent>
-  );
-};
+  )
+}
 
 const HmeDetails = (props: {
-  hme: HmeEmail;
-  client: ICloudClient;
-  activationCallback: () => void;
-  deletionCallback: () => void;
+  hme: HmeEmail
+  client: ICloudClient
+  activationCallback: () => void
+  deletionCallback: () => void
 }) => {
-  const [isActivateSubmitting, setIsActivateSubmitting] = useState(false);
-  const [isDeleteSubmitting, setIsDeleteSubmitting] = useState(false);
+  const [isActivateSubmitting, setIsActivateSubmitting] = useState(false)
+  const [isDeleteSubmitting, setIsDeleteSubmitting] = useState(false)
 
-  const [error, setError] = useState<string>();
+  const [error, setError] = useState<string>()
 
   // Reset the error and the loaders when a new HME prop is passed to this component
   useEffect(() => {
-    setError(undefined);
-    setIsActivateSubmitting(false);
-    setIsDeleteSubmitting(false);
-  }, [props.hme]);
+    setError(undefined)
+    setIsActivateSubmitting(false)
+    setIsDeleteSubmitting(false)
+  }, [props.hme])
 
   const onActivationClick = async () => {
-    setIsActivateSubmitting(true);
+    setIsActivateSubmitting(true)
     try {
-      const pms = new PremiumMailSettings(props.client);
+      const pms = new PremiumMailSettings(props.client)
       if (props.hme.isActive) {
-        await pms.deactivateHme(props.hme.anonymousId);
+        await pms.deactivateHme(props.hme.anonymousId)
       } else {
-        await pms.reactivateHme(props.hme.anonymousId);
+        await pms.reactivateHme(props.hme.anonymousId)
       }
-      props.activationCallback();
+      props.activationCallback()
     } catch (e) {
-      setError(e.toString());
+      setError(e.toString())
     } finally {
-      setIsActivateSubmitting(false);
+      setIsActivateSubmitting(false)
     }
-  };
+  }
 
   const onDeletionClick = async () => {
-    setIsDeleteSubmitting(true);
+    setIsDeleteSubmitting(true)
     try {
-      const pms = new PremiumMailSettings(props.client);
-      await pms.deleteHme(props.hme.anonymousId);
-      props.deletionCallback();
+      const pms = new PremiumMailSettings(props.client)
+      await pms.deleteHme(props.hme.anonymousId)
+      props.deletionCallback()
     } catch (e) {
-      setError(e.toString());
+      setError(e.toString())
     } finally {
-      setIsDeleteSubmitting(false);
+      setIsDeleteSubmitting(false)
     }
-  };
+  }
 
   const onCopyClick = async () => {
-    await navigator.clipboard.writeText(props.hme.hme);
-  };
+    await navigator.clipboard.writeText(props.hme.hme)
+  }
 
   const onAutofillClick = async () => {
-    await sendMessageToTab(MessageType.Autofill, props.hme.hme);
-  };
+    await sendMessageToTab(MessageType.Autofill, props.hme.hme)
+  }
 
   const buttonBaseClass =
-    'inline-flex items-center justify-center gap-2 rounded-2xl px-3 py-3 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-950';
+    'inline-flex items-center justify-center gap-2 rounded-2xl px-3 py-3 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-950'
   const labelClassName =
-    'text-xs font-semibold uppercase tracking-[0.3em] text-slate-400';
+    'text-xs font-semibold uppercase tracking-[0.3em] text-slate-400'
   const valueClassName =
-    'mt-1 rounded-xl border border-slate-800/70 bg-slate-950/60 px-3 py-2 text-sm font-medium text-slate-100 truncate';
+    'mt-1 rounded-xl border border-slate-800/70 bg-slate-950/60 px-3 py-2 text-sm font-medium text-slate-100 truncate'
 
   return (
     <div className="space-y-4 text-slate-100">
@@ -608,79 +603,79 @@ const HmeDetails = (props: {
         )}
       </div>
     </div>
-  );
-};
+  )
+}
 
 const searchHmeEmails = (
   searchPrompt: string,
   hmeEmails: HmeEmail[]
 ): HmeEmail[] | undefined => {
   if (!searchPrompt) {
-    return undefined;
+    return undefined
   }
 
   const searchEngine = new Fuse(hmeEmails, {
     keys: ['label', 'hme'],
     threshold: 0.4,
-  });
-  const searchResults = searchEngine.search(searchPrompt);
-  return searchResults.map((result) => result.item);
-};
+  })
+  const searchResults = searchEngine.search(searchPrompt)
+  return searchResults.map((result) => result.item)
+}
 
 const HmeManager = (props: {
-  callback: TransitionCallback<AuthenticatedAndManagingAction>;
-  client: ICloudClient;
+  callback: TransitionCallback<AuthenticatedAndManagingAction>
+  client: ICloudClient
 }) => {
-  const [fetchedHmeEmails, setFetchedHmeEmails] = useState<HmeEmail[]>();
-  const [hmeEmailsError, setHmeEmailsError] = useState<string>();
-  const [isFetching, setIsFetching] = useState(true);
-  const [selectedHmeIdx, setSelectedHmeIdx] = useState(0);
-  const [searchPrompt, setSearchPrompt] = useState<string>();
+  const [fetchedHmeEmails, setFetchedHmeEmails] = useState<HmeEmail[]>()
+  const [hmeEmailsError, setHmeEmailsError] = useState<string>()
+  const [isFetching, setIsFetching] = useState(true)
+  const [selectedHmeIdx, setSelectedHmeIdx] = useState(0)
+  const [searchPrompt, setSearchPrompt] = useState<string>()
 
   useEffect(() => {
     const fetchHmeList = async () => {
-      setHmeEmailsError(undefined);
-      setIsFetching(true);
+      setHmeEmailsError(undefined)
+      setIsFetching(true)
       try {
-        const pms = new PremiumMailSettings(props.client);
-        const result = await pms.listHme();
+        const pms = new PremiumMailSettings(props.client)
+        const result = await pms.listHme()
         setFetchedHmeEmails(
           result.hmeEmails.sort((a, b) => b.createTimestamp - a.createTimestamp)
-        );
+        )
       } catch (e) {
-        setHmeEmailsError(e.toString());
+        setHmeEmailsError(e.toString())
       } finally {
-        setIsFetching(false);
+        setIsFetching(false)
       }
-    };
+    }
 
-    fetchHmeList();
-  }, [props.client]);
+    fetchHmeList()
+  }, [props.client])
 
   const activationCallbackFactory = (hmeEmail: HmeEmail) => () => {
-    const newHmeEmail = { ...hmeEmail, isActive: !hmeEmail.isActive };
+    const newHmeEmail = { ...hmeEmail, isActive: !hmeEmail.isActive }
     setFetchedHmeEmails((prevFetchedHmeEmails) =>
       prevFetchedHmeEmails?.map((item) =>
         deepEqual(item, hmeEmail) ? newHmeEmail : item
       )
-    );
-  };
+    )
+  }
 
   const deletionCallbackFactory = (hmeEmail: HmeEmail) => () => {
     setFetchedHmeEmails((prevFetchedHmeEmails) =>
       prevFetchedHmeEmails?.filter((item) => !deepEqual(item, hmeEmail))
-    );
-  };
+    )
+  }
 
   const hmeListGrid = (fetchedHmeEmails: HmeEmail[]) => {
     const hmeEmails =
-      searchHmeEmails(searchPrompt || '', fetchedHmeEmails) || fetchedHmeEmails;
+      searchHmeEmails(searchPrompt || '', fetchedHmeEmails) || fetchedHmeEmails
 
     if (selectedHmeIdx >= hmeEmails.length) {
-      setSelectedHmeIdx(hmeEmails.length - 1);
+      setSelectedHmeIdx(hmeEmails.length - 1)
     }
 
-    const selectedHmeEmail = hmeEmails[selectedHmeIdx];
+    const selectedHmeEmail = hmeEmails[selectedHmeIdx]
 
     const searchBox = (
       <div className="relative p-3 rounded-tl-3xl border-b border-slate-800/60 bg-slate-950">
@@ -693,17 +688,17 @@ const HmeManager = (props: {
           placeholder="Search"
           aria-label="Search through your HideMyEmail+ aliases"
           onChange={(e) => {
-            setSearchPrompt(e.target.value);
-            setSelectedHmeIdx(0);
+            setSearchPrompt(e.target.value)
+            setSelectedHmeIdx(0)
           }}
         />
       </div>
-    );
+    )
 
     const btnBaseClassName =
-      'w-full truncate border-b border-slate-800/50 bg-slate-950/40 px-3 py-3 text-left text-sm font-medium text-slate-200 transition focus:outline-none focus:ring-2 focus:ring-rainbow-purple/60';
-    const btnClassName = `${btnBaseClassName} hover:bg-slate-900/80`;
-    const selectedBtnClassName = `${btnBaseClassName} bg-gradient-to-r from-[rgba(139,92,246,0.4)] via-[rgba(79,70,229,0.4)] to-[rgba(66,133,244,0.4)] text-white shadow-[inset_0_0_0_1px_rgba(129,140,248,0.4)]`;
+      'w-full truncate border-b border-slate-800/50 bg-slate-950/40 px-3 py-3 text-left text-sm font-medium text-slate-200 transition focus:outline-none focus:ring-2 focus:ring-rainbow-purple/60'
+    const btnClassName = `${btnBaseClassName} hover:bg-slate-900/80`
+    const selectedBtnClassName = `${btnBaseClassName} bg-gradient-to-r from-[rgba(139,92,246,0.4)] via-[rgba(79,70,229,0.4)] to-[rgba(66,133,244,0.4)] text-white shadow-[inset_0_0_0_1px_rgba(129,140,248,0.4)]`
 
     const labelList = hmeEmails.map((hme, idx) => (
       <button
@@ -722,13 +717,13 @@ const HmeManager = (props: {
           </span>
         )}
       </button>
-    ));
+    ))
 
     const noSearchResult = (
       <div className="break-words p-4 text-center text-slate-500">
         No results for &quot;{searchPrompt}&quot;
       </div>
-    );
+    )
 
     return (
       <div
@@ -750,30 +745,30 @@ const HmeManager = (props: {
           )}
         </div>
       </div>
-    );
-  };
+    )
+  }
 
   const emptyState = (
     <div className="text-center text-lg text-slate-500">
       There are no emails to list
     </div>
-  );
+  )
 
   const resolveMainChildComponent = (): ReactNode => {
     if (isFetching) {
-      return <Spinner />;
+      return <Spinner />
     }
 
     if (hmeEmailsError) {
-      return <ErrorMessage>{hmeEmailsError}</ErrorMessage>;
+      return <ErrorMessage>{hmeEmailsError}</ErrorMessage>
     }
 
     if (!fetchedHmeEmails || fetchedHmeEmails.length === 0) {
-      return emptyState;
+      return emptyState
     }
 
-    return hmeListGrid(fetchedHmeEmails);
-  };
+    return hmeListGrid(fetchedHmeEmails)
+  }
 
   return (
     <TitledComponent hideHeader>
@@ -792,16 +787,16 @@ const HmeManager = (props: {
         </div>
       </div>
     </TitledComponent>
-  );
-};
+  )
+}
 
 const constructClient = (clientState: Store['clientState']): ICloudClient => {
   if (clientState === undefined) {
-    throw new Error('Cannot construct client when client state is undefined');
+    throw new Error('Cannot construct client when client state is undefined')
   }
 
-  return new ICloudClient(clientState.setupUrl, clientState.webservices);
-};
+  return new ICloudClient(clientState.setupUrl, clientState.webservices)
+}
 
 const transitionToNextStateElement = (
   state: PopupState,
@@ -810,71 +805,71 @@ const transitionToNextStateElement = (
 ): ReactElement => {
   switch (state) {
     case PopupState.SignedOut: {
-      return <SignInInstructions />;
+      return <SignInInstructions />
     }
     case PopupState.Authenticated: {
       const callback = (action: AuthenticatedAction) =>
-        setState(STATE_MACHINE_TRANSITIONS[state][action]);
+        setState(STATE_MACHINE_TRANSITIONS[state][action])
       return (
         <HmeGenerator
           callback={callback}
           client={constructClient(clientState)}
         />
-      );
+      )
     }
     case PopupState.AuthenticatedAndManaging: {
       const callback = (action: AuthenticatedAndManagingAction) =>
-        setState(STATE_MACHINE_TRANSITIONS[state][action]);
+        setState(STATE_MACHINE_TRANSITIONS[state][action])
       return (
         <HmeManager callback={callback} client={constructClient(clientState)} />
-      );
+      )
     }
     default: {
-      const exhaustivenessCheck: never = state;
-      throw new Error(`Unhandled PopupState case: ${exhaustivenessCheck}`);
+      const exhaustivenessCheck: never = state
+      throw new Error(`Unhandled PopupState case: ${exhaustivenessCheck}`)
     }
   }
-};
+}
 
 const Popup = () => {
   const [state, setState, isStateLoading] = useBrowserStorageState(
     'popupState',
     PopupState.SignedOut
-  );
+  )
 
   const [clientState, setClientState, isClientStateLoading] =
-    useBrowserStorageState('clientState', undefined);
-  const [clientAuthStateSynced, setClientAuthStateSynced] = useState(false);
+    useBrowserStorageState('clientState', undefined)
+  const [clientAuthStateSynced, setClientAuthStateSynced] = useState(false)
 
   useEffect(() => {
     const syncClientAuthState = async () => {
       const isAuthenticated =
         clientState?.setupUrl !== undefined &&
-        (await new ICloudClient(clientState.setupUrl).isAuthenticated());
+        (await new ICloudClient(clientState.setupUrl).isAuthenticated())
 
       if (isAuthenticated) {
         setState((prevState) =>
           prevState === PopupState.SignedOut
             ? PopupState.Authenticated
             : prevState
-        );
+        )
       } else {
-        setState(PopupState.SignedOut);
-        setClientState(undefined);
-        performDeauthSideEffects();
+        setState(PopupState.SignedOut)
+        setClientState(undefined)
+        performDeauthSideEffects()
       }
 
-      setClientAuthStateSynced(true);
-    };
+      setClientAuthStateSynced(true)
+    }
 
-    !isClientStateLoading && !clientAuthStateSynced && syncClientAuthState();
+    !isClientStateLoading && !clientAuthStateSynced && syncClientAuthState()
   }, [
     setState,
     setClientState,
     clientAuthStateSynced,
     clientState?.setupUrl,
     isClientStateLoading,
-  ]);
+  ])
 
   return (
     <div className="flex items-start justify-center px-4 py-4 text-slate-100">
@@ -886,7 +881,7 @@ const Popup = () => {
         )}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Popup;
+export default Popup

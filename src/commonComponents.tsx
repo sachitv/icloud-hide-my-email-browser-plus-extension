@@ -2,37 +2,35 @@ import React, {
   ButtonHTMLAttributes,
   DetailedHTMLProps,
   ReactNode,
-} from 'react';
-import { SpinnerIcon } from './icons';
+} from 'react'
+import { SpinnerIcon } from './icons'
 
 export const Spinner = () => {
   return (
     <div className="flex items-center justify-center py-6">
       <SpinnerIcon className="h-8 w-8 animate-spin text-rainbow-purple drop-shadow-[0_0_12px_rgba(139,92,246,0.45)]" />
     </div>
-  );
-};
+  )
+}
 
 export const LoadingButton = (
   props: {
-    loading: boolean;
+    loading: boolean
   } & DetailedHTMLProps<
     ButtonHTMLAttributes<HTMLButtonElement>,
     HTMLButtonElement
   >
 ) => {
-  const { loading, disabled, className, ...btnHtmlAttrs } = props;
+  const { loading, disabled, className, ...btnHtmlAttrs } = props
 
   const defaultClassName =
-    'w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-indigo-500 px-5 py-3 text-sm font-semibold text-white shadow-[0_22px_40px_-26px_rgba(79,70,229,0.6)] transition duration-200 hover:bg-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-300/80 focus:ring-offset-2 focus:ring-offset-slate-900';
+    'w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-indigo-500 px-5 py-3 text-sm font-semibold text-white shadow-[0_22px_40px_-26px_rgba(79,70,229,0.6)] transition duration-200 hover:bg-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-300/80 focus:ring-offset-2 focus:ring-offset-slate-900'
 
   const disabledClassName =
-    'w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-700/60 px-5 py-3 text-sm font-semibold text-slate-300 shadow-inner cursor-not-allowed focus:outline-none';
+    'w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-700/60 px-5 py-3 text-sm font-semibold text-slate-300 shadow-inner cursor-not-allowed focus:outline-none'
 
-  const baseClassName = disabled ? disabledClassName : defaultClassName;
-  const composedClassName = [baseClassName, className]
-    .filter(Boolean)
-    .join(' ');
+  const baseClassName = disabled ? disabledClassName : defaultClassName
+  const composedClassName = [baseClassName, className].filter(Boolean).join(' ')
 
   return (
     <button
@@ -46,8 +44,8 @@ export const LoadingButton = (
       )}
       {props.children}
     </button>
-  );
-};
+  )
+}
 
 export const ErrorMessage = (props: { children?: React.ReactNode }) => {
   return (
@@ -57,17 +55,17 @@ export const ErrorMessage = (props: { children?: React.ReactNode }) => {
     >
       {props.children}
     </div>
-  );
-};
+  )
+}
 
 export const TitledComponent = (props: {
-  title?: string;
-  subtitle?: string;
-  hideHeader?: boolean;
-  children?: React.ReactNode;
+  title?: string
+  subtitle?: string
+  hideHeader?: boolean
+  children?: React.ReactNode
 }) => {
-  const { title, subtitle, hideHeader = false, children: childrenProp } = props;
-  const children = React.Children.toArray(childrenProp) as ReactNode[];
+  const { title, subtitle, hideHeader = false, children: childrenProp } = props
+  const children = React.Children.toArray(childrenProp) as ReactNode[]
 
   return (
     <section className="relative overflow-hidden rounded-3xl border border-slate-800/50 bg-slate-950/70 shadow-[0_40px_80px_-60px_rgba(30,64,175,0.8)] backdrop-blur-xl">
@@ -92,7 +90,7 @@ export const TitledComponent = (props: {
       {children.length > 0 && (
         <div className="divide-y divide-slate-800/60">
           {children.map((child, key) => {
-            const paddingClass = key === 0 ? 'px-6 py-2' : 'px-6 py-5';
+            const paddingClass = key === 0 ? 'px-6 py-2' : 'px-6 py-5'
             return (
               <div
                 key={key}
@@ -100,13 +98,13 @@ export const TitledComponent = (props: {
               >
                 {child}
               </div>
-            );
+            )
           })}
         </div>
       )}
     </section>
-  );
-};
+  )
+}
 
 export const Link = (
   props: React.DetailedHTMLProps<
@@ -116,13 +114,13 @@ export const Link = (
 ) => {
   // https://github.com/jsx-eslint/eslint-plugin-react/issues/3284
   // eslint-disable-next-line react/prop-types
-  const { className, children, ...restProps } = props;
+  const { className, children, ...restProps } = props
   const composedClassName = [
     'font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#4285f4] via-[#8b5cf6] to-[#e11d48] hover:from-[#e11d48] hover:via-[#ea4335] hover:to-[#fbbc05] transition-colors duration-150',
     className,
   ]
     .filter(Boolean)
-    .join(' ');
+    .join(' ')
   return (
     <a
       className={composedClassName}
@@ -132,5 +130,5 @@ export const Link = (
     >
       {children}
     </a>
-  );
-};
+  )
+}

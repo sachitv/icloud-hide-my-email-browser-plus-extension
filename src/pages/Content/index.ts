@@ -1,3 +1,3 @@
-import script from './script';
+import script from './script'
 
-script();
+script()

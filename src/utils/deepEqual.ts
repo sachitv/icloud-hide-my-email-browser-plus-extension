@@ -1,6 +1,6 @@
-const hasOwn = Object.prototype.hasOwnProperty;
+const hasOwn = Object.prototype.hasOwnProperty
 
-type AnyRecord = Record<string | number | symbol, unknown>;
+type AnyRecord = Record<string | number | symbol, unknown>
 
 const deepEqualInternal = (
   a: unknown,
@@ -8,69 +8,69 @@ const deepEqualInternal = (
   stack: WeakMap<object, object>
 ): boolean => {
   if (Object.is(a, b)) {
-    return true;
+    return true
   }
 
   if (typeof a !== typeof b) {
-    return false;
+    return false
   }
 
   if (a === null || b === null) {
-    return false;
+    return false
   }
 
   if (typeof a !== 'object') {
-    return false;
+    return false
   }
 
-  const objectA = a as object;
-  const objectB = b as object;
+  const objectA = a as object
+  const objectB = b as object
 
   if (stack.get(objectA) === objectB) {
-    return true;
+    return true
   }
 
-  stack.set(objectA, objectB);
+  stack.set(objectA, objectB)
 
   if (Array.isArray(objectA)) {
     if (!Array.isArray(objectB)) {
-      return false;
+      return false
     }
 
     if (objectA.length !== objectB.length) {
-      return false;
+      return false
     }
 
     for (let index = 0; index < objectA.length; index += 1) {
       if (!deepEqualInternal(objectA[index], objectB[index], stack)) {
-        return false;
+        return false
       }
     }
 
-    return true;
+    return true
   }
 
   if (objectA instanceof Date && objectB instanceof Date) {
-    return objectA.getTime() === objectB.getTime();
+    return objectA.getTime() === objectB.getTime()
   }
 
-  const recordA = objectA as AnyRecord;
-  const recordB = objectB as AnyRecord;
+  const recordA = objectA as AnyRecord
+  const recordB = objectB as AnyRecord
 
   if (Object.getPrototypeOf(recordA) !== Object.getPrototypeOf(recordB)) {
-    return false;
+    return false
   }
 
-  const keysA = Reflect.ownKeys(recordA);
-  const keysB = Reflect.ownKeys(recordB);
+  const keysA = Reflect.ownKeys(recordA)
+  const keysB = Reflect.ownKeys(recordB)
 
   if (keysA.length !== keysB.length) {
-    return false;
+    return false
   }
 
   for (const key of keysA) {
     if (!hasOwn.call(recordB, key)) {
-      return false;
+      return false
     }
 
     if (
@@ -80,14 +80,14 @@ const deepEqualInternal = (
         stack
       )
     ) {
-      return false;
+      return false
     }
   }
 
-  return true;
-};
+  return true
+}
 
 export const deepEqual = (a: unknown, b: unknown): boolean =>
-  deepEqualInternal(a, b, new WeakMap());
+  deepEqualInternal(a, b, new WeakMap())
 
-export default deepEqual;
+export default deepEqual

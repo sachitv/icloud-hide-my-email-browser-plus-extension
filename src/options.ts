@@ -1,15 +1,15 @@
 export type Autofill = {
-  button: boolean;
-  contextMenu: boolean;
-};
+  button: boolean
+  contextMenu: boolean
+}
 
 export type Options = {
-  autofill: Autofill;
-};
+  autofill: Autofill
+}
 
 export const DEFAULT_OPTIONS: Options = {
   autofill: {
     button: true,
     contextMenu: true,
   },
-};
+}

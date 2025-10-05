@@ -4,29 +4,29 @@ export enum PopupState {
   AuthenticatedAndManaging,
 }
 
-export type SignedOutAction = 'AUTHENTICATE';
-export type AuthenticatedAction = 'MANAGE' | 'SIGN_OUT';
-export type AuthenticatedAndManagingAction = 'GENERATE' | 'SIGN_OUT';
+export type SignedOutAction = 'AUTHENTICATE'
+export type AuthenticatedAction = 'MANAGE' | 'SIGN_OUT'
+export type AuthenticatedAndManagingAction = 'GENERATE' | 'SIGN_OUT'
 
 export type PopupAction =
   | SignedOutAction
   | AuthenticatedAction
-  | AuthenticatedAndManagingAction;
+  | AuthenticatedAndManagingAction
 
 type GenericTranstitions<Actions extends PopupAction> = {
-  [key in Actions]: PopupState;
-};
+  [key in Actions]: PopupState
+}
 
-type SignedOutTransitions = GenericTranstitions<SignedOutAction>;
-type AuthenticatedTransitions = GenericTranstitions<AuthenticatedAction>;
+type SignedOutTransitions = GenericTranstitions<SignedOutAction>
+type AuthenticatedTransitions = GenericTranstitions<AuthenticatedAction>
 type AuthenticatedAndManagingTransition =
-  GenericTranstitions<AuthenticatedAndManagingAction>;
+  GenericTranstitions<AuthenticatedAndManagingAction>
 
 type Transitions = {
-  [PopupState.SignedOut]: SignedOutTransitions;
-  [PopupState.Authenticated]: AuthenticatedTransitions;
-  [PopupState.AuthenticatedAndManaging]: AuthenticatedAndManagingTransition;
-} & { [key in PopupState]: unknown };
+  [PopupState.SignedOut]: SignedOutTransitions
+  [PopupState.Authenticated]: AuthenticatedTransitions
+  [PopupState.AuthenticatedAndManaging]: AuthenticatedAndManagingTransition
+} & { [key in PopupState]: unknown }
 
 export const STATE_MACHINE_TRANSITIONS: Transitions = {
   [PopupState.SignedOut]: {
@@ -40,4 +40,4 @@ export const STATE_MACHINE_TRANSITIONS: Transitions = {
     GENERATE: PopupState.Authenticated,
     SIGN_OUT: PopupState.SignedOut,
   },
-};
+}

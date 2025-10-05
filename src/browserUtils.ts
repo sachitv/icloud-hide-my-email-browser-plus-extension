@@ -1,5 +1,5 @@
-import browser from 'webextension-polyfill';
+import browser from 'webextension-polyfill'
 
 export const isFirefox = browser.runtime
   .getURL('')
-  .startsWith('moz-extension://');
+  .startsWith('moz-extension://')

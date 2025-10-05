@@ -1,9 +1,9 @@
 export class UnsuccessfulRequestError extends Error {}
 
-type ServiceName = 'premiummailsettings';
+type ServiceName = 'premiummailsettings'
 
-export const DEFAULT_SETUP_URL = 'https://setup.icloud.com/setup/ws/1';
-export const CN_SETUP_URL = 'https://setup.icloud.com.cn/setup/ws/1';
+export const DEFAULT_SETUP_URL = 'https://setup.icloud.com/setup/ws/1'
+export const CN_SETUP_URL = 'https://setup.icloud.com.cn/setup/ws/1'
 
 class ICloudClient {
   constructor(
@@ -15,40 +15,40 @@ class ICloudClient {
     method: 'GET' | 'POST',
     url: string,
     options: {
-      headers?: Record<string, string>;
-      data?: Record<string, unknown>;
+      headers?: Record<string, string>
+      data?: Record<string, unknown>
     } = {}
   ): Promise<unknown> {
-    const { headers = {}, data = undefined } = options;
+    const { headers = {}, data = undefined } = options
 
     const response = await fetch(url, {
       method,
       headers,
       body: data !== undefined ? JSON.stringify(data) : undefined,
-    });
+    })
 
     if (!response.ok) {
       throw new UnsuccessfulRequestError(
         `Request to ${method} ${url} failed with status code ${response.status}`
-      );
+      )
     }
 
-    return await response.json();
+    return await response.json()
   }
 
   public webserviceUrl(serviceName: ServiceName): string {
     if (this.webservices === undefined) {
-      throw new Error('webservices have not been initialised');
+      throw new Error('webservices have not been initialised')
     }
-    return this.webservices[serviceName].url;
+    return this.webservices[serviceName].url
   }
 
   public async isAuthenticated(): Promise<boolean> {
     try {
-      await this.validateToken();
-      return true;
+      await this.validateToken()
+      return true
     } catch {
-      return false;
+      return false
     }
   }
 
@@ -57,53 +57,53 @@ class ICloudClient {
       'POST',
       `${this.setupUrl}/validate`
     )) as {
-      webservices: ICloudClient['webservices'];
-    };
+      webservices: ICloudClient['webservices']
+    }
 
     if (webservices) {
-      this.webservices = webservices;
+      this.webservices = webservices
     }
   }
 
   public async signOut(
     options: { trust: boolean } = { trust: false }
   ): Promise<void> {
-    const { trust } = options;
+    const { trust } = options
     await this.request('POST', `${this.setupUrl}/logout`, {
       data: {
         trustBrowsers: trust,
         allBrowsers: trust,
       },
-    }).catch(console.debug);
+    }).catch(console.debug)
   }
 }
 
 export type HmeEmail = {
-  origin: 'ON_DEMAND' | 'SAFARI';
-  anonymousId: string;
-  domain: string;
-  forwardToEmail: string;
-  hme: string;
-  isActive: boolean;
-  label: string;
-  note: string;
-  createTimestamp: number;
-  recipientMailId: string;
-};
+  origin: 'ON_DEMAND' | 'SAFARI'
+  anonymousId: string
+  domain: string
+  forwardToEmail: string
+  hme: string
+  isActive: boolean
+  label: string
+  note: string
+  createTimestamp: number
+  recipientMailId: string
+}
 
 export type ListHmeResult = {
-  hmeEmails: HmeEmail[];
-  selectedForwardTo: string;
-  forwardToEmails: string[];
-};
+  hmeEmails: HmeEmail[]
+  selectedForwardTo: string
+  forwardToEmails: string[]
+}
 
 type PremiumMailSettingsResponse<T = unknown> = {
-  success: boolean;
-  result: T;
+  success: boolean
+  result: T
   error?: {
-    errorMessage: string;
-  };
-};
+    errorMessage: string
+  }
+}
 
 export class GenerateHmeException extends Error {}
 export class ReserveHmeException extends Error {}
@@ -114,32 +114,32 @@ export class DeleteHmeException extends Error {}
 export class UpdateFwdToHmeException extends Error {}
 
 export class PremiumMailSettings {
-  private readonly baseUrl: string;
-  private readonly v2BaseUrl: string;
+  private readonly baseUrl: string
+  private readonly v2BaseUrl: string
   constructor(readonly client: ICloudClient) {
-    this.baseUrl = `${client.webserviceUrl('premiummailsettings')}/v1`;
-    this.v2BaseUrl = `${client.webserviceUrl('premiummailsettings')}/v2`;
+    this.baseUrl = `${client.webserviceUrl('premiummailsettings')}/v1`
+    this.v2BaseUrl = `${client.webserviceUrl('premiummailsettings')}/v2`
   }
 
   async listHme(): Promise<ListHmeResult> {
     const { result } = (await this.client.request(
       'GET',
       `${this.v2BaseUrl}/hme/list`
-    )) as PremiumMailSettingsResponse<ListHmeResult>;
-    return result;
+    )) as PremiumMailSettingsResponse<ListHmeResult>
+    return result
   }
 
   async generateHme(): Promise<string> {
     const response = (await this.client.request(
       'POST',
       `${this.baseUrl}/hme/generate`
-    )) as PremiumMailSettingsResponse<{ hme: string }>;
+    )) as PremiumMailSettingsResponse<{ hme: string }>
 
     if (!response.success) {
-      throw new GenerateHmeException(response.error?.errorMessage);
+      throw new GenerateHmeException(response.error?.errorMessage)
     }
 
-    return response.result.hme;
+    return response.result.hme
   }
 
   async reserveHme(
@@ -153,13 +153,13 @@ export class PremiumMailSettings {
       'POST',
       `${this.baseUrl}/hme/reserve`,
       { data: { hme, label, note } }
-    )) as PremiumMailSettingsResponse<{ hme: HmeEmail }>;
+    )) as PremiumMailSettingsResponse<{ hme: HmeEmail }>
 
     if (!response.success) {
-      throw new ReserveHmeException(response.error?.errorMessage);
+      throw new ReserveHmeException(response.error?.errorMessage)
     }
 
-    return response.result.hme;
+    return response.result.hme
   }
 
   async updateHmeMetadata(
@@ -171,10 +171,10 @@ export class PremiumMailSettings {
       'POST',
       `${this.baseUrl}/hme/updateMetaData`,
       { data: { anonymousId, label, note } }
-    )) as PremiumMailSettingsResponse;
+    )) as PremiumMailSettingsResponse
 
     if (!response.success) {
-      throw new UpdateHmeMetadataException('Failed to update HME metadata');
+      throw new UpdateHmeMetadataException('Failed to update HME metadata')
     }
   }
 
@@ -183,10 +183,10 @@ export class PremiumMailSettings {
       'POST',
       `${this.baseUrl}/hme/deactivate`,
       { data: { anonymousId } }
-    )) as PremiumMailSettingsResponse;
+    )) as PremiumMailSettingsResponse
 
     if (!response.success) {
-      throw new DeactivateHmeException('Failed to deactivate HME');
+      throw new DeactivateHmeException('Failed to deactivate HME')
     }
   }
 
@@ -195,10 +195,10 @@ export class PremiumMailSettings {
       'POST',
       `${this.baseUrl}/hme/reactivate`,
       { data: { anonymousId } }
-    )) as PremiumMailSettingsResponse;
+    )) as PremiumMailSettingsResponse
 
     if (!response.success) {
-      throw new ReactivateHmeException('Failed to reactivate HME');
+      throw new ReactivateHmeException('Failed to reactivate HME')
     }
   }
 
@@ -207,10 +207,10 @@ export class PremiumMailSettings {
       'POST',
       `${this.baseUrl}/hme/delete`,
       { data: { anonymousId } }
-    )) as PremiumMailSettingsResponse;
+    )) as PremiumMailSettingsResponse
 
     if (!response.success) {
-      throw new DeleteHmeException('Failed to delete HME');
+      throw new DeleteHmeException('Failed to delete HME')
     }
   }
 
@@ -219,14 +219,14 @@ export class PremiumMailSettings {
       'POST',
       `${this.baseUrl}/hme/updateForwardTo`,
       { data: { forwardToEmail } }
-    )) as PremiumMailSettingsResponse;
+    )) as PremiumMailSettingsResponse
 
     if (!response.success) {
       throw new UpdateFwdToHmeException(
         'Failed to update the Forward To email.'
-      );
+      )
     }
   }
 }
 
-export default ICloudClient;
+export default ICloudClient

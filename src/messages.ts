@@ -1,4 +1,4 @@
-import browser from 'webextension-polyfill';
+import browser from 'webextension-polyfill'
 
 export enum MessageType {
   Autofill,
@@ -10,28 +10,28 @@ export enum MessageType {
 }
 
 export type Message<T> = {
-  type: MessageType;
-  data: T;
-};
+  type: MessageType
+  data: T
+}
 
 export type ReservationRequestData = {
-  hme: string;
-  label: string;
-  elementId: string;
-};
+  hme: string
+  label: string
+  elementId: string
+}
 
 export type GenerationResponseData = {
-  hme?: string;
-  elementId: string;
-  error?: string;
-};
+  hme?: string
+  elementId: string
+  error?: string
+}
 
 export type ActiveInputElementWriteData = {
-  text: string;
-  copyToClipboard: boolean;
-};
+  text: string
+  copyToClipboard: boolean
+}
 
-export type ReservationResponseData = GenerationResponseData;
+export type ReservationResponseData = GenerationResponseData
 
 export const sendMessageToTab = async (
   type: MessageType,
@@ -39,16 +39,16 @@ export const sendMessageToTab = async (
   tab?: browser.Tabs.Tab
 ): Promise<void> => {
   if (tab === undefined) {
-    [tab] = await browser.tabs.query({
+    ;[tab] = await browser.tabs.query({
       active: true,
       lastFocusedWindow: true,
-    });
+    })
   }
 
   if (tab?.id !== undefined) {
     await browser.tabs.sendMessage(tab.id, {
       type,
       data,
-    });
+    })
   }
-};
+}

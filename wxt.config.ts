@@ -1,23 +1,23 @@
-import { defineConfig } from 'wxt';
-import { existsSync } from 'node:fs';
-import path from 'node:path';
+import { defineConfig } from 'wxt'
+import { existsSync } from 'node:fs'
+import path from 'node:path'
 
 const detectBinary = (...candidates: Array<string | undefined>) =>
-  candidates.find((candidate) => candidate && existsSync(candidate));
+  candidates.find((candidate) => candidate && existsSync(candidate))
 
 const resolveBraveBinary = () => {
   const candidates: Array<string | undefined> = [
     process.env.BRAVE_BROWSER_BINARY,
     process.env.BRAVE_BINARY,
-  ];
+  ]
 
   if (process.platform === 'darwin') {
     candidates.push(
       '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser'
-    );
+    )
   } else if (process.platform === 'win32') {
-    const programFiles = process.env.PROGRAMFILES;
-    const programFilesX86 = process.env['PROGRAMFILES(X86)'];
+    const programFiles = process.env.PROGRAMFILES
+    const programFilesX86 = process.env['PROGRAMFILES(X86)']
     if (programFiles) {
       candidates.push(
         path.join(
@@ -27,7 +27,7 @@ const resolveBraveBinary = () => {
           'Application',
           'brave.exe'
         )
-      );
+      )
     }
     if (programFilesX86) {
       candidates.push(
@@ -38,32 +38,32 @@ const resolveBraveBinary = () => {
           'Application',
           'brave.exe'
         )
-      );
+      )
     }
   } else {
     candidates.push(
       '/usr/bin/brave-browser',
       '/usr/bin/brave',
       '/snap/bin/brave'
-    );
+    )
   }
 
-  return detectBinary(...candidates);
-};
+  return detectBinary(...candidates)
+}
 
 const resolveEdgeBinary = () => {
   const candidates: Array<string | undefined> = [
     process.env.EDGE_BROWSER_BINARY,
     process.env.EDGE_BINARY,
-  ];
+  ]
 
   if (process.platform === 'darwin') {
     candidates.push(
       '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge'
-    );
+    )
   } else if (process.platform === 'win32') {
-    const programFiles = process.env.PROGRAMFILES;
-    const programFilesX86 = process.env['PROGRAMFILES(X86)'];
+    const programFiles = process.env.PROGRAMFILES
+    const programFilesX86 = process.env['PROGRAMFILES(X86)']
     if (programFiles) {
       candidates.push(
         path.join(
@@ -73,7 +73,7 @@ const resolveEdgeBinary = () => {
           'Application',
           'msedge.exe'
         )
-      );
+      )
     }
     if (programFilesX86) {
       candidates.push(
@@ -84,7 +84,7 @@ const resolveEdgeBinary = () => {
           'Application',
           'msedge.exe'
         )
-      );
+      )
     }
   } else {
     candidates.push(
@@ -92,26 +92,26 @@ const resolveEdgeBinary = () => {
       '/usr/bin/microsoft-edge-stable',
       '/usr/bin/microsoft-edge-beta',
       '/usr/bin/microsoft-edge-dev'
-    );
+    )
   }
 
-  return detectBinary(...candidates);
-};
+  return detectBinary(...candidates)
+}
 
-const braveBinary = resolveBraveBinary();
-const edgeBinary = resolveEdgeBinary();
+const braveBinary = resolveBraveBinary()
+const edgeBinary = resolveEdgeBinary()
 
-const runnerBinaries: Record<string, string> = {};
+const runnerBinaries: Record<string, string> = {}
 if (braveBinary) {
-  runnerBinaries.brave = braveBinary;
+  runnerBinaries.brave = braveBinary
 }
 if (edgeBinary) {
-  runnerBinaries.edge = edgeBinary;
+  runnerBinaries.edge = edgeBinary
 }
 
 const runnerConfig = Object.keys(runnerBinaries).length
   ? { binaries: runnerBinaries }
-  : undefined;
+  : undefined
 
 export default defineConfig({
   modules: ['@wxt-dev/webextension-polyfill'],
@@ -168,7 +168,7 @@ export default defineConfig({
         '48': 'icon-48.png',
         '128': 'icon-128.png',
       },
-    };
+    }
 
     if (browser === 'firefox') {
       return {
@@ -191,9 +191,9 @@ export default defineConfig({
             },
           },
         },
-      };
+      }
     }
 
-    return baseManifest;
+    return baseManifest
   },
-});
+})

@@ -1,20 +1,20 @@
-import React, { InputHTMLAttributes, useState } from 'react';
-import { TitledComponent, Link } from '../../commonComponents';
-import { InfoCircleIcon, CheckCircleIcon, WarningIcon } from '../../icons';
-import { isFirefox } from '../../browserUtils';
+import React, { InputHTMLAttributes, useState } from 'react'
+import { TitledComponent, Link } from '../../commonComponents'
+import { InfoCircleIcon, CheckCircleIcon, WarningIcon } from '../../icons'
+import { isFirefox } from '../../browserUtils'
 
 const Notice = (props: {
-  title: string;
-  children: React.ReactNode;
-  isAlert?: boolean;
+  title: string
+  children: React.ReactNode
+  isAlert?: boolean
 }) => {
-  const { title, children, isAlert = false } = props;
+  const { title, children, isAlert = false } = props
 
   const basePalette = isAlert
     ? 'border border-rainbow-yellow/50 bg-rainbow-yellow/10 text-amber-100'
-    : 'border border-slate-800/60 bg-slate-950/60 text-slate-200';
+    : 'border border-slate-800/60 bg-slate-950/60 text-slate-200'
 
-  const IconComponent = isAlert ? WarningIcon : InfoCircleIcon;
+  const IconComponent = isAlert ? WarningIcon : InfoCircleIcon
 
   return (
     <div
@@ -32,8 +32,8 @@ const Notice = (props: {
         {children}
       </div>
     </div>
-  );
-};
+  )
+}
 
 const SignInInstructions = () => {
   return (
@@ -92,15 +92,14 @@ const SignInInstructions = () => {
         </p>
       </Notice>
     </div>
-  );
-};
+  )
+}
 
 const AutofillableDemoInput = (props: {
-  inputAttributes: InputHTMLAttributes<HTMLInputElement>;
-  label: string;
+  inputAttributes: InputHTMLAttributes<HTMLInputElement>
+  label: string
 }) => {
-  const [autofillableInputValue, setAutoFillableInputValue] =
-    useState<string>();
+  const [autofillableInputValue, setAutoFillableInputValue] = useState<string>()
 
   return (
     <div className="space-y-2">
@@ -122,8 +121,8 @@ const AutofillableDemoInput = (props: {
         {...props.inputAttributes}
       />
     </div>
-  );
-};
+  )
+}
 
 const UsageInstructions = () => {
   return (
@@ -184,8 +183,8 @@ const UsageInstructions = () => {
         </ol>
       </div>
     </div>
-  );
-};
+  )
+}
 
 const TechnicalOverview = () => {
   return (
@@ -239,8 +238,8 @@ const TechnicalOverview = () => {
         offers a more ergonomic browser experience compared to icloud.com.
       </p>
     </div>
-  );
-};
+  )
+}
 
 const Userguide = () => {
   return (
@@ -260,7 +259,7 @@ const Userguide = () => {
         </div>
       </TitledComponent>
     </div>
-  );
-};
+  )
+}
 
-export default Userguide;
+export default Userguide

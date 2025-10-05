@@ -4,6 +4,6 @@ export const startCase = (value: string): string =>
     .replace(/([a-z\d])([A-Z])/g, '$1 $2')
     .trim()
     .replace(/\s+/g, ' ')
-    .replace(/\b\w/g, (char) => char.toUpperCase());
+    .replace(/\b\w/g, (char) => char.toUpperCase())
 
-export default startCase;
+export default startCase
