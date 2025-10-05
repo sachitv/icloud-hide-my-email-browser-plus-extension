@@ -23,6 +23,9 @@ jobs:
             licenses:
               - 'package.json'
               - 'package-lock.json'
+              - 'ATTRIBUTIONS.md'
+              - 'utils/generateLicenseTable.mjs'
+              - 'utils/checkLicenses.mjs'
 
   format:
     runs-on: ubuntu-latest
