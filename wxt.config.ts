@@ -101,16 +101,16 @@ const resolveEdgeBinary = () => {
 const braveBinary = resolveBraveBinary();
 const edgeBinary = resolveEdgeBinary();
 
-const runnerBinaries: Record<string, string> = {};
+const browserBinaries: Record<string, string> = {};
 if (braveBinary) {
-  runnerBinaries.brave = braveBinary;
+  browserBinaries.brave = braveBinary;
 }
 if (edgeBinary) {
-  runnerBinaries.edge = edgeBinary;
+  browserBinaries.edge = edgeBinary;
 }
 
-const runnerConfig = Object.keys(runnerBinaries).length
-  ? { binaries: runnerBinaries }
+const webExtConfig = Object.keys(browserBinaries).length
+  ? { binaries: browserBinaries }
   : undefined;
 
 export default defineConfig({
@@ -121,7 +121,7 @@ export default defineConfig({
   outDir: 'build',
   manifestVersion: 3,
   browser: 'brave',
-  runner: runnerConfig,
+  webExt: webExtConfig,
   manifest: ({ browser }) => {
     const baseManifest = {
       name: 'Hide My Email+',
