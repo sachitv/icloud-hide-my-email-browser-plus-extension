@@ -2,6 +2,7 @@ import React, {
   useState,
   Dispatch,
   useEffect,
+  useId,
   ButtonHTMLAttributes,
   DetailedHTMLProps,
   ReactNode,
@@ -256,6 +257,9 @@ const HmeGenerator = (props: {
   const [note, setNote] = useState<string>();
   const [label, setLabel] = useState<string>();
 
+  const labelId = useId();
+  const noteId = useId();
+
   useEffect(() => {
     const fetchHmeList = async () => {
       setHmeError(undefined);
@@ -341,7 +345,7 @@ const HmeGenerator = (props: {
   };
 
   const isReservationFormDisabled =
-    isEmailRefreshSubmitting || hmeEmail == reservedHme?.hme;
+    isEmailRefreshSubmitting || hmeEmail === reservedHme?.hme;
 
   const reservationFormInputClassName =
     'w-full rounded-2xl border border-slate-800/70 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 transition focus:border-rainbow-purple focus:outline-none focus:ring-2 focus:ring-rainbow-purple/70';
@@ -352,6 +356,7 @@ const HmeGenerator = (props: {
         <div className="flex flex-col items-center gap-3 text-center">
           <div className="inline-flex items-center gap-3 rounded-full border border-rainbow-purple/50 bg-slate-900/70 px-5 py-2 text-lg font-semibold text-white shadow-inner shadow-rainbow-purple/20">
             <button
+              type="button"
               className="rounded-full bg-rainbow-purple/20 px-2 py-2 text-rainbow-purple transition hover:bg-rainbow-purple/40 focus:outline-none focus:ring-2 focus:ring-rainbow-purple/70"
               onClick={onEmailRefreshClick}
               aria-label="Refresh email"
@@ -383,13 +388,13 @@ const HmeGenerator = (props: {
             >
               <div className="space-y-2">
                 <label
-                  htmlFor="label"
+                  htmlFor={labelId}
                   className="block text-xs font-semibold uppercase tracking-[0.32em] text-slate-400"
                 >
                   Label
                 </label>
                 <input
-                  id="label"
+                  id={labelId}
                   placeholder={tabHost}
                   required
                   value={label || ''}
@@ -400,13 +405,13 @@ const HmeGenerator = (props: {
               </div>
               <div className="space-y-2">
                 <label
-                  htmlFor="note"
+                  htmlFor={noteId}
                   className="block text-xs font-semibold uppercase tracking-[0.32em] text-slate-400"
                 >
                   Note
                 </label>
                 <textarea
-                  id="note"
+                  id={noteId}
                   rows={2}
                   className={reservationFormInputClassName}
                   placeholder="Add a short reminder (optional)"
@@ -567,6 +572,7 @@ const HmeDetails = (props: {
       {error && <ErrorMessage>{error}</ErrorMessage>}
       <div className="grid grid-cols-3 gap-2">
         <button
+          type="button"
           title="Copy"
           className={`${buttonBaseClass} bg-slate-800 text-white hover:bg-slate-700 focus:ring-slate-500`}
           onClick={onCopyClick}
@@ -574,6 +580,7 @@ const HmeDetails = (props: {
           <ClipboardIcon className="h-4 w-4" />
         </button>
         <button
+          type="button"
           title="Autofill"
           className={`${buttonBaseClass} bg-emerald-500 text-white hover:bg-emerald-400 focus:ring-emerald-300`}
           onClick={onAutofillClick}
@@ -707,7 +714,7 @@ const HmeManager = (props: {
 
     const labelList = hmeEmails.map((hme, idx) => (
       <button
-        key={idx}
+        key={hme.hme}
         aria-current={selectedHmeIdx === idx}
         type="button"
         className={idx === selectedHmeIdx ? selectedBtnClassName : btnClassName}

@@ -105,7 +105,7 @@ const SelectFwdToForm = () => {
       {fwdToEmails?.map((fwdToEmail, key) => (
         <div
           className="flex items-center gap-3 rounded-2xl border border-slate-800/60 bg-slate-950/50 px-4 py-3 shadow-inner shadow-slate-900/30"
-          key={key}
+          key={fwdToEmail}
         >
           <input
             onChange={() => setSelectedFwdToEmail(fwdToEmail)}

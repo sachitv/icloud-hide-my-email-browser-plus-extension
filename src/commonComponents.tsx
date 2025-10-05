@@ -91,11 +91,15 @@ export const TitledComponent = (props: {
       )}
       {children.length > 0 && (
         <div className="divide-y divide-slate-800/60">
-          {children.map((child, key) => {
-            const paddingClass = key === 0 ? 'px-6 py-2' : 'px-6 py-5';
+          {children.map((child, index) => {
+            const paddingClass = index === 0 ? 'px-6 py-2' : 'px-6 py-5';
+            const childKey =
+              React.isValidElement(child) && child.key != null
+                ? child.key
+                : `section-${index}`;
             return (
               <div
-                key={key}
+                key={childKey}
                 className={`${paddingClass} text-[15px] text-slate-100/90`}
               >
                 {child}

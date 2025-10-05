@@ -25,7 +25,11 @@ const {
   > = {};
   const useBrowserStorageStateSpy = vi.fn(
     (key: string, initialValue: unknown) => {
-      const entry = store[key] ?? (store[key] = {});
+      let entry = store[key];
+      if (!entry) {
+        entry = {};
+        store[key] = entry;
+      }
       const [state, setState] = React.useState(entry.state ?? initialValue);
       entry.state = state;
 
