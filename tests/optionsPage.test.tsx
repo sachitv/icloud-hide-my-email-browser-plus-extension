@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import Options from '../src/pages/Options/Options';
 import { DEFAULT_STORE } from '../src/storage';
+import React from 'react';
 
 const {
   storageStateMocks,
@@ -14,7 +15,6 @@ const {
   updateForwardToHmeMock,
   webExtensionPolyfillMock,
 } = vi.hoisted(() => {
-  const React = require('react') as typeof import('react');
   const store: Record<
     string,
     {
@@ -35,7 +35,7 @@ const {
 
       const setStateWithSpy = React.useMemo(
         () => (value: unknown) => {
-          setState((prev) => {
+          setState((prev: unknown) => {
             const nextValue = typeof value === 'function' ? value(prev) : value;
             spy(nextValue);
             return nextValue;
@@ -55,8 +55,7 @@ const {
   const listHmeMock = vi.fn();
   const updateForwardToHmeMock = vi.fn();
   const ICloudClientConstructorMock = vi.fn<
-    [],
-    { isAuthenticated: typeof isAuthenticatedMock }
+    () => { isAuthenticated: typeof isAuthenticatedMock }
   >(() => ({
     isAuthenticated: isAuthenticatedMock,
   }));
@@ -97,7 +96,7 @@ vi.mock('../src/iCloudClient', () => ({
 
 vi.mock('webextension-polyfill', () => webExtensionPolyfillMock);
 
-vi.mock('../src/pages/Options/Options.css', () => ({}), { virtual: true });
+vi.mock('../src/pages/Options/Options.css', () => ({}));
 
 describe('Options page UI', () => {
   beforeEach(() => {
