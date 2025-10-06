@@ -9,7 +9,7 @@ Hide My Email+ builds on iCloud's [Hide My Email](https://support.apple.com/en-u
 - [Chrome](https://chromewebstore.google.com/detail/hide-my-email+/olkpkcclmmjmmknlhdggcjiefbdgjfke?hl=en)
 - [Firefox](https://addons.mozilla.org/en-GB/firefox/addon/hide-my-email-plus/)
 - [Brave](https://chromewebstore.google.com/detail/hide-my-email+/olkpkcclmmjmmknlhdggcjiefbdgjfke?hl=en)
-- Microsoft Edge
+- [Microsoft Edge](https://microsoftedge.microsoft.com/addons/detail/hide-my-email/dphflggbjdfhbgpodjplabjnfjdppknf)
 
 The extension _should_ work on any browser that implements the [Manifest V3 extension API](https://developer.chrome.com/docs/extensions/reference/) supported by Chromium-based browsers.
 
