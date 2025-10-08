@@ -24,7 +24,7 @@ jobs:
   version:
     permissions:
       contents: read
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     outputs:
       extension_version: ${{ steps.package-version.outputs.extension_version }}
     steps:
@@ -39,7 +39,7 @@ jobs:
     permissions:
       contents: read
       actions: write
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     needs: version
     steps:
       - uses: actions/checkout@v5
@@ -63,7 +63,7 @@ jobs:
     permissions:
       contents: read
       actions: write
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     needs: version
     steps:
       - uses: actions/checkout@v5
@@ -87,7 +87,7 @@ jobs:
     permissions:
       contents: read
       actions: write
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     needs: version
     steps:
       - uses: actions/checkout@v5
@@ -111,7 +111,7 @@ jobs:
     permissions:
       contents: read
       actions: write
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     needs: version
     steps:
       - uses: actions/checkout@v5
@@ -137,7 +137,7 @@ jobs:
     permissions:
       contents: read
       actions: write
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     needs: version
     steps:
       - uses: actions/checkout@v5
@@ -160,7 +160,7 @@ jobs:
   publish:
     permissions:
       actions: read
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     needs:
       - package-chrome
       - package-firefox
@@ -225,7 +225,7 @@ jobs:
     permissions:
       contents: write
       actions: read
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     needs:
       - package-brave
       - package-chrome
