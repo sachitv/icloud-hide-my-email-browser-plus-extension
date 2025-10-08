@@ -9,7 +9,7 @@ on:
 
 jobs:
   detect-license-changes:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     outputs:
       licenses: ${{ steps.filter.outputs.licenses }}
     steps:
@@ -28,7 +28,7 @@ jobs:
               - 'utils/checkLicenses.mjs'
 
   format:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v5
       - name: Use Node.js 22.x
@@ -52,7 +52,7 @@ jobs:
           }
 
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     needs: format
     steps:
       - uses: actions/checkout@v5
@@ -71,7 +71,7 @@ jobs:
           }
 
   unit-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     needs: lint
     steps:
       - uses: actions/checkout@v5
@@ -86,7 +86,7 @@ jobs:
         run: npm test
 
   build-brave:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     needs: unit-tests
     steps:
       - uses: actions/checkout@v5
@@ -113,7 +113,7 @@ jobs:
           path: build/icloud-hide-my-email-plus-browser-extension-brave.zip
 
   build-chrome:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     needs: unit-tests
     steps:
       - uses: actions/checkout@v5
@@ -140,7 +140,7 @@ jobs:
           path: build/icloud-hide-my-email-plus-browser-extension-chrome.zip
 
   build-edge:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     needs: unit-tests
     steps:
       - uses: actions/checkout@v5
@@ -167,7 +167,7 @@ jobs:
           path: build/icloud-hide-my-email-plus-browser-extension-edge.zip
 
   build-firefox:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     needs: unit-tests
     steps:
       - uses: actions/checkout@v5
@@ -198,7 +198,7 @@ jobs:
   license-audit:
     needs: detect-license-changes
     if: needs.detect-license-changes.outputs.licenses == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v5
       - name: Use Node.js 22.x
@@ -214,7 +214,7 @@ jobs:
   attribution-check:
     needs: detect-license-changes
     if: needs.detect-license-changes.outputs.licenses == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v5
       - name: Use Node.js 22.x
