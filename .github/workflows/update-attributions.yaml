@@ -1,0 +1,41 @@
+name: Update Attributions
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+
+jobs:
+  update-attributions:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Generate attributions file
+      run: npm run report:licenses
+
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v6
+      with:
+        title: 'chore: update ATTRIBUTIONS.md'
+        body: 'Automated update of ATTRIBUTIONS.md due to dependency changes.'
+        commit-message: 'chore: update ATTRIBUTIONS.md'
+        branch: 'chore/update-attributions'
+        delete-branch: true
