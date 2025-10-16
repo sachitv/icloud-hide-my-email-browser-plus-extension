@@ -55,7 +55,7 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
-    "@types/chrome": "^0.1.22",
+    "@types/chrome": "^0.1.24",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@types/webextension-polyfill": "^0.12.4",
