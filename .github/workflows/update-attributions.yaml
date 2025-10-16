@@ -16,6 +16,12 @@ jobs:
       pull-requests: write
 
     steps:
+    - uses: actions/create-github-app-token@v2
+      id: generate-token
+      with:
+        app-id: ${{ secrets.ATTRIBUTION_APP_ID }}
+        private-key: ${{ secrets.ATTRIBUTION_APP_PRIVATE_KEY }}
+
     - name: Checkout code
       uses: actions/checkout@v4
 
@@ -34,6 +40,7 @@ jobs:
     - name: Create Pull Request
       uses: peter-evans/create-pull-request@v6
       with:
+        token: ${{ steps.generate-token.outputs.token }}
         title: 'chore: update ATTRIBUTIONS.md'
         body: 'Automated update of ATTRIBUTIONS.md due to dependency changes.'
         commit-message: 'chore: update ATTRIBUTIONS.md'
