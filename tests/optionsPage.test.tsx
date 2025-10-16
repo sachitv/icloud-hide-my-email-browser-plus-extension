@@ -89,10 +89,17 @@ vi.mock('../src/hooks', () => ({
   useBrowserStorageState: useBrowserStorageStateSpy,
 }));
 
-vi.mock('../src/iCloudClient', () => ({
-  default: ICloudClientConstructorMock,
-  PremiumMailSettings: PremiumMailSettingsMock,
-}));
+vi.mock('../src/iCloudClient', async () => {
+  const actual = await vi.importActual<typeof import('../src/iCloudClient')>(
+    '../src/iCloudClient'
+  );
+
+  return {
+    ...actual,
+    default: ICloudClientConstructorMock,
+    PremiumMailSettings: PremiumMailSettingsMock,
+  };
+});
 
 vi.mock('webextension-polyfill', () => webExtensionPolyfillMock);
 
@@ -197,6 +204,42 @@ describe('Options page UI', () => {
     await waitFor(() =>
       expect(storageStateMocks.iCloudHmeOptions?.state).toEqual({
         autofill: { button: true, contextMenu: false },
+        defaults: {
+          reservationNote:
+            DEFAULT_STORE.iCloudHmeOptions.defaults.reservationNote,
+        },
+      })
+    );
+  });
+
+  it('updates the default reservation note when edited', async () => {
+    storageStateMocks.iCloudHmeOptions = {
+      state: structuredClone(DEFAULT_STORE.iCloudHmeOptions),
+      isLoading: false,
+    };
+    storageStateMocks.clientState = {
+      state: undefined,
+      spy: vi.fn(),
+      isLoading: false,
+    };
+
+    const user = userEvent.setup();
+    render(<Options />);
+
+    const noteField = await screen.findByLabelText(/default reservation note/i);
+
+    await user.clear(noteField);
+    await user.type(noteField, 'Use for shopping accounts');
+
+    await waitFor(() =>
+      expect(storageStateMocks.iCloudHmeOptions?.state).toEqual({
+        autofill: {
+          button: true,
+          contextMenu: true,
+        },
+        defaults: {
+          reservationNote: 'Use for shopping accounts',
+        },
       })
     );
   });

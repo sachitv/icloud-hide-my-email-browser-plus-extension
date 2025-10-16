@@ -37,7 +37,7 @@ import {
   TitledComponent,
   Link,
 } from '../../commonComponents';
-import { setBrowserStorageValue, Store } from '../../storage';
+import { DEFAULT_STORE, setBrowserStorageValue, Store } from '../../storage';
 
 import browser from 'webextension-polyfill';
 import Fuse from 'fuse.js';
@@ -256,6 +256,12 @@ const HmeGenerator = (props: {
   const [note, setNote] = useState<string>();
   const [label, setLabel] = useState<string>();
 
+  const [options] = useBrowserStorageState(
+    'iCloudHmeOptions',
+    DEFAULT_STORE.iCloudHmeOptions
+  );
+  const defaultReservationNote = options.defaults.reservationNote;
+
   useEffect(() => {
     const fetchHmeList = async () => {
       setHmeError(undefined);
@@ -305,6 +311,12 @@ const HmeGenerator = (props: {
     getTabHost().catch(console.error);
   }, []);
 
+  useEffect(() => {
+    if (note === undefined) {
+      setNote(defaultReservationNote);
+    }
+  }, [defaultReservationNote, note]);
+
   const onEmailRefreshClick = async () => {
     setIsEmailRefreshSubmitting(true);
     setReservedHme(undefined);
@@ -328,8 +340,14 @@ const HmeGenerator = (props: {
     if (hmeEmail !== undefined) {
       try {
         const pms = new PremiumMailSettings(props.client);
+        const reservationNote =
+          note === undefined ? defaultReservationNote : note;
         setReservedHme(
-          await pms.reserveHme(hmeEmail, label || tabHost, note || undefined)
+          await pms.reserveHme(
+            hmeEmail,
+            label || tabHost,
+            reservationNote
+          )
         );
         setLabel(undefined);
         setNote(undefined);

@@ -83,6 +83,14 @@ const performAuthSideEffects = async (
   }
 };
 
+const resolveDefaultReservationNote = async (): Promise<string> => {
+  const options =
+    (await getBrowserStorageValue('iCloudHmeOptions')) ||
+    DEFAULT_STORE.iCloudHmeOptions;
+
+  return options.defaults.reservationNote;
+};
+
 // ===== Message handling =====
 
 browser.runtime.onMessage.addListener(async (uncastedMessage: unknown) => {
@@ -134,7 +142,7 @@ browser.runtime.onMessage.addListener(async (uncastedMessage: unknown) => {
       break;
     case MessageType.ReservationRequest:
       {
-        const { hme, label, elementId } =
+        const { hme, label, elementId, note } =
           message.data as ReservationRequestData;
         const client = await constructClient();
         // Given that the reservation step happens shortly after
@@ -143,7 +151,12 @@ browser.runtime.onMessage.addListener(async (uncastedMessage: unknown) => {
         // skipping token validation.
         try {
           const pms = new PremiumMailSettings(client);
-          await pms.reserveHme(hme, label);
+          const defaultNote = await resolveDefaultReservationNote();
+          await pms.reserveHme(
+            hme,
+            label,
+            note === undefined ? defaultNote : note
+          );
           await sendMessageToTab(MessageType.ReservationResponse, {
             hme,
             elementId,
@@ -263,7 +276,8 @@ browser.contextMenus.onClicked.addListener(async (info, tab) => {
   try {
     const pms = new PremiumMailSettings(client);
     const hme = await pms.generateHme();
-    await pms.reserveHme(hme, hostname);
+    const defaultNote = await resolveDefaultReservationNote();
+    await pms.reserveHme(hme, hostname, defaultNote);
     await sendMessageToTab(
       MessageType.ActiveInputElementWrite,
       { text: hme, copyToClipboard: true } as ActiveInputElementWriteData,
@@ -289,7 +303,7 @@ browser.contextMenus.onClicked.addListener(async (info, tab) => {
 browser.webRequest.onResponseStarted.addListener(
   async (details: browser.WebRequest.OnResponseStartedDetailsType) => {
     const { statusCode, url } = details;
-    if (statusCode < 200 && statusCode > 299) {
+    if (statusCode < 200 || statusCode > 299) {
       console.debug('Request failed', details);
       return;
     }
@@ -315,7 +329,7 @@ browser.webRequest.onResponseStarted.addListener(
 browser.webRequest.onResponseStarted.addListener(
   async (details: browser.WebRequest.OnResponseStartedDetailsType) => {
     const { statusCode } = details;
-    if (statusCode < 200 && statusCode > 299) {
+    if (statusCode < 200 || statusCode > 299) {
       console.debug('Request failed', details);
       return;
     }

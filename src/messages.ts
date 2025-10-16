@@ -18,6 +18,7 @@ export type ReservationRequestData = {
   hme: string;
   label: string;
   elementId: string;
+  note?: string;
 };
 
 export type GenerationResponseData = {

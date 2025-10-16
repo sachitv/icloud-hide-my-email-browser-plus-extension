@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import Popup from '../src/pages/Popup/Popup';
 import { PopupState } from '../src/pages/Popup/stateMachine';
 import { CONTEXT_MENU_ITEM_ID } from '../src/pages/Background/constants';
+import { DEFAULT_STORE } from '../src/storage';
 
 const {
   useBrowserStorageStateMock,
@@ -86,19 +87,33 @@ vi.mock('../src/hooks', () => ({
   useBrowserStorageState: useBrowserStorageStateMock,
 }));
 
-vi.mock('../src/storage', () => ({
-  setBrowserStorageValue: setBrowserStorageValueMock,
-}));
+vi.mock('../src/storage', async () => {
+  const actual = await vi.importActual<typeof import('../src/storage')>(
+    '../src/storage'
+  );
+
+  return {
+    ...actual,
+    setBrowserStorageValue: setBrowserStorageValueMock,
+  };
+});
 
 vi.mock('../src/messages', () => ({
   MessageType: { Autofill: 'Autofill' },
   sendMessageToTab: sendMessageToTabMock,
 }));
 
-vi.mock('../src/iCloudClient', () => ({
-  default: ICloudClientMock,
-  PremiumMailSettings: PremiumMailSettingsConstructorMock,
-}));
+vi.mock('../src/iCloudClient', async () => {
+  const actual = await vi.importActual<typeof import('../src/iCloudClient')>(
+    '../src/iCloudClient'
+  );
+
+  return {
+    ...actual,
+    default: ICloudClientMock,
+    PremiumMailSettings: PremiumMailSettingsConstructorMock,
+  };
+});
 
 vi.mock('webextension-polyfill', () => ({
   default: {
@@ -153,6 +168,10 @@ describe('Popup UI', () => {
 
       if (key === 'clientState') {
         return [clientStateValue, vi.fn(), clientStateLoading];
+      }
+
+      if (key === 'iCloudHmeOptions') {
+        return [DEFAULT_STORE.iCloudHmeOptions, vi.fn(), false];
       }
 
       throw new Error(`Unexpected key ${key}`);

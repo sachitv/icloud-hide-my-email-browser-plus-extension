@@ -1,5 +1,5 @@
 import browser from 'webextension-polyfill';
-import ICloudClient from './iCloudClient';
+import ICloudClient, { DEFAULT_RESERVATION_NOTE } from './iCloudClient';
 import { PopupState } from './pages/Popup/stateMachine';
 
 export type Autofill = {
@@ -9,6 +9,9 @@ export type Autofill = {
 
 export type Options = {
   autofill: Autofill;
+  defaults: {
+    reservationNote: string;
+  };
 };
 
 export type Store = {
@@ -26,6 +29,9 @@ export const DEFAULT_STORE = {
     autofill: {
       button: true,
       contextMenu: true,
+    },
+    defaults: {
+      reservationNote: DEFAULT_RESERVATION_NOTE,
     },
   },
   clientState: undefined,

@@ -113,6 +113,9 @@ export class ReactivateHmeException extends Error {}
 export class DeleteHmeException extends Error {}
 export class UpdateFwdToHmeException extends Error {}
 
+export const DEFAULT_RESERVATION_NOTE =
+  'Generated through the Hide My Email+ browser extension';
+
 export class PremiumMailSettings {
   private readonly baseUrl: string;
   private readonly v2BaseUrl: string;
@@ -145,9 +148,7 @@ export class PremiumMailSettings {
   async reserveHme(
     hme: string,
     label: string,
-    note:
-      | string
-      | undefined = 'Generated through the Hide My Email+ browser extension'
+    note: string | undefined = DEFAULT_RESERVATION_NOTE
   ): Promise<HmeEmail> {
     const response = (await this.client.request(
       'POST',

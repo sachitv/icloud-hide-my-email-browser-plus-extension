@@ -201,6 +201,47 @@ const AutofillForm = () => {
   );
 };
 
+const DefaultReservationNoteForm = () => {
+  const [options, setOptions] = useBrowserStorageState(
+    'iCloudHmeOptions',
+    DEFAULT_STORE.iCloudHmeOptions
+  );
+
+  const textareaClassName =
+    'w-full rounded-2xl border border-slate-800/60 bg-slate-950/50 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 transition focus:border-rainbow-purple focus:outline-none focus:ring-2 focus:ring-rainbow-purple/70';
+
+  return (
+    <div className="space-y-2">
+      <label
+        htmlFor="default-reservation-note"
+        className="block text-xs font-semibold uppercase tracking-[0.32em] text-slate-400"
+      >
+        Default reservation note
+      </label>
+      <textarea
+        id="default-reservation-note"
+        rows={3}
+        className={textareaClassName}
+        placeholder="Generated through the Hide My Email+ browser extension"
+        value={options.defaults.reservationNote}
+        onChange={(event) =>
+          setOptions((prev) => ({
+            ...prev,
+            defaults: {
+              ...prev.defaults,
+              reservationNote: event.target.value,
+            },
+          }))
+        }
+      />
+      <p className="text-xs text-slate-400">
+        This note is applied automatically when reserving aliases from the
+        popup, autofill button, or context menu.
+      </p>
+    </div>
+  );
+};
+
 const Options = () => {
   return (
     <div className="min-h-screen px-4 py-10 text-slate-100">
@@ -219,6 +260,10 @@ const Options = () => {
           <div className="space-y-3">
             <h3 className="text-lg font-semibold text-white">Autofill</h3>
             <AutofillForm />
+          </div>
+          <div className="space-y-3">
+            <h3 className="text-lg font-semibold text-white">Alias defaults</h3>
+            <DefaultReservationNoteForm />
           </div>
         </TitledComponent>
       </div>

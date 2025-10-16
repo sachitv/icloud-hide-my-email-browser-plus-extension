@@ -8,6 +8,7 @@ import ICloudClient, {
   ReactivateHmeException,
   DeleteHmeException,
   UpdateFwdToHmeException,
+  DEFAULT_RESERVATION_NOTE,
 } from '../src/iCloudClient';
 
 describe('PremiumMailSettings', () => {
@@ -125,7 +126,7 @@ describe('PremiumMailSettings', () => {
           forwardToEmail: 'user@example.com',
           isActive: true,
           label: 'Label',
-          note: 'Generated through the Hide My Email+ browser extension',
+          note: DEFAULT_RESERVATION_NOTE,
           createTimestamp: 0,
           recipientMailId: 'abc',
         },
@@ -142,7 +143,7 @@ describe('PremiumMailSettings', () => {
         data: {
           hme: 'alias@example.com',
           label: 'Label',
-          note: 'Generated through the Hide My Email+ browser extension',
+          note: DEFAULT_RESERVATION_NOTE,
         },
       }
     );
