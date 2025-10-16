@@ -66,7 +66,7 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [@testing-library/user-event@14.6.1](https://github.com/testing-library/user-event)                         | MIT                                 |
 | [@types/aria-query@5.0.4](https://github.com/DefinitelyTyped/DefinitelyTyped)                               | MIT                                 |
 | [@types/chai@5.2.2](https://github.com/DefinitelyTyped/DefinitelyTyped)                                     | MIT                                 |
-| [@types/chrome@0.1.22](https://github.com/DefinitelyTyped/DefinitelyTyped)                                  | MIT                                 |
+| [@types/chrome@0.1.24](https://github.com/DefinitelyTyped/DefinitelyTyped)                                  | MIT                                 |
 | [@types/deep-eql@4.0.2](https://github.com/DefinitelyTyped/DefinitelyTyped)                                 | MIT                                 |
 | [@types/estree@1.0.8](https://github.com/DefinitelyTyped/DefinitelyTyped)                                   | MIT                                 |
 | [@types/filesystem@0.0.36](https://github.com/DefinitelyTyped/DefinitelyTyped)                              | MIT                                 |
@@ -74,8 +74,8 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [@types/har-format@1.2.16](https://github.com/DefinitelyTyped/DefinitelyTyped)                              | MIT                                 |
 | [@types/minimatch@3.0.5](https://github.com/DefinitelyTyped/DefinitelyTyped)                                | MIT                                 |
 | [@types/node@24.6.2](https://github.com/DefinitelyTyped/DefinitelyTyped)                                    | MIT                                 |
-| [@types/react-dom@19.2.0](https://github.com/DefinitelyTyped/DefinitelyTyped)                               | MIT                                 |
-| [@types/react@19.2.0](https://github.com/DefinitelyTyped/DefinitelyTyped)                                   | MIT                                 |
+| [@types/react-dom@19.2.2](https://github.com/DefinitelyTyped/DefinitelyTyped)                               | MIT                                 |
+| [@types/react@19.2.2](https://github.com/DefinitelyTyped/DefinitelyTyped)                                   | MIT                                 |
 | [@types/webextension-polyfill@0.12.4](https://github.com/DefinitelyTyped/DefinitelyTyped)                   | MIT                                 |
 | [@types/yauzl@2.10.3](https://github.com/DefinitelyTyped/DefinitelyTyped)                                   | MIT                                 |
 | [@ungap/structured-clone@1.3.0](https://github.com/ungap/structured-clone)                                  | ISC                                 |
@@ -596,7 +596,6 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [tough-cookie@6.0.0](https://github.com/salesforce/tough-cookie)                                            | BSD-3-Clause                        |
 | [tr46@6.0.0](https://github.com/jsdom/tr46)                                                                 | MIT                                 |
 | [treeify@1.1.0](https://github.com/notatestuser/treeify)                                                    | MIT                                 |
-| [tslib@2.8.1](https://github.com/Microsoft/tslib)                                                           | 0BSD                                |
 | [type-check@0.4.0](https://github.com/gkz/type-check)                                                       | MIT                                 |
 | [type-fest@0.20.2](https://github.com/sindresorhus/type-fest)                                               | (MIT OR CC0-1.0)                    |
 | [type-fest@3.13.1](https://github.com/sindresorhus/type-fest)                                               | (MIT OR CC0-1.0)                    |
