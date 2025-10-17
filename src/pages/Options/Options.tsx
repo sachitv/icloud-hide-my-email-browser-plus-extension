@@ -141,14 +141,6 @@ const Disclaimer = () => {
         Made by <Link href="https://sachit.me">Sachit Vithaldas</Link>.
       </p>
       <p className="text-center">
-        Forked from{' '}
-        <Link href="https://github.com/dedoussis/icloud-hide-my-email-browser-extension">
-          icloud-hide-my-email-browser-extension
-        </Link>{' '}
-        by <Link href="https://twitter.com/dedoussis">Dimitrios Dedoussis</Link>
-        .
-      </p>
-      <p className="text-center">
         The source code is available at{' '}
         <Link href="https://github.com/sachitv/icloud-hide-my-email-browser-extension">
           Github
