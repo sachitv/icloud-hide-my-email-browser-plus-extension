@@ -445,7 +445,7 @@ const HmeGenerator = (props: {
           Made by <Link href="https://sachit.dev">Sachit Vithaldas</Link>.
         </p>
         <p className="text-center">
-          The source code is available at{' '}
+          The source code is available on{' '}
           <Link href="https://github.com/sachitv/icloud-hide-my-email-browser-plus-extension">
             GitHub
           </Link>
