@@ -142,7 +142,7 @@ const Disclaimer = () => {
       </p>
       <p className="text-center">
         The source code is available on{' '}
-          <Link href="https://github.com/sachitv/icloud-hide-my-email-browser-plus-extension">
+        <Link href="https://github.com/sachitv/icloud-hide-my-email-browser-plus-extension">
           Github
         </Link>
         .
