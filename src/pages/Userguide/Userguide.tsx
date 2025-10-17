@@ -57,8 +57,8 @@ const SignInInstructions = () => {
           />
         </div>
         <p>
-          Once you&apos;re signed in to your account, you&apos;re set to go. Open
-          the extension pop-up (cloud icon) to generate a new{' '}
+          Once you&apos;re signed in to your account, you&apos;re set to go.
+          Open the extension pop-up (cloud icon) to generate a new{' '}
           <span className="font-semibold">Hide My Email+</span> alias! ✨
         </p>
       </div>
@@ -131,8 +131,8 @@ const UsageInstructions = () => {
       <div className="space-y-3">
         <p>
           In the extension pop-up (cloud icon) you can find a
-          MacOS-System-Settings-like UI that enables you to generate new
-          Hide My Email+ aliases and manage existing ones.
+          MacOS-System-Settings-like UI that enables you to generate new Hide My
+          Email+ aliases and manage existing ones.
         </p>
         <p>
           <span className="font-semibold">
