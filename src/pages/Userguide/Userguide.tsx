@@ -57,7 +57,7 @@ const SignInInstructions = () => {
           />
         </div>
         <p>
-          Once you&apos;re signed in to your account you&apos;re set to go. Open
+          Once you&apos;re signed in to your account, you&apos;re set to go. Open
           the extension pop-up (cloud icon) to generate a new{' '}
           <span className="font-semibold">Hide My Email+</span> alias! ✨
         </p>
@@ -132,7 +132,7 @@ const UsageInstructions = () => {
         <p>
           In the extension pop-up (cloud icon) you can find a
           MacOS-System-Settings-like UI that enables you to generate new
-          HideMyEmail+ aliases and manage existing ones.
+          Hide My Email+ aliases and manage existing ones.
         </p>
         <p>
           <span className="font-semibold">
@@ -175,7 +175,7 @@ const UsageInstructions = () => {
         it in the <Link href="./options.html">extension Options</Link>.
       </div>
       <div className="text-slate-200">
-        Don&apos;t forget to delete the HideMyEmail+ aliases you created above
+        Don&apos;t forget to delete the Hide My Email+ aliases you created above
         for the purposes of trying this out:
         <ol className="list-decimal list-inside marker:text-rainbow-purple">
           <li>Open the extension pop-up (cloud icon)</li>
@@ -228,7 +228,7 @@ const TechnicalOverview = () => {
           href="https://github.com/sachitv/icloud-hide-my-email-browser-plus-extension"
           aria-label="source code"
         >
-          publicly available in GitHub
+          publicly available on GitHub
         </Link>
         .
       </p>
@@ -247,7 +247,7 @@ const Userguide = () => {
     <div className="w-9/12 m-auto mt-3 mb-24 text-slate-100">
       <TitledComponent title="Hide My Email+" subtitle="Quickstart guide">
         <div>
-          <h3 className="font-bold text-lg mb-3">Sign-in to iCloud</h3>
+          <h3 className="font-bold text-lg mb-3">Sign in to iCloud</h3>
           <SignInInstructions />
         </div>
         <div>
