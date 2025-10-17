@@ -16,7 +16,6 @@
     "build": "wxt build --browser=brave",
     "check:licenses": "node utils/checkLicenses.mjs",
     "dev": "wxt",
-    "format": "npm run biome:format",
     "biome:format": "biome format --write .",
     "biome:format:check": "biome format",
     "lint:check": "biome lint",
