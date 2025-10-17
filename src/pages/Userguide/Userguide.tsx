@@ -40,7 +40,7 @@ const SignInInstructions = () => {
     <div className="space-y-6 text-slate-200 leading-relaxed">
       <div className="space-y-4">
         <p>
-          To setup this extension, you need to sign-in to your iCloud account
+          To set up this extension, you need to sign in to your iCloud account
           from within the browser. Navigate to{' '}
           <Link href="https://icloud.com" aria-label="Go to iCloud.com">
             icloud.com
@@ -57,23 +57,23 @@ const SignInInstructions = () => {
           />
         </div>
         <p>
-          Once you&apos;re signed-in to your account you&apos;re set to go. Open
+          Once you&apos;re signed in to your account you&apos;re set to go. Open
           the extension pop-up (cloud icon) to generate a new{' '}
-          <span className="font-semibold">HideMyEmail+</span> alias! ✨
+          <span className="font-semibold">Hide My Email+</span> alias! ✨
         </p>
       </div>
       {isFirefox && (
         <Notice title="Using Firefox Multi-Account Containers?" isAlert>
           <p>
-            The extension won&apos;t work if you log-in to icloud.com from a tab
-            within a container. Instead, you need to log-in from a{' '}
+            The extension won&apos;t work if you log in to icloud.com from a tab
+            within a container. Instead, you need to log in from a{' '}
             <i>default</i> tab that is not part of any container. Once logged
             in, the extension will work in any tab, whether it&apos;s part of a
             container or not.
           </p>
         </Notice>
       )}
-      <Notice title="Already signed-in?">
+      <Notice title="Already signed in?">
         <p>No further action needed. The extension is ready to use!</p>
       </Notice>
       <Notice title='Do I have to ✅ the "Keep me signed in" box?'>
@@ -225,7 +225,7 @@ const TechnicalOverview = () => {
         </span>
         . The source of the extension is{' '}
         <Link
-          href="https://github.com/sachitv/icloud-hide-my-email-browser-extension"
+          href="https://github.com/sachitv/icloud-hide-my-email-browser-plus-extension"
           aria-label="source code"
         >
           publicly available in GitHub
