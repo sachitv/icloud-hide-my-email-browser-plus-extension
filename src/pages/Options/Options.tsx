@@ -14,7 +14,7 @@ import { startCase } from '../../utils/startCase';
 import { deepEqual } from '../../utils/deepEqual';
 
 const SELECT_FWD_TO_SIGNED_OUT_CTA_COPY =
-  'To select a new Forward-To address, you first need to sign-in by following the instructions on the extension pop-up.';
+  'To select a new Forward-To address, you first need to sign in by following the instructions on the extension pop-up.';
 
 const SelectFwdToForm = () => {
   const [selectedFwdToEmail, setSelectedFwdToEmail] = useState<string>();
@@ -142,7 +142,7 @@ const Disclaimer = () => {
       </p>
       <p className="text-center">
         The source code is available at{' '}
-        <Link href="https://github.com/sachitv/icloud-hide-my-email-browser-extension">
+          <Link href="https://github.com/sachitv/icloud-hide-my-email-browser-plus-extension">
           Github
         </Link>
         .

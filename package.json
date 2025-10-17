@@ -6,7 +6,7 @@
   "author": "Sachit Vithaldas",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sachitv/icloud-hide-my-email-browser-extension.git"
+    "url": "https://github.com/sachitv/icloud-hide-my-email-browser-plus-extension.git"
   },
   "scripts": {
     "build:brave": "wxt build --browser=brave",

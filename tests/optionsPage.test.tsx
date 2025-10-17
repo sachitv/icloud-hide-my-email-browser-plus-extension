@@ -130,7 +130,7 @@ describe('Options page UI', () => {
     await waitFor(() =>
       expect(
         screen.getByText(
-          /To select a new Forward-To address, you first need to sign-in/i
+          /To select a new Forward-To address, you first need to sign in/i
         )
       ).toBeInTheDocument()
     );
