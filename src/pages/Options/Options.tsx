@@ -16,6 +16,10 @@ import { DEFAULT_STORE } from '../../storage';
 import { startCase } from '../../utils/startCase';
 import { deepEqual } from '../../utils/deepEqual';
 
+type OptionsState = typeof DEFAULT_STORE.iCloudHmeOptions;
+
+let lastKnownOptions: OptionsState | undefined;
+
 const SELECT_FWD_TO_SIGNED_OUT_CTA_COPY =
   'To select a new Forward-To address, you first need to sign-in by following the instructions on the extension pop-up.';
 
@@ -172,6 +176,14 @@ const AutofillForm = () => {
     DEFAULT_STORE.iCloudHmeOptions
   );
 
+  useEffect(() => {
+    lastKnownOptions = options;
+
+    return () => {
+      lastKnownOptions = undefined;
+    };
+  }, [options]);
+
   return (
     <form className="space-y-3">
       {Object.entries(options.autofill).map(([key, value]) => (
@@ -180,12 +192,20 @@ const AutofillForm = () => {
           key={key}
         >
           <input
-            onChange={() =>
-              setOptions({
-                ...options,
-                autofill: { ...options.autofill, [key]: !value },
-              })
-            }
+            onChange={() => {
+              const baseOptions = lastKnownOptions ?? options;
+              const optionKey = key as keyof OptionsState['autofill'];
+              const nextOptions: OptionsState = {
+                ...baseOptions,
+                autofill: {
+                  ...baseOptions.autofill,
+                  [optionKey]: !baseOptions.autofill[optionKey],
+                },
+              };
+
+              setOptions(nextOptions);
+              lastKnownOptions = nextOptions;
+            }}
             checked={value}
             id={`checkbox-${key}`}
             type="checkbox"
@@ -227,15 +247,19 @@ const DefaultReservationNoteForm = () => {
         className={textareaClassName}
         placeholder={DEFAULT_RESERVATION_NOTE}
         value={options.defaults.reservationNote}
-        onChange={(event) =>
-          setOptions((prev) => ({
-            ...prev,
+        onChange={(event) => {
+          const baseOptions = lastKnownOptions ?? options;
+          const nextOptions: OptionsState = {
+            ...baseOptions,
             defaults: {
-              ...prev.defaults,
+              ...baseOptions.defaults,
               reservationNote: event.target.value,
             },
-          }))
-        }
+          };
+
+          setOptions(nextOptions);
+          lastKnownOptions = nextOptions;
+        }}
       />
       <p className="text-xs text-slate-400">
         This note is applied automatically when reserving aliases from the
