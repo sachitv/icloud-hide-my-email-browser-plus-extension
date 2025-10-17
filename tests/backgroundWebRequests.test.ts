@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { SpyInstance } from 'vitest';
 import { CONTEXT_MENU_ITEM_ID } from '../src/pages/Background/constants';
 import { DEFAULT_SETUP_URL } from '../src/iCloudClient';
 import { DEFAULT_STORE } from '../src/storage';
@@ -55,7 +56,8 @@ const {
   const contextMenusOnClickedAddListenerMock = vi.fn();
   const storageOnChangedAddListenerMock = vi.fn();
   const runtimeOnMessageAddListenerMock = vi.fn();
-  const runtimeOnInstalledListeners: Array<(details: RuntimeDetails) => void> = [];
+  const runtimeOnInstalledListeners: Array<(details: RuntimeDetails) => void> =
+    [];
   const runtimeOnInstalledAddListenerMock = vi.fn(
     (listener: (details: RuntimeDetails) => void) => {
       runtimeOnInstalledListeners.push(listener);
@@ -155,9 +157,8 @@ vi.mock('../src/iCloudClient', async () => {
 });
 
 vi.mock('../src/messages', async () => {
-  const actual = await vi.importActual<typeof import('../src/messages')>(
-    '../src/messages'
-  );
+  const actual =
+    await vi.importActual<typeof import('../src/messages')>('../src/messages');
 
   return {
     ...actual,
@@ -166,9 +167,12 @@ vi.mock('../src/messages', async () => {
 });
 
 describe('background webRequest listeners', () => {
+  let consoleDebugSpy: SpyInstance;
   const importBackground = () => import('../src/pages/Background');
 
-  const getListener = (matcher: (filter: WebRequestListenerEntry['filter']) => boolean) => {
+  const getListener = (
+    matcher: (filter: WebRequestListenerEntry['filter']) => boolean
+  ) => {
     const entry = webRequestListeners.find(({ filter }) => matcher(filter));
     if (!entry) {
       throw new Error('Expected webRequest listener to be registered');
@@ -178,6 +182,7 @@ describe('background webRequest listeners', () => {
 
   beforeEach(async () => {
     vi.resetModules();
+    consoleDebugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
     webRequestListeners.length = 0;
     webRequestAddListenerMock.mockClear();
     contextMenusUpdateMock.mockClear();
@@ -219,8 +224,9 @@ describe('background webRequest listeners', () => {
   it('performs authentication side effects when login succeeds', async () => {
     isAuthenticatedMock.mockResolvedValue(true);
 
-    const loginListener = getListener((filter) =>
-      filter.urls?.some((url) => url.includes('/accountLogin')) ?? false
+    const loginListener = getListener(
+      (filter) =>
+        filter.urls?.some((url) => url.includes('/accountLogin')) ?? false
     );
 
     await loginListener({
@@ -243,8 +249,9 @@ describe('background webRequest listeners', () => {
   });
 
   it('skips authentication side effects when login fails', async () => {
-    const loginListener = getListener((filter) =>
-      filter.urls?.some((url) => url.includes('/accountLogin')) ?? false
+    const loginListener = getListener(
+      (filter) =>
+        filter.urls?.some((url) => url.includes('/accountLogin')) ?? false
     );
 
     await loginListener({
@@ -259,8 +266,8 @@ describe('background webRequest listeners', () => {
   });
 
   it('performs deauthentication side effects when logout succeeds', async () => {
-    const logoutListener = getListener((filter) =>
-      filter.urls?.some((url) => url.includes('/logout')) ?? false
+    const logoutListener = getListener(
+      (filter) => filter.urls?.some((url) => url.includes('/logout')) ?? false
     );
 
     await logoutListener({
@@ -279,8 +286,8 @@ describe('background webRequest listeners', () => {
   });
 
   it('skips deauthentication side effects when logout fails', async () => {
-    const logoutListener = getListener((filter) =>
-      filter.urls?.some((url) => url.includes('/logout')) ?? false
+    const logoutListener = getListener(
+      (filter) => filter.urls?.some((url) => url.includes('/logout')) ?? false
     );
 
     await logoutListener({
@@ -295,5 +302,6 @@ describe('background webRequest listeners', () => {
 
   afterEach(() => {
     delete (globalThis as { chrome?: unknown }).chrome;
+    consoleDebugSpy.mockRestore();
   });
 });

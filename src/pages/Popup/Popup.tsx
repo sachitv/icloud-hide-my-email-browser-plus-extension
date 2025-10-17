@@ -343,11 +343,7 @@ const HmeGenerator = (props: {
         const reservationNote =
           note === undefined ? defaultReservationNote : note;
         setReservedHme(
-          await pms.reserveHme(
-            hmeEmail,
-            label || tabHost,
-            reservationNote
-          )
+          await pms.reserveHme(hmeEmail, label || tabHost, reservationNote)
         );
         setLabel(undefined);
         setNote(undefined);

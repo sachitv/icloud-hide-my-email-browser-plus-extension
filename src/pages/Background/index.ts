@@ -1,5 +1,7 @@
 import {
   getBrowserStorageValue,
+  getDefaultReservationNote,
+  getICloudHmeOptions,
   setBrowserStorageValue,
   Store,
   DEFAULT_STORE,
@@ -83,14 +85,6 @@ const performAuthSideEffects = async (
   }
 };
 
-const resolveDefaultReservationNote = async (): Promise<string> => {
-  const options =
-    (await getBrowserStorageValue('iCloudHmeOptions')) ||
-    DEFAULT_STORE.iCloudHmeOptions;
-
-  return options.defaults.reservationNote;
-};
-
 // ===== Message handling =====
 
 browser.runtime.onMessage.addListener(async (uncastedMessage: unknown) => {
@@ -151,7 +145,7 @@ browser.runtime.onMessage.addListener(async (uncastedMessage: unknown) => {
         // skipping token validation.
         try {
           const pms = new PremiumMailSettings(client);
-          const defaultNote = await resolveDefaultReservationNote();
+          const defaultNote = await getDefaultReservationNote();
           await pms.reserveHme(
             hme,
             label,
@@ -177,9 +171,7 @@ browser.runtime.onMessage.addListener(async (uncastedMessage: unknown) => {
 // ===== Context menu =====
 
 const setupContextMenu = async () => {
-  const options =
-    (await getBrowserStorageValue('iCloudHmeOptions')) ||
-    DEFAULT_STORE.iCloudHmeOptions;
+  const options = await getICloudHmeOptions();
 
   browser.contextMenus.create(
     {
@@ -276,7 +268,7 @@ browser.contextMenus.onClicked.addListener(async (info, tab) => {
   try {
     const pms = new PremiumMailSettings(client);
     const hme = await pms.generateHme();
-    const defaultNote = await resolveDefaultReservationNote();
+    const defaultNote = await getDefaultReservationNote();
     await pms.reserveHme(hme, hostname, defaultNote);
     await sendMessageToTab(
       MessageType.ActiveInputElementWrite,

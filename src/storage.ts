@@ -54,3 +54,13 @@ export async function setBrowserStorageValue<K extends keyof Store>(
     await browser.storage.local.set({ [key]: value });
   }
 }
+
+export async function getICloudHmeOptions(): Promise<Options> {
+  const options = await getBrowserStorageValue('iCloudHmeOptions');
+  return options ?? DEFAULT_STORE.iCloudHmeOptions;
+}
+
+export async function getDefaultReservationNote(): Promise<string> {
+  const options = await getICloudHmeOptions();
+  return options.defaults.reservationNote ?? DEFAULT_RESERVATION_NOTE;
+}

@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import './Options.css';
 import { useBrowserStorageState } from '../../hooks';
-import ICloudClient, { PremiumMailSettings } from '../../iCloudClient';
+import ICloudClient, {
+  PremiumMailSettings,
+  DEFAULT_RESERVATION_NOTE,
+} from '../../iCloudClient';
 import {
   Spinner,
   LoadingButton,
@@ -222,7 +225,7 @@ const DefaultReservationNoteForm = () => {
         id="default-reservation-note"
         rows={3}
         className={textareaClassName}
-        placeholder="Generated through the Hide My Email+ browser extension"
+        placeholder={DEFAULT_RESERVATION_NOTE}
         value={options.defaults.reservationNote}
         onChange={(event) =>
           setOptions((prev) => ({

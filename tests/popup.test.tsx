@@ -88,9 +88,8 @@ vi.mock('../src/hooks', () => ({
 }));
 
 vi.mock('../src/storage', async () => {
-  const actual = await vi.importActual<typeof import('../src/storage')>(
-    '../src/storage'
-  );
+  const actual =
+    await vi.importActual<typeof import('../src/storage')>('../src/storage');
 
   return {
     ...actual,
