@@ -140,7 +140,8 @@ export default defineConfig({
         {
           matches: ['http://*/*', 'https://*/*', '<all_urls>'],
           js: ['content-script.js'],
-          css: ['assets/content-script.css'],
+          all_frames: true,
+          match_about_blank: true,
         },
       ],
       options_page: 'options.html',

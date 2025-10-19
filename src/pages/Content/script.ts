@@ -7,7 +7,6 @@ import {
   ReservationResponseData,
 } from '../../messages';
 import { v4 as uuidv4 } from 'uuid';
-import './index.css';
 import browser from 'webextension-polyfill';
 import { getBrowserStorageValue } from '../../storage';
 
@@ -15,21 +14,103 @@ const EMAIL_INPUT_QUERY_STRING =
   'input[type="email"], input[name="email"], input[id="email"]';
 
 const LOADING_COPY = 'Hide My Email+ — Loading...';
+const SIGNED_OUT_COPY = 'Please sign in to iCloud';
 
 // A unique CSS class prefix is used to guarantee that the style injected
 // by the extension does not interfere with the existing style of
 // a web page.
 const STYLE_CLASS_PREFIX = 'd1691f0f-b8f0-495e-9ffb-fe4e6f84b518';
 
+const SHADOW_BUTTON_STYLES = `
+:host,
+* {
+  box-sizing: border-box;
+}
+.${STYLE_CLASS_PREFIX}-button {
+  border-radius: 1rem;
+  padding: 0.625rem 1rem;
+  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: rgb(13, 12, 38);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 14px 28px -18px rgba(66, 133, 244, 0.35);
+  transition: transform 150ms ease, box-shadow 150ms ease, opacity 150ms ease, background-color 150ms ease;
+  text-align: center;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  position: fixed;
+  z-index: 9999;
+  transform: translateY(0);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 0;
+  pointer-events: auto;
+  animation: ${STYLE_CLASS_PREFIX}-rainbow 2.5s linear infinite;
+}
+.${STYLE_CLASS_PREFIX}-hover-button:hover {
+  transform: translateY(-0.125rem);
+  box-shadow: 0 20px 35px -18px rgba(236, 72, 153, 0.45);
+}
+.${STYLE_CLASS_PREFIX}-cursor-not-allowed {
+  cursor: not-allowed;
+  background-color: rgb(13, 12, 38);
+  color: rgba(255, 255, 255, 0.7);
+  box-shadow: none;
+  transform: translateY(0);
+}
+.${STYLE_CLASS_PREFIX}-cursor-progress {
+  cursor: progress;
+  opacity: 0.8;
+  background-color: rgb(13, 12, 38);
+}
+.${STYLE_CLASS_PREFIX}-cursor-pointer {
+  cursor: pointer;
+}
+@keyframes ${STYLE_CLASS_PREFIX}-rainbow {
+  0% {
+    color: #4285f4d9;
+  }
+  33% {
+    color: #8b5cf6d9;
+  }
+  66% {
+    color: #ec4899d9;
+  }
+  100% {
+    color: #4285f4d9;
+  }
+}
+`.trim();
+
 const className = (shortName: string): string =>
   `${STYLE_CLASS_PREFIX}-${shortName}`;
+
+const waitForDocumentReady = async (): Promise<void> => {
+  if (document.readyState !== 'loading') {
+    return;
+  }
+
+  await new Promise<void>((resolve) => {
+    document.addEventListener('DOMContentLoaded', () => resolve(), {
+      once: true,
+    });
+  });
+};
 
 type AutofillableInputElement = {
   inputElement: HTMLInputElement;
   buttonSupport?: {
     btnElement: HTMLButtonElement;
+    hostElement: HTMLDivElement;
+    appendTarget: HTMLElement;
     inputOnFocusCallback: (ev: FocusEvent) => void;
     inputOnBlurCallback: (ev: FocusEvent) => void;
+    focusListenerOptions: AddEventListenerOptions;
+    scrollListenerOptions: AddEventListenerOptions;
+    repositionButton: () => void;
     btnOnMousedownCallback: (ev: MouseEvent) => void;
   };
 };
@@ -67,34 +148,86 @@ const enableButton = (
 };
 
 const makeButtonSupport = (
-  inputElement: HTMLInputElement
+  inputElement: HTMLInputElement,
+  appendTarget: HTMLElement
 ): AutofillableInputElement['buttonSupport'] => {
+  const eventOptions: AddEventListenerOptions = { capture: true };
+  const scrollListenerOptions: AddEventListenerOptions = {
+    capture: true,
+    passive: true,
+  };
+  const hostElement = document.createElement('div');
+  hostElement.style.position = 'fixed';
+  hostElement.style.top = '0';
+  hostElement.style.left = '0';
+  hostElement.style.width = '0';
+  hostElement.style.height = '0';
+  hostElement.style.zIndex = '2147483647';
+
+  const shadowRoot = hostElement.attachShadow({ mode: 'open' });
+  const styleElement = document.createElement('style');
+  styleElement.textContent = SHADOW_BUTTON_STYLES;
   const btnElement = document.createElement('button');
   const btnElementId = uuidv4();
   btnElement.setAttribute('id', btnElementId);
   btnElement.setAttribute('type', 'button');
   btnElement.classList.add(className('button'));
+  shadowRoot.append(styleElement, btnElement);
 
   disableButton(btnElement, 'cursor-not-allowed', LOADING_COPY);
 
-  const inputOnFocusCallback = async () => {
-    disableButton(btnElement, 'cursor-progress', LOADING_COPY);
-    inputElement.parentNode?.insertBefore(btnElement, inputElement.nextSibling);
+  const repositionButton = () => {
+    if (!inputElement.isConnected || !hostElement.isConnected) {
+      return;
+    }
 
-    await browser.runtime.sendMessage({
-      type: MessageType.GenerateRequest,
-      data: btnElementId,
-    });
+    const rect = inputElement.getBoundingClientRect();
+    btnElement.style.top = `${rect.bottom}px`;
+    btnElement.style.left = `${rect.left}px`;
+    btnElement.style.width = `${rect.width}px`;
   };
 
-  inputElement.addEventListener('focus', inputOnFocusCallback);
+  const inputOnFocusCallback = async () => {
+    disableButton(btnElement, 'cursor-progress', LOADING_COPY);
+    appendTarget.appendChild(hostElement);
+    repositionButton();
+    window.addEventListener('scroll', repositionButton, scrollListenerOptions);
+    window.addEventListener('resize', repositionButton);
+
+    const clientState = await getBrowserStorageValue('clientState');
+    if (clientState === undefined) {
+      disableButton(btnElement, 'cursor-not-allowed', SIGNED_OUT_COPY);
+      return;
+    }
+
+    try {
+      await browser.runtime.sendMessage({
+        type: MessageType.GenerateRequest,
+        data: btnElementId,
+      });
+    } catch (error) {
+      console.debug(
+        'Hide My Email+: Failed to request alias generation',
+        error
+      );
+      disableButton(btnElement, 'cursor-not-allowed', SIGNED_OUT_COPY);
+    }
+  };
+
+  inputElement.addEventListener('focus', inputOnFocusCallback, eventOptions);
 
   const inputOnBlurCallback = () => {
     disableButton(btnElement, 'cursor-not-allowed', LOADING_COPY);
-    btnElement.remove();
+    hostElement.remove();
+    window.removeEventListener(
+      'scroll',
+      repositionButton,
+      scrollListenerOptions
+    );
+    window.removeEventListener('resize', repositionButton);
   };
 
-  inputElement.addEventListener('blur', inputOnBlurCallback);
+  inputElement.addEventListener('blur', inputOnBlurCallback, eventOptions);
 
   const btnOnMousedownCallback = async (ev: MouseEvent) => {
     ev.preventDefault();
@@ -110,8 +243,12 @@ const makeButtonSupport = (
 
   return {
     btnElement,
+    hostElement,
     inputOnFocusCallback,
     inputOnBlurCallback,
+    focusListenerOptions: eventOptions,
+    scrollListenerOptions,
+    repositionButton,
     btnOnMousedownCallback,
   };
 };
@@ -120,17 +257,49 @@ const removeButtonSupport = (
   inputElement: HTMLInputElement,
   buttonSupport: NonNullable<AutofillableInputElement['buttonSupport']>
 ): void => {
-  const { btnElement, inputOnFocusCallback, inputOnBlurCallback } =
-    buttonSupport;
-  inputElement.removeEventListener('focus', inputOnFocusCallback);
-  inputElement.removeEventListener('blur', inputOnBlurCallback);
+  const {
+    btnElement,
+    hostElement,
+    inputOnFocusCallback,
+    inputOnBlurCallback,
+    focusListenerOptions,
+    scrollListenerOptions,
+    repositionButton,
+  } = buttonSupport;
+  inputElement.removeEventListener(
+    'focus',
+    inputOnFocusCallback,
+    focusListenerOptions
+  );
+  inputElement.removeEventListener(
+    'blur',
+    inputOnBlurCallback,
+    focusListenerOptions
+  );
+  window.removeEventListener('scroll', repositionButton, scrollListenerOptions);
+  window.removeEventListener('resize', repositionButton);
   btnElement.remove();
+  if (hostElement.isConnected) {
+    hostElement.remove();
+  }
 };
 
 export default async function main(): Promise<void> {
+  await waitForDocumentReady();
+
+  const appendTarget = document.body ?? document.documentElement;
+  if (!appendTarget) {
+    return;
+  }
+
   const emailInputElements = document.querySelectorAll<HTMLInputElement>(
     EMAIL_INPUT_QUERY_STRING
   );
+
+  const findButtonSupportById = (elementId: string) =>
+    autofillableInputElements.find(
+      (item) => item.buttonSupport?.btnElement.id === elementId
+    )?.buttonSupport;
 
   const options = await getBrowserStorageValue('iCloudHmeOptions');
 
@@ -141,7 +310,7 @@ export default async function main(): Promise<void> {
     buttonSupport:
       options?.autofill.button === false
         ? undefined
-        : makeButtonSupport(inputElement),
+        : makeButtonSupport(inputElement, appendTarget),
   });
 
   const autofillableInputElements = Array.from(emailInputElements).map(
@@ -192,7 +361,7 @@ export default async function main(): Promise<void> {
   };
 
   const observer = new MutationObserver(mutationCallback);
-  observer.observe(document.body, {
+  observer.observe(appendTarget, {
     childList: true,
     attributes: false,
     subtree: true,
@@ -214,9 +383,9 @@ export default async function main(): Promise<void> {
           const { hme, elementId, error } =
             message.data as GenerationResponseData;
 
-          const element = document.getElementById(elementId);
-
-          if (!element || !(element instanceof HTMLButtonElement)) {
+          const buttonSupport = findButtonSupportById(elementId);
+          const element = buttonSupport?.btnElement;
+          if (!element) {
             break;
           }
 
@@ -237,9 +406,9 @@ export default async function main(): Promise<void> {
           const { hme, error, elementId } =
             message.data as ReservationResponseData;
 
-          const btnElement = document.getElementById(elementId);
-
-          if (!btnElement || !(btnElement instanceof HTMLButtonElement)) {
+          const buttonSupport = findButtonSupportById(elementId);
+          const btnElement = buttonSupport?.btnElement;
+          if (!btnElement) {
             break;
           }
 
@@ -259,12 +428,13 @@ export default async function main(): Promise<void> {
             break;
           }
 
-          const { inputElement, buttonSupport } = found;
+          const { inputElement, buttonSupport: activeButtonSupport } = found;
           inputElement.value = hme;
           inputElement.dispatchEvent(new Event('input', { bubbles: true }));
           inputElement.dispatchEvent(new Event('change', { bubbles: true }));
 
-          buttonSupport && removeButtonSupport(inputElement, buttonSupport);
+          activeButtonSupport &&
+            removeButtonSupport(inputElement, activeButtonSupport);
         }
         break;
       case MessageType.ActiveInputElementWrite:

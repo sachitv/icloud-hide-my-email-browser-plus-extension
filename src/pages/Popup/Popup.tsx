@@ -731,7 +731,7 @@ const HmeManager = (props: {
           <div className="sticky top-0 z-10">{searchBox}</div>
           {hmeEmails.length === 0 && searchPrompt ? noSearchResult : labelList}
         </div>
-        <div className="basis-[70%] grow overflow-y-auto rounded-r-3xl border-l border-slate-800/60 bg-slate-950/30 p-4">
+        <div className="basis-[70%] grow overflow-y-auto rounded-r-3xl border-l border-slate-800/60 bg-slate-950/80 p-4">
           {selectedHmeEmail && (
             <HmeDetails
               client={props.client}
