@@ -73,10 +73,12 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [@types/filewriter@0.0.33](https://github.com/DefinitelyTyped/DefinitelyTyped)                              | MIT                                 |
 | [@types/har-format@1.2.16](https://github.com/DefinitelyTyped/DefinitelyTyped)                              | MIT                                 |
 | [@types/minimatch@3.0.5](https://github.com/DefinitelyTyped/DefinitelyTyped)                                | MIT                                 |
+| [@types/node@20.19.22](https://github.com/DefinitelyTyped/DefinitelyTyped)                                  | MIT                                 |
 | [@types/node@24.6.2](https://github.com/DefinitelyTyped/DefinitelyTyped)                                    | MIT                                 |
 | [@types/react-dom@19.2.2](https://github.com/DefinitelyTyped/DefinitelyTyped)                               | MIT                                 |
 | [@types/react@19.2.2](https://github.com/DefinitelyTyped/DefinitelyTyped)                                   | MIT                                 |
 | [@types/webextension-polyfill@0.12.4](https://github.com/DefinitelyTyped/DefinitelyTyped)                   | MIT                                 |
+| [@types/whatwg-mimetype@3.0.2](https://github.com/DefinitelyTyped/DefinitelyTyped)                          | MIT                                 |
 | [@types/yauzl@2.10.3](https://github.com/DefinitelyTyped/DefinitelyTyped)                                   | MIT                                 |
 | [@ungap/structured-clone@1.3.0](https://github.com/ungap/structured-clone)                                  | ISC                                 |
 | [@vitest/coverage-v8@3.2.4](https://github.com/vitest-dev/vitest)                                           | MIT                                 |
@@ -290,7 +292,7 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [graceful-readlink@1.0.1](https://github.com/zhiyelee/graceful-readlink)                                    | MIT                                 |
 | [graphemer@1.4.0](https://github.com/flmnt/graphemer)                                                       | MIT                                 |
 | [growly@1.3.0](https://github.com/theabraham/growly)                                                        | MIT                                 |
-| [happy-dom@14.12.3](https://github.com/capricorn86/happy-dom)                                               | MIT                                 |
+| [happy-dom@20.0.7](https://github.com/capricorn86/happy-dom)                                                | MIT                                 |
 | [has-flag@4.0.0](https://github.com/sindresorhus/has-flag)                                                  | MIT                                 |
 | [hasown@2.0.2](https://github.com/inspect-js/hasOwn)                                                        | MIT                                 |
 | [highlight.js@10.7.3](https://github.com/highlightjs/highlight.js)                                          | BSD-3-Clause                        |
@@ -609,6 +611,7 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [typescript@5.9.3](https://github.com/microsoft/TypeScript)                                                 | Apache-2.0                          |
 | [ufo@1.6.1](https://github.com/unjs/ufo)                                                                    | MIT                                 |
 | [uhyphen@0.2.0](https://github.com/WebReflection/uhyphen)                                                   | ISC                                 |
+| [undici-types@6.21.0](https://github.com/nodejs/undici)                                                     | MIT                                 |
 | [undici-types@7.13.0](https://github.com/nodejs/undici)                                                     | MIT                                 |
 | [undici@7.16.0](https://github.com/nodejs/undici)                                                           | MIT                                 |
 | [unimport@5.4.1](https://github.com/unjs/unimport)                                                          | MIT                                 |
@@ -631,7 +634,6 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [web-ext-run@0.2.4](https://github.com/aklinker1/web-ext-run)                                               | MPL-2.0                             |
 | [web-ext@9.0.0](https://github.com/mozilla/web-ext)                                                         | MPL-2.0                             |
 | [webextension-polyfill@0.12.0](https://github.com/mozilla/webextension-polyfill)                            | MPL-2.0                             |
-| [webidl-conversions@7.0.0](https://github.com/jsdom/webidl-conversions)                                     | BSD-2-Clause                        |
 | [webidl-conversions@8.0.0](https://github.com/jsdom/webidl-conversions)                                     | BSD-2-Clause                        |
 | [webpack-virtual-modules@0.6.2](https://github.com/sysgears/webpack-virtual-modules)                        | MIT                                 |
 | [whatwg-encoding@3.1.1](https://github.com/jsdom/whatwg-encoding)                                           | MIT                                 |
