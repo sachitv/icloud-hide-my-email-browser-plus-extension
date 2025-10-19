@@ -232,7 +232,6 @@ jobs:
       - package-edge
       - package-firefox
       - package-sources
-      - publish
       - version
     steps:
       - name: Download Brave artifact
