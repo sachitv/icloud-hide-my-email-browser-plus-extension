@@ -442,7 +442,7 @@ const HmeGenerator = (props: {
       </div>
       <div className="pt-4 text-xs text-slate-400">
         <p className="text-center">
-          Made by <Link href="https://sachit.dev">Sachit Vithaldas</Link>.
+          Made by <Link href="https://sachit.me">Sachit Vithaldas</Link>.
         </p>
         <p className="text-center">
           The source code is available on{' '}
