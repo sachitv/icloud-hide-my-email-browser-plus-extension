@@ -10,7 +10,7 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [@alloc/quick-lru@5.2.0](https://github.com/sindresorhus/quick-lru)                                         | MIT                                 |
 | [@ampproject/remapping@2.3.0](https://github.com/ampproject/remapping)                                      | Apache-2.0                          |
 | [@asamuzakjp/css-color@4.0.5](https://github.com/asamuzaK/cssColor)                                         | MIT                                 |
-| [@asamuzakjp/dom-selector@6.6.1](https://github.com/asamuzaK/domSelector)                                   | MIT                                 |
+| [@asamuzakjp/dom-selector@6.7.2](https://github.com/asamuzaK/domSelector)                                   | MIT                                 |
 | [@asamuzakjp/nwsapi@2.3.9](https://github.com/dperini/nwsapi)                                               | MIT                                 |
 | [@babel/code-frame@7.27.1](https://github.com/babel/babel)                                                  | MIT                                 |
 | [@babel/helper-string-parser@7.27.1](https://github.com/babel/babel)                                        | MIT                                 |
@@ -290,6 +290,7 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [graceful-readlink@1.0.1](https://github.com/zhiyelee/graceful-readlink)                                    | MIT                                 |
 | [graphemer@1.4.0](https://github.com/flmnt/graphemer)                                                       | MIT                                 |
 | [growly@1.3.0](https://github.com/theabraham/growly)                                                        | MIT                                 |
+| [happy-dom@14.12.3](https://github.com/capricorn86/happy-dom)                                               | MIT                                 |
 | [has-flag@4.0.0](https://github.com/sindresorhus/has-flag)                                                  | MIT                                 |
 | [hasown@2.0.2](https://github.com/inspect-js/hasOwn)                                                        | MIT                                 |
 | [highlight.js@10.7.3](https://github.com/highlightjs/highlight.js)                                          | BSD-3-Clause                        |
@@ -357,7 +358,7 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [js-tokens@4.0.0](https://github.com/lydell/js-tokens)                                                      | MIT                                 |
 | [js-tokens@9.0.1](https://github.com/lydell/js-tokens)                                                      | MIT                                 |
 | [js-yaml@4.1.0](https://github.com/nodeca/js-yaml)                                                          | MIT                                 |
-| [jsdom@27.0.0](https://github.com/jsdom/jsdom)                                                              | MIT                                 |
+| [jsdom@27.0.1](https://github.com/jsdom/jsdom)                                                              | MIT                                 |
 | [json-buffer@3.0.1](https://github.com/dominictarr/json-buffer)                                             | MIT                                 |
 | [json-merge-patch@1.0.2](https://github.com/pierreinglebert/json-merge-patch)                               | MIT                                 |
 | [json-parse-even-better-errors@3.0.2](https://github.com/npm/json-parse-even-better-errors)                 | MIT                                 |
@@ -456,6 +457,7 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [parse5@5.1.1](https://github.com/inikulin/parse5)                                                          | MIT                                 |
 | [parse5@6.0.1](https://github.com/inikulin/parse5)                                                          | MIT                                 |
 | [parse5@7.3.0](https://github.com/inikulin/parse5)                                                          | MIT                                 |
+| [parse5@8.0.0](https://github.com/inikulin/parse5)                                                          | MIT                                 |
 | [path-exists@4.0.0](https://github.com/sindresorhus/path-exists)                                            | MIT                                 |
 | [path-is-absolute@1.0.1](https://github.com/sindresorhus/path-is-absolute)                                  | MIT                                 |
 | [path-key@3.1.1](https://github.com/sindresorhus/path-key)                                                  | MIT                                 |
@@ -629,9 +631,11 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [web-ext-run@0.2.4](https://github.com/aklinker1/web-ext-run)                                               | MPL-2.0                             |
 | [web-ext@9.0.0](https://github.com/mozilla/web-ext)                                                         | MPL-2.0                             |
 | [webextension-polyfill@0.12.0](https://github.com/mozilla/webextension-polyfill)                            | MPL-2.0                             |
+| [webidl-conversions@7.0.0](https://github.com/jsdom/webidl-conversions)                                     | BSD-2-Clause                        |
 | [webidl-conversions@8.0.0](https://github.com/jsdom/webidl-conversions)                                     | BSD-2-Clause                        |
 | [webpack-virtual-modules@0.6.2](https://github.com/sysgears/webpack-virtual-modules)                        | MIT                                 |
 | [whatwg-encoding@3.1.1](https://github.com/jsdom/whatwg-encoding)                                           | MIT                                 |
+| [whatwg-mimetype@3.0.0](https://github.com/jsdom/whatwg-mimetype)                                           | MIT                                 |
 | [whatwg-mimetype@4.0.0](https://github.com/jsdom/whatwg-mimetype)                                           | MIT                                 |
 | [whatwg-url@15.1.0](https://github.com/jsdom/whatwg-url)                                                    | MIT                                 |
 | [when-exit@2.1.4](https://github.com/fabiospampinato/when-exit)                                             | MIT                                 |
