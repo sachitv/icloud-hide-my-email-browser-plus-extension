@@ -79,7 +79,11 @@ const makeButtonSupport = (
 
   const inputOnFocusCallback = async () => {
     disableButton(btnElement, 'cursor-progress', LOADING_COPY);
-    inputElement.parentNode?.insertBefore(btnElement, inputElement.nextSibling);
+    document.body.appendChild(btnElement);
+    const rect = inputElement.getBoundingClientRect();
+    btnElement.style.top = `${rect.bottom + window.scrollY}px`;
+    btnElement.style.left = `${rect.left + window.scrollX}px`;
+    btnElement.style.width = `${rect.width}px`;
 
     await browser.runtime.sendMessage({
       type: MessageType.GenerateRequest,
