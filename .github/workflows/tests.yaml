@@ -132,7 +132,7 @@ jobs:
 
   lint:
     runs-on: ubuntu-24.04-arm
-    needs: [detect-changes, format]
+    needs: detect-changes
     if: needs.detect-changes.outputs.lint == 'true'
     steps:
       - uses: actions/checkout@v5
