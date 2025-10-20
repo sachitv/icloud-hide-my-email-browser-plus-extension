@@ -8,10 +8,14 @@ on:
       - main
 
 jobs:
-  detect-license-changes:
+  detect-changes:
     runs-on: ubuntu-24.04-arm
     outputs:
       licenses: ${{ steps.filter.outputs.licenses }}
+      format: ${{ steps.filter.outputs.format }}
+      lint: ${{ steps.filter.outputs.lint }}
+      tests: ${{ steps.filter.outputs.tests }}
+      build: ${{ steps.filter.outputs.build }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -26,9 +30,84 @@ jobs:
               - 'ATTRIBUTIONS.md'
               - 'utils/generateLicenseTable.mjs'
               - 'utils/checkLicenses.mjs'
+            format:
+              - '**/*.ts'
+              - '**/*.tsx'
+              - '**/*.js'
+              - '**/*.jsx'
+              - '**/*.mjs'
+              - '**/*.cjs'
+              - '**/*.json'
+              - '**/*.jsonc'
+              - '**/*.css'
+              - '**/*.scss'
+              - '**/*.md'
+              - '**/*.yml'
+              - '**/*.yaml'
+              - '.prettierignore'
+              - 'biome.json'
+              - 'wxt.config.ts'
+              - 'tailwind.config.js'
+              - 'postcss.config.js'
+              - 'tsconfig.json'
+              - 'vitest.config.ts'
+              - '.github/**'
+            lint:
+              - '**/*.ts'
+              - '**/*.tsx'
+              - '**/*.js'
+              - '**/*.jsx'
+              - '**/*.mjs'
+              - '**/*.cjs'
+              - '**/*.json'
+              - '**/*.jsonc'
+              - 'biome.json'
+              - 'wxt.config.ts'
+              - 'tailwind.config.js'
+              - 'postcss.config.js'
+              - 'tsconfig.json'
+              - 'vitest.config.ts'
+              - '.github/workflows/**/*.yml'
+              - 'package.json'
+              - 'package-lock.json'
+            tests:
+              - 'src/**'
+              - 'tests/**'
+              - 'entrypoints/**'
+              - 'assets/**'
+              - 'manifest.json'
+              - 'messages.ts'
+              - 'options.ts'
+              - 'rules.json'
+              - 'wxt.config.ts'
+              - 'tailwind.config.js'
+              - 'postcss.config.js'
+              - 'tsconfig.json'
+              - 'vitest.config.ts'
+              - 'package.json'
+              - 'package-lock.json'
+            build:
+              - 'src/**'
+              - 'tests/**'
+              - 'entrypoints/**'
+              - 'assets/**'
+              - 'build/**'
+              - 'manifest.json'
+              - 'messages.ts'
+              - 'options.ts'
+              - 'rules.json'
+              - 'wxt.config.ts'
+              - 'tailwind.config.js'
+              - 'postcss.config.js'
+              - 'tsconfig.json'
+              - 'vitest.config.ts'
+              - 'package.json'
+              - 'package-lock.json'
 
   format:
     runs-on: ubuntu-24.04-arm
+    needs: detect-changes
+    if: needs.detect-changes.outputs.format == 'true'
     steps:
       - uses: actions/checkout@v5
       - name: Use Node.js 22.x
@@ -53,7 +132,8 @@ jobs:
 
   lint:
     runs-on: ubuntu-24.04-arm
-    needs: format
+    needs: [detect-changes, format]
+    if: needs.detect-changes.outputs.lint == 'true'
     steps:
       - uses: actions/checkout@v5
       - name: Use Node.js 22.x
@@ -72,7 +152,8 @@ jobs:
 
   unit-tests:
     runs-on: ubuntu-24.04-arm
-    needs: lint
+    needs: [detect-changes, lint]
+    if: needs.detect-changes.outputs.tests == 'true'
     steps:
       - uses: actions/checkout@v5
       - name: Use Node.js 22.x
@@ -87,7 +168,8 @@ jobs:
 
   build-brave:
     runs-on: ubuntu-24.04-arm
-    needs: unit-tests
+    needs: [detect-changes, unit-tests]
+    if: needs.detect-changes.outputs.build == 'true'
     steps:
       - uses: actions/checkout@v5
       - name: Use Node.js 22.x
@@ -114,7 +196,8 @@ jobs:
 
   build-chrome:
     runs-on: ubuntu-24.04-arm
-    needs: unit-tests
+    needs: [detect-changes, unit-tests]
+    if: needs.detect-changes.outputs.build == 'true'
     steps:
       - uses: actions/checkout@v5
       - name: Use Node.js 22.x
@@ -141,7 +224,8 @@ jobs:
 
   build-edge:
     runs-on: ubuntu-24.04-arm
-    needs: unit-tests
+    needs: [detect-changes, unit-tests]
+    if: needs.detect-changes.outputs.build == 'true'
     steps:
       - uses: actions/checkout@v5
       - name: Use Node.js 22.x
@@ -168,7 +252,8 @@ jobs:
 
   build-firefox:
     runs-on: ubuntu-24.04-arm
-    needs: unit-tests
+    needs: [detect-changes, unit-tests]
+    if: needs.detect-changes.outputs.build == 'true'
     steps:
       - uses: actions/checkout@v5
       - name: Use Node.js 22.x
@@ -196,8 +281,8 @@ jobs:
           path: build/icloud-hide-my-email-plus-browser-extension-firefox.zip
 
   license-audit:
-    needs: detect-license-changes
-    if: needs.detect-license-changes.outputs.licenses == 'true'
+    needs: detect-changes
+    if: needs.detect-changes.outputs.licenses == 'true'
     runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v5
@@ -210,4 +295,3 @@ jobs:
         run: npm ci
       - name: Check dependency licenses
         run: npm run check:licenses -- --verbose
-
