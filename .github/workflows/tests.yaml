@@ -152,7 +152,7 @@ jobs:
 
   unit-tests:
     runs-on: ubuntu-24.04-arm
-    needs: [detect-changes, lint]
+    needs: detect-changes
     if: needs.detect-changes.outputs.tests == 'true'
     steps:
       - uses: actions/checkout@v5
