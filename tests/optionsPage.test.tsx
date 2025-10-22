@@ -200,4 +200,91 @@ describe('Options page UI', () => {
       })
     );
   });
+
+  it('shows a sign-in prompt when the stored session is no longer authenticated', async () => {
+    storageStateMocks.iCloudHmeOptions = {
+      state: DEFAULT_STORE.iCloudHmeOptions,
+      isLoading: false,
+    };
+    storageStateMocks.clientState = {
+      state: {
+        setupUrl: 'https://setup.example.com',
+        webservices: {},
+      },
+      spy: vi.fn(),
+      isLoading: false,
+    };
+
+    isAuthenticatedMock.mockResolvedValue(false);
+
+    render(<Options />);
+
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          /To select a new Forward-To address, you first need to sign in/i
+        )
+      ).toBeInTheDocument()
+    );
+  });
+
+  it('shows an error when listing forwarding targets fails', async () => {
+    storageStateMocks.iCloudHmeOptions = {
+      state: DEFAULT_STORE.iCloudHmeOptions,
+      isLoading: false,
+    };
+    storageStateMocks.clientState = {
+      state: {
+        setupUrl: 'https://setup.example.com',
+        webservices: {},
+      },
+      spy: vi.fn(),
+      isLoading: false,
+    };
+
+    isAuthenticatedMock.mockResolvedValue(true);
+    listHmeMock.mockRejectedValue(new Error('upstream error'));
+
+    render(<Options />);
+
+    await waitFor(() =>
+      expect(screen.getByText(/upstream error/i)).toBeInTheDocument()
+    );
+  });
+
+  it('requires selecting a forwarding target before submission', async () => {
+    storageStateMocks.iCloudHmeOptions = {
+      state: DEFAULT_STORE.iCloudHmeOptions,
+      isLoading: false,
+    };
+    storageStateMocks.clientState = {
+      state: {
+        setupUrl: 'https://setup.example.com',
+        webservices: {},
+      },
+      spy: vi.fn(),
+      isLoading: false,
+    };
+
+    isAuthenticatedMock.mockResolvedValue(true);
+    listHmeMock.mockResolvedValue({
+      forwardToEmails: [],
+      selectedForwardTo: undefined,
+    });
+
+    const user = userEvent.setup();
+    render(<Options />);
+
+    await user.click(
+      await screen.findByRole('button', { name: /update forwarding/i })
+    );
+
+    await waitFor(() =>
+      expect(
+        screen.getByText(/No Forward To address has been selected/i)
+      ).toBeInTheDocument()
+    );
+    expect(updateForwardToHmeMock).not.toHaveBeenCalled();
+  });
+
 });

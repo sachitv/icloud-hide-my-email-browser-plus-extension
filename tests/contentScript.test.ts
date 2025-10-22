@@ -78,6 +78,10 @@ vi.mock('webextension-polyfill', () => ({
 }));
 
 const getBrowserStorageValueMock = vi.hoisted(() => vi.fn());
+const { clipboardWriteTextMock, originalClipboard } = vi.hoisted(() => ({
+  clipboardWriteTextMock: vi.fn().mockResolvedValue(undefined),
+  originalClipboard: navigator.clipboard,
+}));
 
 vi.mock('../src/storage', () => ({
   getBrowserStorageValue: getBrowserStorageValueMock,
@@ -131,11 +135,25 @@ describe('content script email button integration', () => {
     runtimeMessageListener = undefined;
     windowAddEventListenerSpy.mockClear();
     windowRemoveEventListenerSpy.mockClear();
+    clipboardWriteTextMock.mockClear();
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: clipboardWriteTextMock },
+    });
   });
 
   afterAll(() => {
     windowAddEventListenerSpy.mockRestore();
     windowRemoveEventListenerSpy.mockRestore();
+    if (originalClipboard === undefined) {
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete (navigator as { clipboard?: never }).clipboard;
+    } else {
+      Object.defineProperty(navigator, 'clipboard', {
+        configurable: true,
+        value: originalClipboard,
+      });
+    }
   });
 
   it('surfaces the signed-out prompt when generation fails with an auth error', async () => {
@@ -196,6 +214,52 @@ describe('content script email button integration', () => {
     expect(button?.style.left).toBe('220px');
     expect(button?.textContent).toBe('Please sign in to iCloud');
     expect(button?.hasAttribute('disabled')).toBe(true);
+  });
+
+  it('skips button support when autofill button is disabled', async () => {
+    getBrowserStorageValueMock.mockImplementation(async (key: string) => {
+      if (key === 'iCloudHmeOptions') {
+        return {
+          autofill: { button: false, contextMenu: true },
+        };
+      }
+      if (key === 'clientState') {
+        return {
+          setupUrl: 'https://example.com/setup',
+          webservices: {},
+        };
+      }
+      return undefined;
+    });
+
+    const input = createInputElement();
+
+    const { default: main } = await import('../src/pages/Content/script');
+    await main();
+
+    focusInput(input);
+    await Promise.resolve();
+
+    const hosts = Array.from(document.body.children).filter(
+      (el): el is HTMLElement => el instanceof HTMLElement && !!el.shadowRoot
+    );
+
+    expect(hosts).toHaveLength(0);
+
+    runtimeMessageListener?.({
+      type: MessageType.GenerateResponse,
+      data: {
+        elementId: 'unknown',
+        hme: 'should-not-apply',
+      },
+    });
+
+    runtimeMessageListener?.({
+      type: MessageType.Autofill,
+      data: 'autofill@example.com',
+    });
+
+    expect(input.value).toBe('autofill@example.com');
   });
 
   it('repositions the button when a scrollable ancestor scrolls', async () => {
@@ -271,6 +335,57 @@ describe('content script email button integration', () => {
 
     input.dispatchEvent(new Event('blur'));
     expect(host?.isConnected).toBe(false);
+  });
+
+  it('renders errors from generation responses and ignores empty payloads', async () => {
+    getBrowserStorageValueMock.mockImplementation(async (key: string) => {
+      if (key === 'iCloudHmeOptions') {
+        return {
+          autofill: { button: true, contextMenu: true },
+        };
+      }
+      if (key === 'clientState') {
+        return {
+          setupUrl: 'https://example.com/setup',
+          webservices: {},
+        };
+      }
+      return undefined;
+    });
+
+    const input = createInputElement();
+
+    const { default: main } = await import('../src/pages/Content/script');
+    await main();
+
+    focusInput(input);
+    await Promise.resolve();
+
+    const host = Array.from(document.body.children).find(
+      (el): el is HTMLElement => el instanceof HTMLElement && !!el.shadowRoot
+    );
+    const button = host?.shadowRoot?.querySelector('button');
+    expect(button).toBeDefined();
+
+    runtimeMessageListener?.({
+      type: MessageType.GenerateResponse,
+      data: {
+        elementId: 'button-uuid',
+        error: 'Generation failed',
+      },
+    });
+
+    expect(button?.textContent).toBe('Generation failed');
+    expect(button?.hasAttribute('disabled')).toBe(true);
+
+    runtimeMessageListener?.({
+      type: MessageType.GenerateResponse,
+      data: {
+        elementId: 'button-uuid',
+      },
+    });
+
+    expect(button?.textContent).toBe('Generation failed');
   });
 
   it('renders the generated alias and handles reservation responses', async () => {
@@ -351,5 +466,313 @@ describe('content script email button integration', () => {
           eventName === 'scroll' && handler === scrollHandler
       )
     ).toBe(true);
+  });
+
+  it('applies autofill messages and removes button support', async () => {
+    getBrowserStorageValueMock.mockImplementation(async (key: string) => {
+      if (key === 'iCloudHmeOptions') {
+        return {
+          autofill: { button: true, contextMenu: true },
+        };
+      }
+      if (key === 'clientState') {
+        return {
+          setupUrl: 'https://example.com/setup',
+          webservices: {},
+        };
+      }
+      return undefined;
+    });
+
+    const input = createInputElement();
+
+    const { default: main } = await import('../src/pages/Content/script');
+    await main();
+
+    focusInput(input);
+    await Promise.resolve();
+
+    const hostBefore = Array.from(document.body.children).find(
+      (el): el is HTMLElement => el instanceof HTMLElement && !!el.shadowRoot
+    ) as HTMLElement | undefined;
+    expect(hostBefore).toBeDefined();
+
+    runtimeMessageListener?.({
+      type: MessageType.Autofill,
+      data: 'autofill@example.com',
+    });
+
+    expect(input.value).toBe('autofill@example.com');
+
+    const hostAfter = Array.from(document.body.children).find(
+      (el): el is HTMLElement => el instanceof HTMLElement && !!el.shadowRoot
+    );
+    expect(hostAfter).toBeUndefined();
+  });
+
+  it('renders reservation errors and ignores missing payloads', async () => {
+    getBrowserStorageValueMock.mockImplementation(async (key: string) => {
+      if (key === 'iCloudHmeOptions') {
+        return {
+          autofill: { button: true, contextMenu: true },
+        };
+      }
+      if (key === 'clientState') {
+        return {
+          setupUrl: 'https://example.com/setup',
+          webservices: {},
+        };
+      }
+      return undefined;
+    });
+
+    const input = createInputElement();
+
+    const { default: main } = await import('../src/pages/Content/script');
+    await main();
+
+    focusInput(input);
+    await Promise.resolve();
+
+    const host = Array.from(document.body.children).find(
+      (el): el is HTMLElement => el instanceof HTMLElement && !!el.shadowRoot
+    ) as HTMLElement | undefined;
+    const button = host?.shadowRoot?.querySelector('button') as
+      | HTMLButtonElement
+      | undefined;
+
+    runtimeMessageListener?.({
+      type: MessageType.GenerateResponse,
+      data: {
+        elementId: 'button-uuid',
+        hme: 'alias@example.com',
+      },
+    });
+
+    expect(button?.textContent).toBe('alias@example.com');
+
+    runtimeMessageListener?.({
+      type: MessageType.ReservationResponse,
+      data: {
+        elementId: 'button-uuid',
+        error: 'Reservation failed',
+      },
+    });
+
+    expect(button?.textContent).toBe('Reservation failed');
+    expect(button?.hasAttribute('disabled')).toBe(true);
+
+    runtimeMessageListener?.({
+      type: MessageType.ReservationResponse,
+      data: {
+        elementId: 'button-uuid',
+      },
+    });
+
+    expect(button?.textContent).toBe('Reservation failed');
+  });
+
+  it('ignores reservation responses when no matching input remains', async () => {
+    getBrowserStorageValueMock.mockImplementation(async (key: string) => {
+      if (key === 'iCloudHmeOptions') {
+        return {
+          autofill: { button: true, contextMenu: true },
+        };
+      }
+      if (key === 'clientState') {
+        return {
+          setupUrl: 'https://example.com/setup',
+          webservices: {},
+        };
+      }
+      return undefined;
+    });
+
+    const input = createInputElement();
+
+    const { default: main } = await import('../src/pages/Content/script');
+    await main();
+
+    focusInput(input);
+    await Promise.resolve();
+
+    const host = Array.from(document.body.children).find(
+      (el): el is HTMLElement => el instanceof HTMLElement && !!el.shadowRoot
+    ) as HTMLElement | undefined;
+    const button = host?.shadowRoot?.querySelector('button');
+    expect(button).toBeDefined();
+
+    runtimeMessageListener?.({
+      type: MessageType.GenerateResponse,
+      data: {
+        elementId: 'button-uuid',
+        hme: 'alias@example.com',
+      },
+    });
+
+    const originalFind = Array.prototype.find;
+    let findCallCount = 0;
+    Array.prototype.find = function (predicate, thisArg) {
+      const shouldIntercept =
+        Array.isArray(this) &&
+        this.every(
+          (item) =>
+            item !== undefined &&
+            typeof item === 'object' &&
+            'inputElement' in (item as object)
+        );
+      if (shouldIntercept) {
+        findCallCount += 1;
+        if (findCallCount === 2) {
+          return undefined;
+        }
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      return originalFind.call(this, predicate, thisArg);
+    };
+
+    runtimeMessageListener?.({
+      type: MessageType.ReservationResponse,
+      data: {
+        elementId: 'button-uuid',
+        hme: 'alias@example.com',
+      },
+    });
+
+    expect(button?.textContent).toBe('alias@example.com');
+
+    Array.prototype.find = originalFind;
+  });
+
+  it('writes to the active input element and copies to clipboard when requested', async () => {
+    const hostRemovalSpy = vi.fn();
+    getBrowserStorageValueMock.mockImplementation(async (key: string) => {
+      if (key === 'iCloudHmeOptions') {
+        return {
+          autofill: { button: true, contextMenu: true },
+        };
+      }
+      if (key === 'clientState') {
+        return {
+          setupUrl: 'https://example.com/setup',
+          webservices: {},
+        };
+      }
+      return undefined;
+    });
+
+    const input = createInputElement();
+    input.addEventListener('input', hostRemovalSpy);
+    input.addEventListener('change', hostRemovalSpy);
+
+    const { default: main } = await import('../src/pages/Content/script');
+    await main();
+
+    focusInput(input);
+    await Promise.resolve();
+
+    const host = Array.from(document.body.children).find(
+      (el): el is HTMLElement => el instanceof HTMLElement && !!el.shadowRoot
+    ) as HTMLElement | undefined;
+    expect(host).toBeDefined();
+
+    Object.defineProperty(document, 'activeElement', {
+      configurable: true,
+      get: () => input,
+    });
+
+    runtimeMessageListener?.({
+      type: MessageType.ActiveInputElementWrite,
+      data: {
+        text: 'copied-alias@example.com',
+        copyToClipboard: true,
+      },
+    });
+
+    expect(input.value).toBe('copied-alias@example.com');
+    expect(clipboardWriteTextMock).toHaveBeenCalledWith(
+      'copied-alias@example.com'
+    );
+    expect(host.isConnected).toBe(false);
+    expect(hostRemovalSpy).toHaveBeenCalled();
+
+    Object.defineProperty(document, 'activeElement', {
+      configurable: true,
+      get: () => document.body,
+    });
+  });
+
+  it('ignores active element writes when no input is focused', async () => {
+    getBrowserStorageValueMock.mockImplementation(async (key: string) => {
+      if (key === 'iCloudHmeOptions') {
+        return {
+          autofill: { button: true, contextMenu: true },
+        };
+      }
+      return undefined;
+    });
+
+    const { default: main } = await import('../src/pages/Content/script');
+    await main();
+
+    Object.defineProperty(document, 'activeElement', {
+      configurable: true,
+      get: () => document.body,
+    });
+
+    runtimeMessageListener?.({
+      type: MessageType.ActiveInputElementWrite,
+      data: {
+        text: 'ignored@example.com',
+        copyToClipboard: true,
+      },
+    });
+
+    expect(clipboardWriteTextMock).not.toHaveBeenCalled();
+  });
+
+  it('ignores reservation responses when no button is present', async () => {
+    getBrowserStorageValueMock.mockImplementation(async (key: string) => {
+      if (key === 'iCloudHmeOptions') {
+        return {
+          autofill: { button: true, contextMenu: true },
+        };
+      }
+      return undefined;
+    });
+
+    const { default: main } = await import('../src/pages/Content/script');
+    await main();
+
+    runtimeMessageListener?.({
+      type: MessageType.ReservationResponse,
+      data: {
+        elementId: 'missing',
+        hme: 'ignored',
+      },
+    });
+
+    runtimeMessageListener?.({
+      type: MessageType.ReservationResponse,
+      data: {
+        elementId: 'missing',
+        error: 'still ignored',
+      },
+    });
+  });
+
+  it('falls back to the default branch for unknown messages', async () => {
+    getBrowserStorageValueMock.mockResolvedValue(undefined);
+
+    const { default: main } = await import('../src/pages/Content/script');
+    await main();
+
+    expect(() =>
+      runtimeMessageListener?.({
+        // @ts-expect-error - testing default case
+        type: 'unknown',
+      })
+    ).not.toThrow();
   });
 });
