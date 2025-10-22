@@ -30,6 +30,8 @@ jobs:
               - 'ATTRIBUTIONS.md'
               - 'utils/generateLicenseTable.mjs'
               - 'utils/checkLicenses.mjs'
+              # I added this so that in case the workflow changes, this job is re-run.
+              - '.github/workflows/**/*.yml'
             format:
               - '**/*.ts'
               - '**/*.tsx'
@@ -86,6 +88,8 @@ jobs:
               - 'vitest.config.ts'
               - 'package.json'
               - 'package-lock.json'
+              # I added this so that in case the workflow changes, all my tests are re-run.
+              - '.github/workflows/**/*.yml'
             build:
               - 'src/**'
               - 'tests/**'
@@ -103,6 +107,8 @@ jobs:
               - 'vitest.config.ts'
               - 'package.json'
               - 'package-lock.json'
+              # I added this so that in case the workflow changes, all my tests are re-run.
+              - '.github/workflows/**/*.yml'
 
   format:
     runs-on: ubuntu-24.04-arm
