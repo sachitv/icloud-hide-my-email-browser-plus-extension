@@ -626,7 +626,7 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [uuid@8.3.2](https://github.com/uuidjs/uuid)                                                                | MIT                                 |
 | [validate-npm-package-license@3.0.4](https://github.com/kemitchell/validate-npm-package-license.js)         | Apache-2.0                          |
 | [vite-node@3.2.4](https://github.com/vitest-dev/vitest)                                                     | MIT                                 |
-| [vite@7.1.9](https://github.com/vitejs/vite)                                                                | MIT                                 |
+| [vite@7.1.11](https://github.com/vitejs/vite)                                                               | MIT                                 |
 | [vitest@3.2.4](https://github.com/vitest-dev/vitest)                                                        | MIT                                 |
 | [w3c-xmlserializer@5.0.0](https://github.com/jsdom/w3c-xmlserializer)                                       | MIT                                 |
 | [watchpack@2.4.4](https://github.com/webpack/watchpack)                                                     | MIT                                 |
