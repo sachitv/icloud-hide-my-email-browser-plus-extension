@@ -1,7 +1,15 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
 import Popup from '../src/pages/Popup/Popup';
 import { PopupState } from '../src/pages/Popup/stateMachine';
 import { CONTEXT_MENU_ITEM_ID } from '../src/pages/Background/constants';

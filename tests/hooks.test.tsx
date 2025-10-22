@@ -28,9 +28,8 @@ vi.mock('webextension-polyfill', () => ({
 }));
 
 vi.mock('../src/storage', async () => {
-  const actual = await vi.importActual<typeof import('../src/storage')>(
-    '../src/storage'
-  );
+  const actual =
+    await vi.importActual<typeof import('../src/storage')>('../src/storage');
   return {
     ...actual,
     getBrowserStorageValue: getBrowserStorageValueMock,
@@ -47,8 +46,8 @@ describe('useBrowserStorageState', () => {
   const renderHookProbe = async () => {
     let latestValue: PopupState | undefined;
     let latestIsLoading: boolean | undefined;
-    let latestSetter: React.Dispatch<React.SetStateAction<PopupState>> =
-      () => undefined;
+    let latestSetter: React.Dispatch<React.SetStateAction<PopupState>> = () =>
+      undefined;
 
     const Probe = () => {
       const [value, setValue, isLoading] = useBrowserStorageState(

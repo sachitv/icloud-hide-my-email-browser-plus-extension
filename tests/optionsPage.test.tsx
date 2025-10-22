@@ -291,5 +291,4 @@ describe('Options page UI', () => {
     );
     expect(updateForwardToHmeMock).not.toHaveBeenCalled();
   });
-
 });
