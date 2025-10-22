@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import Popup from '../src/pages/Popup/Popup';
 import { PopupState } from '../src/pages/Popup/stateMachine';
 import { CONTEXT_MENU_ITEM_ID } from '../src/pages/Background/constants';
@@ -19,8 +19,13 @@ const {
   listHmeMock,
   generateHmeMock,
   reserveHmeMock,
+  updateHmeMetadataMock,
+  deactivateHmeMock,
+  reactivateHmeMock,
+  deleteHmeMock,
   PremiumMailSettingsConstructorMock,
   ICloudClientMock,
+  clipboardWriteMock,
 } = vi.hoisted(() => {
   const useBrowserStorageStateMock = vi.fn();
   const contextMenuUpdateMock = vi.fn();
@@ -35,6 +40,11 @@ const {
   const listHmeMock = vi.fn();
   const generateHmeMock = vi.fn();
   const reserveHmeMock = vi.fn();
+  const updateHmeMetadataMock = vi.fn();
+  const deactivateHmeMock = vi.fn();
+  const reactivateHmeMock = vi.fn();
+  const deleteHmeMock = vi.fn();
+  const clipboardWriteMock = vi.fn();
 
   class ICloudClientMock {
     constructor(
@@ -57,10 +67,10 @@ const {
     listHme: listHmeMock,
     generateHme: generateHmeMock,
     reserveHme: reserveHmeMock,
-    updateHmeMetadata: vi.fn(),
-    deactivateHme: vi.fn(),
-    reactivateHme: vi.fn(),
-    deleteHme: vi.fn(),
+    updateHmeMetadata: updateHmeMetadataMock,
+    deactivateHme: deactivateHmeMock,
+    reactivateHme: reactivateHmeMock,
+    deleteHme: deleteHmeMock,
     updateForwardToHme: vi.fn(),
   }));
 
@@ -77,8 +87,13 @@ const {
     listHmeMock,
     generateHmeMock,
     reserveHmeMock,
+    updateHmeMetadataMock,
+    deactivateHmeMock,
+    reactivateHmeMock,
+    deleteHmeMock,
     PremiumMailSettingsConstructorMock,
     ICloudClientMock,
+    clipboardWriteMock,
   };
 });
 
@@ -109,6 +124,30 @@ vi.mock('webextension-polyfill', () => ({
 }));
 
 describe('Popup UI', () => {
+  const originalClipboard = navigator.clipboard;
+
+  beforeAll(() => {
+    Object.defineProperty(window.navigator, 'clipboard', {
+      configurable: true,
+      writable: true,
+      value: {
+        writeText: clipboardWriteMock,
+      },
+    });
+  });
+
+  afterAll(() => {
+    if (originalClipboard === undefined) {
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete (window.navigator as { clipboard?: Clipboard }).clipboard;
+    } else {
+      Object.defineProperty(window.navigator, 'clipboard', {
+        configurable: true,
+        value: originalClipboard,
+      });
+    }
+  });
+
   let popupStateValue: PopupState;
   let clientStateValue:
     | {
@@ -135,6 +174,19 @@ describe('Popup UI', () => {
     setBrowserStorageValueMock.mockReset();
     popupStateSetterMock.mockReset();
     sendMessageToTabMock.mockReset();
+    updateHmeMetadataMock.mockReset();
+    deactivateHmeMock.mockReset();
+    reactivateHmeMock.mockReset();
+    deleteHmeMock.mockReset();
+    clipboardWriteMock.mockReset();
+    clipboardWriteMock.mockResolvedValue(undefined);
+    Object.defineProperty(window.navigator, 'clipboard', {
+      configurable: true,
+      writable: true,
+      value: {
+        writeText: clipboardWriteMock,
+      },
+    });
 
     popupStateValue = PopupState.SignedOut;
     clientStateValue = undefined;
@@ -233,5 +285,235 @@ describe('Popup UI', () => {
     expect(popupStateSetterMock).toHaveBeenCalledWith(
       PopupState.AuthenticatedAndManaging
     );
+  });
+
+  it('refreshes and reserves generated email addresses with copy and autofill helpers', async () => {
+    popupStateValue = PopupState.Authenticated;
+    clientStateValue = {
+      setupUrl: 'https://setup.example.com',
+      webservices: {
+        premiummailsettings: {
+          url: 'https://service.example.com',
+          status: 'active',
+        },
+      },
+    };
+
+    generateHmeMock.mockReset();
+    generateHmeMock.mockResolvedValueOnce('initial@example.com');
+    generateHmeMock.mockResolvedValueOnce('refreshed@example.com');
+    reserveHmeMock.mockReset();
+    reserveHmeMock.mockResolvedValueOnce({
+      anonymousId: 'anon',
+      note: 'Remember me',
+      label: 'My Label',
+      hme: 'reserved@example.com',
+      forwardToEmail: 'forward@example.com',
+      origin: 'ON_DEMAND',
+      isActive: true,
+      domain: 'domain',
+      createTimestamp: Date.now(),
+      recipientMailId: 'recipient',
+    });
+    listHmeMock.mockResolvedValue({
+      hmeEmails: [],
+      forwardToEmails: [],
+      selectedForwardTo: 'forward@example.com',
+    });
+    isAuthenticatedMock.mockResolvedValue(true);
+
+    render(<Popup />);
+
+    const refreshButton = await screen.findByRole('button', {
+      name: /Refresh email/i,
+    });
+    await waitFor(() => expect(generateHmeMock).toHaveBeenCalledTimes(1));
+
+    await user.click(refreshButton);
+    await waitFor(() => expect(generateHmeMock).toHaveBeenCalledTimes(2));
+
+    const labelInput = await screen.findByLabelText(/Label/i);
+    await user.clear(labelInput);
+    await user.type(labelInput, 'My Label');
+
+    const noteInput = screen.getByLabelText(/Note/i);
+    await user.type(noteInput, 'Remember me');
+
+    await user.click(screen.getByRole('button', { name: /Use this email/i }));
+
+    await waitFor(() =>
+      expect(reserveHmeMock).toHaveBeenCalledWith(
+        'refreshed@example.com',
+        'My Label',
+        'Remember me'
+      )
+    );
+
+    const copyButton = await screen.findByRole('button', {
+      name: /Copy to clipboard/i,
+    });
+    await user.click(copyButton);
+
+    const autofillButton = screen.getByRole('button', { name: /^Autofill$/i });
+    await user.click(autofillButton);
+    await waitFor(() =>
+      expect(sendMessageToTabMock).toHaveBeenCalledWith(
+        'Autofill',
+        'reserved@example.com'
+      )
+    );
+  });
+
+  it('manages existing aliases with search, activation toggles, deletion, and sign-out', async () => {
+    popupStateValue = PopupState.AuthenticatedAndManaging;
+    clientStateValue = {
+      setupUrl: 'https://setup.example.com',
+      webservices: {
+        premiummailsettings: {
+          url: 'https://service.example.com',
+          status: 'active',
+        },
+      },
+    };
+
+    const now = Date.now();
+    const activeAlias = {
+      anonymousId: 'active',
+      note: '',
+      label: 'Alpha alias',
+      hme: 'alpha@example.com',
+      forwardToEmail: 'forward@example.com',
+      origin: 'ON_DEMAND' as const,
+      isActive: true,
+      domain: 'domain',
+      createTimestamp: now,
+      recipientMailId: 'recipient',
+    };
+    const betaAlias = {
+      anonymousId: 'beta',
+      note: 'Beta note',
+      label: 'Beta alias',
+      hme: 'beta@example.com',
+      forwardToEmail: 'forward@example.com',
+      origin: 'ON_DEMAND' as const,
+      isActive: false,
+      domain: 'domain',
+      createTimestamp: now - 1000,
+      recipientMailId: 'recipient',
+    };
+    const gammaAlias = {
+      anonymousId: 'gamma',
+      note: '',
+      label: 'Gamma alias',
+      hme: 'gamma@example.com',
+      forwardToEmail: 'forward@example.com',
+      origin: 'ON_DEMAND' as const,
+      isActive: false,
+      domain: 'domain',
+      createTimestamp: now - 2000,
+      recipientMailId: 'recipient',
+    };
+
+    listHmeMock.mockResolvedValue({
+      hmeEmails: [betaAlias, gammaAlias, activeAlias],
+      forwardToEmails: [],
+      selectedForwardTo: 'forward@example.com',
+    });
+    deactivateHmeMock.mockResolvedValue(undefined);
+    reactivateHmeMock.mockResolvedValue(undefined);
+    deleteHmeMock.mockResolvedValue(undefined);
+
+    expect(typeof navigator.clipboard?.writeText).toBe('function');
+    await navigator.clipboard.writeText('probe');
+    clipboardWriteMock.mockClear();
+
+    render(<Popup />);
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: /Generate new email/i })
+      ).toBeInTheDocument()
+    );
+
+    const deactivateButton = await screen.findByRole('button', {
+      name: /Deactivate/i,
+    });
+    await user.click(deactivateButton);
+    await waitFor(() =>
+      expect(deactivateHmeMock).toHaveBeenCalledWith(activeAlias.anonymousId)
+    );
+
+    const searchInput = screen.getByRole('searchbox', {
+      name: /search through your hide my email\+ aliases/i,
+    });
+
+    await user.type(searchInput, 'missing');
+    expect(
+      await screen.findByText(/No results for "missing"/i)
+    ).toBeInTheDocument();
+
+    await user.clear(searchInput);
+    await user.type(searchInput, 'beta');
+    await waitFor(() =>
+      expect(screen.queryByText(/No results for/i)).not.toBeInTheDocument()
+    );
+
+    const betaButton = await screen.findByRole('button', {
+      name: /Beta alias/i,
+    });
+    await user.click(betaButton);
+
+    await waitFor(() =>
+      expect(screen.getByText(/Beta note/i)).toBeInTheDocument()
+    );
+    clipboardWriteMock.mockClear();
+    sendMessageToTabMock.mockClear();
+
+    const copyButton = screen.getByTitle('Copy');
+    await user.click(copyButton);
+
+    const autofillButton = screen.getByTitle('Autofill');
+    await user.click(autofillButton);
+    await waitFor(() =>
+      expect(sendMessageToTabMock).toHaveBeenCalledWith(
+        'Autofill',
+        betaAlias.hme
+      )
+    );
+
+    const deleteButton = screen.getByRole('button', { name: /^Delete$/i });
+    await user.click(deleteButton);
+    await waitFor(() =>
+      expect(deleteHmeMock).toHaveBeenCalledWith(betaAlias.anonymousId)
+    );
+
+    await user.clear(searchInput);
+    await user.type(searchInput, 'gamma');
+    const gammaButton = await screen.findByRole('button', {
+      name: /Gamma alias/i,
+    });
+    await user.click(gammaButton);
+
+    await user.click(screen.getByRole('button', { name: /Reactivate/i }));
+    await waitFor(() =>
+      expect(reactivateHmeMock).toHaveBeenCalledWith(gammaAlias.anonymousId)
+    );
+
+    contextMenuUpdateMock.mockClear();
+    setBrowserStorageValueMock.mockClear();
+    popupStateSetterMock.mockClear();
+
+    await user.click(screen.getByRole('button', { name: /Sign out/i }));
+    await waitFor(() => expect(signOutMock).toHaveBeenCalled());
+
+    expect(setBrowserStorageValueMock).toHaveBeenCalledWith(
+      'clientState',
+      undefined
+    );
+    expect(contextMenuUpdateMock).toHaveBeenCalledWith(
+      CONTEXT_MENU_ITEM_ID,
+      expect.objectContaining({ enabled: false })
+    );
+    expect(popupStateSetterMock).toHaveBeenCalledWith(PopupState.SignedOut);
   });
 });
