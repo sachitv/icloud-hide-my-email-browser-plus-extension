@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { render } from '@testing-library/react';
 import { RefreshIcon, SpinnerIcon } from '../src/icons';
 
+// Validates both branches of the shared icon factory helper.
 describe('icon factory', () => {
   it('marks icons as decorative when no aria label is provided', () => {
     const { getByRole } = render(<SpinnerIcon data-testid="spinner" />);

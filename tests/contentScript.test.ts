@@ -156,6 +156,7 @@ describe('content script email button integration', () => {
     }
   });
 
+  // Signed-out fallback when generation is attempted without client state.
   it('surfaces the signed-out prompt when generation fails with an auth error', async () => {
     getBrowserStorageValueMock.mockImplementation(async (key: string) => {
       if (key === 'iCloudHmeOptions') {
@@ -216,6 +217,7 @@ describe('content script email button integration', () => {
     expect(button?.hasAttribute('disabled')).toBe(true);
   });
 
+  // Ensures button markup is skipped entirely when button autofill is disabled.
   it('skips button support when autofill button is disabled', async () => {
     getBrowserStorageValueMock.mockImplementation(async (key: string) => {
       if (key === 'iCloudHmeOptions') {
@@ -262,6 +264,7 @@ describe('content script email button integration', () => {
     expect(input.value).toBe('autofill@example.com');
   });
 
+  // Covers scroll event handling to keep the floating button aligned to inputs.
   it('repositions the button when a scrollable ancestor scrolls', async () => {
     getBrowserStorageValueMock.mockImplementation(async (key: string) => {
       if (key === 'iCloudHmeOptions') {
@@ -337,6 +340,7 @@ describe('content script email button integration', () => {
     expect(host?.isConnected).toBe(false);
   });
 
+  // Verifies error and empty payload handling for generate responses.
   it('renders errors from generation responses and ignores empty payloads', async () => {
     getBrowserStorageValueMock.mockImplementation(async (key: string) => {
       if (key === 'iCloudHmeOptions') {
@@ -388,6 +392,7 @@ describe('content script email button integration', () => {
     expect(button?.textContent).toBe('Generation failed');
   });
 
+  // Happy path flow: generation success, reservation handling, and cleanup.
   it('renders the generated alias and handles reservation responses', async () => {
     getBrowserStorageValueMock.mockImplementation(async (key: string) => {
       if (key === 'iCloudHmeOptions') {
@@ -468,6 +473,7 @@ describe('content script email button integration', () => {
     ).toBe(true);
   });
 
+  // Ensures background-triggered autofill updates inputs and removes buttons.
   it('applies autofill messages and removes button support', async () => {
     getBrowserStorageValueMock.mockImplementation(async (key: string) => {
       if (key === 'iCloudHmeOptions') {
@@ -510,6 +516,7 @@ describe('content script email button integration', () => {
     expect(hostAfter).toBeUndefined();
   });
 
+  // Covers reservation error responses and missing payload fallbacks.
   it('renders reservation errors and ignores missing payloads', async () => {
     getBrowserStorageValueMock.mockImplementation(async (key: string) => {
       if (key === 'iCloudHmeOptions') {
@@ -572,6 +579,7 @@ describe('content script email button integration', () => {
     expect(button?.textContent).toBe('Reservation failed');
   });
 
+  // Ensures outdated reservation responses are ignored after DOM changes.
   it('ignores reservation responses when no matching input remains', async () => {
     getBrowserStorageValueMock.mockImplementation(async (key: string) => {
       if (key === 'iCloudHmeOptions') {
@@ -645,6 +653,7 @@ describe('content script email button integration', () => {
     Array.prototype.find = originalFind;
   });
 
+  // Confirms ActiveInputElementWrite mutates the focused input and clipboard.
   it('writes to the active input element and copies to clipboard when requested', async () => {
     const hostRemovalSpy = vi.fn();
     getBrowserStorageValueMock.mockImplementation(async (key: string) => {
@@ -703,6 +712,7 @@ describe('content script email button integration', () => {
     });
   });
 
+  // Guards against ActiveInputElementWrite when focus is outside an input.
   it('ignores active element writes when no input is focused', async () => {
     getBrowserStorageValueMock.mockImplementation(async (key: string) => {
       if (key === 'iCloudHmeOptions') {
@@ -732,6 +742,7 @@ describe('content script email button integration', () => {
     expect(clipboardWriteTextMock).not.toHaveBeenCalled();
   });
 
+  // Covers reservation messages with unknown button ids.
   it('ignores reservation responses when no button is present', async () => {
     getBrowserStorageValueMock.mockImplementation(async (key: string) => {
       if (key === 'iCloudHmeOptions') {
@@ -762,6 +773,7 @@ describe('content script email button integration', () => {
     });
   });
 
+  // Exercises the default case to ensure unknown messages are ignored.
   it('falls back to the default branch for unknown messages', async () => {
     getBrowserStorageValueMock.mockResolvedValue(undefined);
 

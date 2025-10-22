@@ -30,6 +30,7 @@ describe('storage helpers', () => {
     browserStorageMocks.storage.local.remove.mockReset();
   });
 
+  // Happy path for reading a stored value.
   it('returns the stored value for the requested key', async () => {
     const storedValue = PopupState.Authenticated;
     browserStorageMocks.storage.local.get.mockResolvedValue({
@@ -44,6 +45,7 @@ describe('storage helpers', () => {
     );
   });
 
+  // Ensures missing keys resolve to undefined.
   it('falls back to undefined when the key is not present', async () => {
     browserStorageMocks.storage.local.get.mockResolvedValue({});
 
@@ -52,6 +54,7 @@ describe('storage helpers', () => {
     ).resolves.toBeUndefined();
   });
 
+  // Validates that defined values route through storage.set.
   it('persists new values with set when provided', async () => {
     const newOptions = {
       ...DEFAULT_STORE.iCloudHmeOptions,
@@ -66,6 +69,7 @@ describe('storage helpers', () => {
     expect(browserStorageMocks.storage.local.remove).not.toHaveBeenCalled();
   });
 
+  // Confirms undefined values trigger storage.remove.
   it('removes the value when set with undefined', async () => {
     await setBrowserStorageValue('clientState', undefined);
 

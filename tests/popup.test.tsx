@@ -237,6 +237,7 @@ describe('Popup UI', () => {
     sendMessageToTabMock.mockResolvedValue(undefined);
   });
 
+  // Baseline: signed-out state should guide users to the sign-in flow.
   it('renders sign-in guidance when the popup is signed out', async () => {
     render(<Popup />);
 
@@ -251,6 +252,7 @@ describe('Popup UI', () => {
     );
   });
 
+  // Happy path for authenticated flow plus transition into management state.
   it('shows the HME generator flow when authenticated state and client data are available', async () => {
     popupStateValue = PopupState.Authenticated;
     clientStateValue = {
@@ -287,6 +289,7 @@ describe('Popup UI', () => {
     );
   });
 
+  // Covers generator refresh, reservation success, clipboard copy, and autofill messaging.
   it('refreshes and reserves generated email addresses with copy and autofill helpers', async () => {
     popupStateValue = PopupState.Authenticated;
     clientStateValue = {
@@ -364,6 +367,7 @@ describe('Popup UI', () => {
     );
   });
 
+  // Exercises manager view: search, activate/deactivate, delete, reactivate, and sign-out side effects.
   it('manages existing aliases with search, activation toggles, deletion, and sign-out', async () => {
     popupStateValue = PopupState.AuthenticatedAndManaging;
     clientStateValue = {

@@ -76,6 +76,7 @@ describe('useBrowserStorageState', () => {
     };
   };
 
+  // Validates initial hydration path and loading state transitions.
   it('hydrates state from storage and toggles loading flag', async () => {
     getBrowserStorageValueMock.mockResolvedValue(PopupState.Authenticated);
 
@@ -88,6 +89,7 @@ describe('useBrowserStorageState', () => {
     expect(getBrowserStorageValueMock).toHaveBeenCalledWith('popupState');
   });
 
+  // Ensures both direct values and functional updates persist to storage.
   it('persists state updates and supports functional setters', async () => {
     getBrowserStorageValueMock.mockResolvedValue(undefined);
     const probe = await renderHookProbe();
@@ -119,6 +121,7 @@ describe('useBrowserStorageState', () => {
     expect(probe.value).toBe(PopupState.AuthenticatedAndManaging);
   });
 
+  // Guards against unnecessary writes when the stored snapshot matches.
   it('avoids state updates when the stored value matches current state', async () => {
     getBrowserStorageValueMock.mockResolvedValue(PopupState.SignedOut);
 

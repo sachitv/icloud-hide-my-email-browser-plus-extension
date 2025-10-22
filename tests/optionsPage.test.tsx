@@ -114,6 +114,7 @@ describe('Options page UI', () => {
     webExtensionPolyfillMock.storage.local.remove.mockReset();
   });
 
+  // Baseline: with no stored client state the page should show the sign-in CTA.
   it('surfaces a sign-in prompt when no client state is available', async () => {
     storageStateMocks.iCloudHmeOptions = {
       state: DEFAULT_STORE.iCloudHmeOptions,
@@ -139,6 +140,7 @@ describe('Options page UI', () => {
     expect(listHmeMock).not.toHaveBeenCalled();
   });
 
+  // Happy path: authenticated client lists aliases and updates storage on submit.
   it('lists available forwarding targets and updates options when toggled', async () => {
     const initialOptions = structuredClone(DEFAULT_STORE.iCloudHmeOptions);
     storageStateMocks.iCloudHmeOptions = {
@@ -201,6 +203,7 @@ describe('Options page UI', () => {
     );
   });
 
+  // Covers branch where stored credentials exist but the session is invalid.
   it('shows a sign-in prompt when the stored session is no longer authenticated', async () => {
     storageStateMocks.iCloudHmeOptions = {
       state: DEFAULT_STORE.iCloudHmeOptions,
@@ -228,6 +231,7 @@ describe('Options page UI', () => {
     );
   });
 
+  // Ensures listHme exceptions bubble into surfaced errors.
   it('shows an error when listing forwarding targets fails', async () => {
     storageStateMocks.iCloudHmeOptions = {
       state: DEFAULT_STORE.iCloudHmeOptions,
@@ -252,6 +256,7 @@ describe('Options page UI', () => {
     );
   });
 
+  // Guard clause: submitting without a selection should show validation feedback.
   it('requires selecting a forwarding target before submission', async () => {
     storageStateMocks.iCloudHmeOptions = {
       state: DEFAULT_STORE.iCloudHmeOptions,

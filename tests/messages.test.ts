@@ -21,6 +21,7 @@ describe('messaging utilities', () => {
     browserTabsMocks.tabs.sendMessage.mockReset();
   });
 
+  // Direct tab id should short-circuit the tab query.
   it('uses the provided tab id when available', async () => {
     await sendMessageToTab(MessageType.Autofill, 'test', { id: 42 } as never);
 
@@ -31,6 +32,7 @@ describe('messaging utilities', () => {
     });
   });
 
+  // Without a tab id we expect a query for the active tab.
   it('queries the active tab when none is provided', async () => {
     browserTabsMocks.tabs.query.mockResolvedValue([{ id: 7 }]);
 
@@ -46,6 +48,7 @@ describe('messaging utilities', () => {
     });
   });
 
+  // Missing ids should be ignored instead of throwing.
   it('guards against missing tab ids', async () => {
     browserTabsMocks.tabs.query.mockResolvedValue([{}]);
 
