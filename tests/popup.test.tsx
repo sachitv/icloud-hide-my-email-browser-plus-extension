@@ -597,7 +597,9 @@ describe('Popup UI', () => {
     render(<Popup />);
 
     await waitFor(() =>
-      expect(screen.getByText(/There are no emails to list/i)).toBeInTheDocument()
+      expect(
+        screen.getByText(/There are no emails to list/i)
+      ).toBeInTheDocument()
     );
   });
 
@@ -697,7 +699,9 @@ describe('Popup UI', () => {
       expect(screen.getByText(/reactivate failed/i)).toBeInTheDocument()
     );
 
-    const deleteButton = await screen.findByRole('button', { name: /^Delete$/i });
+    const deleteButton = await screen.findByRole('button', {
+      name: /^Delete$/i,
+    });
     await user.click(deleteButton);
     await waitFor(() =>
       expect(screen.getByText(/delete failed/i)).toBeInTheDocument()
