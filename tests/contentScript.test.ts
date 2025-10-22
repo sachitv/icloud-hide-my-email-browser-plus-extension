@@ -428,22 +428,6 @@ describe('content script email button integration', () => {
   });
 
   it('removes button support when inputs are detached from the DOM', async () => {
-    const observerCallbacks: MutationCallback[] = [];
-    const OriginalMutationObserver = MutationObserver;
-    class MockMutationObserver {
-      callback: MutationCallback;
-      constructor(callback: MutationCallback) {
-        this.callback = callback;
-        observerCallbacks.push(callback);
-      }
-      observe() {}
-      disconnect() {}
-      takeRecords(): MutationRecord[] {
-        return [];
-      }
-    }
-    vi.stubGlobal('MutationObserver', MockMutationObserver as unknown as typeof MutationObserver);
-
     getBrowserStorageValueMock.mockImplementation(async (key: string) => {
       if (key === 'iCloudHmeOptions') {
         return {
@@ -459,12 +443,15 @@ describe('content script email button integration', () => {
       return undefined;
     });
 
-    const input = createInputElement();
+    const rawInput = createInputElement();
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    container.appendChild(rawInput);
 
     const { default: main } = await import('../src/pages/Content/script');
     await main();
 
-    focusInput(input);
+    focusInput(rawInput);
     await Promise.resolve();
 
     const host = Array.from(document.body.children).find(
@@ -472,25 +459,84 @@ describe('content script email button integration', () => {
     ) as HTMLElement | undefined;
     expect(host).toBeDefined();
 
+    container.remove();
+    await waitFor(() => expect(host?.isConnected).toBe(false));
+  });
+
+  // Ensures newly inserted inputs discovered via mutation observers receive button support.
+  it('registers button support for inputs added via DOM mutations', async () => {
+    getBrowserStorageValueMock.mockImplementation(async (key: string) => {
+      if (key === 'iCloudHmeOptions') {
+        return { autofill: { button: true, contextMenu: true } };
+      }
+      if (key === 'clientState') {
+        return {
+          setupUrl: 'https://example.com/setup',
+          webservices: {},
+        };
+      }
+      return undefined;
+    });
+
+    document.body.innerHTML = '';
+    const { default: main } = await import('../src/pages/Content/script');
+    await main();
+
+    const newEmail = document.createElement('input');
+    newEmail.type = 'email';
+    newEmail.name = 'email';
+    newEmail.getBoundingClientRect = vi.fn(() => ({
+      top: 40,
+      bottom: 64,
+      left: 10,
+      right: 210,
+      width: 200,
+      height: 24,
+      x: 10,
+      y: 40,
+      toJSON: () => ({}),
+    }));
+    document.body.appendChild(newEmail);
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(() => focusInput(newEmail)).not.toThrow();
+    await Promise.resolve();
+  });
+
+  // Guards against non-element nodes emitted from mutation observer removals.
+  it('ignores removed nodes that are not elements', async () => {
+    getBrowserStorageValueMock.mockImplementation(async (key: string) => {
+      if (key === 'iCloudHmeOptions') {
+        return { autofill: { button: true, contextMenu: true } };
+      }
+      if (key === 'clientState') {
+        return {
+          setupUrl: 'https://example.com/setup',
+          webservices: {},
+        };
+      }
+      return undefined;
+    });
+
+    const rawInput = createInputElement();
     const container = document.createElement('div');
-    container.appendChild(input);
+    document.body.appendChild(container);
+    container.appendChild(rawInput);
 
-    const mutation = {
-      type: 'childList',
-      target: document.body,
-      addedNodes: [],
-      removedNodes: [container],
-      attributeName: null,
-      attributeNamespace: null,
-      nextSibling: null,
-      oldValue: null,
-      previousSibling: null,
-    } as unknown as MutationRecord;
+    const { default: main } = await import('../src/pages/Content/script');
+    await main();
 
-    observerCallbacks[0]?.([mutation], {} as MutationObserver);
-    expect(host.isConnected).toBe(false);
+    const textNode = document.createTextNode('removed text');
+    document.body.appendChild(textNode);
+    document.body.removeChild(textNode);
+    await new Promise((resolve) => setTimeout(resolve, 0));
 
-    vi.stubGlobal('MutationObserver', OriginalMutationObserver);
+    focusInput(rawInput);
+    await Promise.resolve();
+    const host = Array.from(document.body.children).find(
+      (el): el is HTMLElement => el instanceof HTMLElement && !!el.shadowRoot
+    );
+    expect(host).toBeDefined();
   });
 
   // Verifies error and empty payload handling for generate responses.

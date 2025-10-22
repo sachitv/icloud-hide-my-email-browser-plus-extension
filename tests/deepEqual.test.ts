@@ -114,12 +114,14 @@ describe('deepEqual', () => {
     expect(deepEqual(obj1, obj3)).toBe(false);
   });
 
+  // Distinguishes array shape from array-like objects.
   it('should treat arrays and objects with numeric keys differently', () => {
     const array = [1, 2, 3];
     const arrayLike = { 0: 1, 1: 2, 2: 3, length: 3 };
     expect(deepEqual(array, arrayLike)).toBe(false);
   });
 
+  // Ensures symbol keyed properties participate in equality checks.
   it('should compare objects with symbol keys', () => {
     const sym = Symbol('key');
     const obj1 = { [sym]: 1 };

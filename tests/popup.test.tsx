@@ -529,6 +529,31 @@ describe('Popup UI', () => {
     expect(popupStateSetterMock).toHaveBeenCalledWith(PopupState.SignedOut);
   });
 
+  // syncClientAuthState success path should promote SignedOut to Authenticated.
+  it('promotes signed-out state when stored session is still authenticated', async () => {
+    popupStateValue = PopupState.SignedOut;
+    clientStateValue = {
+      setupUrl: 'https://setup.example.com',
+      webservices: {},
+    };
+    isAuthenticatedMock.mockResolvedValue(true);
+    listHmeMock.mockResolvedValue({
+      hmeEmails: [],
+      forwardToEmails: [],
+      selectedForwardTo: 'forward@example.com',
+    });
+
+    render(<Popup />);
+
+    await waitFor(() => expect(popupStateSetterMock).toHaveBeenCalled());
+    const updater = popupStateSetterMock.mock.calls.find(
+      ([arg]) => typeof arg === 'function'
+    )?.[0] as (state: PopupState) => PopupState;
+    expect(updater).toBeTypeOf('function');
+    expect(updater(PopupState.SignedOut)).toBe(PopupState.Authenticated);
+  });
+
+  // Error path: listHme rejection should surface the error UI.
   it('renders an error state when alias fetching fails in manager view', async () => {
     popupStateValue = PopupState.AuthenticatedAndManaging;
     clientStateValue = {
@@ -550,6 +575,7 @@ describe('Popup UI', () => {
     );
   });
 
+  // Empty state branch when no aliases are returned.
   it('renders an empty state when no aliases are returned', async () => {
     popupStateValue = PopupState.AuthenticatedAndManaging;
     clientStateValue = {
@@ -575,6 +601,7 @@ describe('Popup UI', () => {
     );
   });
 
+  // constructClient guard: missing clientState should throw.
   it('throws when attempting to construct a client without persisted state', () => {
     popupStateValue = PopupState.Authenticated;
     clientStateValue = undefined;
@@ -584,6 +611,7 @@ describe('Popup UI', () => {
     );
   });
 
+  // transitionToNextStateElement default branch should be unreachable.
   it('throws on an unknown popup state', () => {
     popupStateValue = 99 as PopupState;
     clientStateValue = undefined;
@@ -591,6 +619,7 @@ describe('Popup UI', () => {
     expect(() => render(<Popup />)).toThrow(/Unhandled PopupState case/i);
   });
 
+  // Error handling inside HmeDetails for activate/reactivate/delete flows.
   it('surfaces activation, reactivation, and deletion errors within HME details', async () => {
     popupStateValue = PopupState.AuthenticatedAndManaging;
     clientStateValue = {

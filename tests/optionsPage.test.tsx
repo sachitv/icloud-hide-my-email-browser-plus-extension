@@ -140,6 +140,28 @@ describe('Options page UI', () => {
     expect(listHmeMock).not.toHaveBeenCalled();
   });
 
+  // Smoke test to keep static copy (disclaimer + sections) covered.
+  it('renders disclaimer and section headings', () => {
+    storageStateMocks.iCloudHmeOptions = {
+      state: DEFAULT_STORE.iCloudHmeOptions,
+      isLoading: false,
+    };
+    storageStateMocks.clientState = {
+      state: undefined,
+      spy: vi.fn(),
+      isLoading: false,
+    };
+
+    render(<Options />);
+
+    expect(screen.getByText(/Disclaimer/i)).toBeInTheDocument();
+    expect(screen.getByText(/Forward To Address/i)).toBeInTheDocument();
+    expect(screen.getByText(/Autofill/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/This extension is not endorsed by/i)
+    ).toBeInTheDocument();
+  });
+
   // Happy path: authenticated client lists aliases and updates storage on submit.
   it('lists available forwarding targets and updates options when toggled', async () => {
     const initialOptions = structuredClone(DEFAULT_STORE.iCloudHmeOptions);
