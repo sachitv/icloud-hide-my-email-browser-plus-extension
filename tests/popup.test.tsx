@@ -528,4 +528,150 @@ describe('Popup UI', () => {
     );
     expect(popupStateSetterMock).toHaveBeenCalledWith(PopupState.SignedOut);
   });
+
+  it('renders an error state when alias fetching fails in manager view', async () => {
+    popupStateValue = PopupState.AuthenticatedAndManaging;
+    clientStateValue = {
+      setupUrl: 'https://setup.example.com',
+      webservices: {
+        premiummailsettings: {
+          url: 'https://service.example.com',
+          status: 'active',
+        },
+      },
+    };
+
+    listHmeMock.mockRejectedValue(new Error('loading failed'));
+
+    render(<Popup />);
+
+    await waitFor(() =>
+      expect(screen.getByText(/loading failed/i)).toBeInTheDocument()
+    );
+  });
+
+  it('renders an empty state when no aliases are returned', async () => {
+    popupStateValue = PopupState.AuthenticatedAndManaging;
+    clientStateValue = {
+      setupUrl: 'https://setup.example.com',
+      webservices: {
+        premiummailsettings: {
+          url: 'https://service.example.com',
+          status: 'active',
+        },
+      },
+    };
+
+    listHmeMock.mockResolvedValue({
+      hmeEmails: [],
+      forwardToEmails: [],
+      selectedForwardTo: 'forward@example.com',
+    });
+
+    render(<Popup />);
+
+    await waitFor(() =>
+      expect(screen.getByText(/There are no emails to list/i)).toBeInTheDocument()
+    );
+  });
+
+  it('throws when attempting to construct a client without persisted state', () => {
+    popupStateValue = PopupState.Authenticated;
+    clientStateValue = undefined;
+
+    expect(() => render(<Popup />)).toThrow(
+      /Cannot construct client when client state is undefined/i
+    );
+  });
+
+  it('throws on an unknown popup state', () => {
+    popupStateValue = 99 as PopupState;
+    clientStateValue = undefined;
+
+    expect(() => render(<Popup />)).toThrow(/Unhandled PopupState case/i);
+  });
+
+  it('surfaces activation, reactivation, and deletion errors within HME details', async () => {
+    popupStateValue = PopupState.AuthenticatedAndManaging;
+    clientStateValue = {
+      setupUrl: 'https://setup.example.com',
+      webservices: {
+        premiummailsettings: {
+          url: 'https://service.example.com',
+          status: 'active',
+        },
+      },
+    };
+
+    const now = Date.now();
+    listHmeMock.mockResolvedValue({
+      hmeEmails: [
+        {
+          anonymousId: 'active',
+          note: '',
+          label: 'Active alias',
+          hme: 'active@example.com',
+          forwardToEmail: 'forward@example.com',
+          origin: 'ON_DEMAND',
+          isActive: true,
+          domain: 'domain',
+          createTimestamp: now,
+          recipientMailId: 'recipient',
+        },
+        {
+          anonymousId: 'inactive',
+          note: '',
+          label: 'Inactive alias',
+          hme: 'inactive@example.com',
+          forwardToEmail: 'forward@example.com',
+          origin: 'ON_DEMAND',
+          isActive: false,
+          domain: 'domain',
+          createTimestamp: now - 1000,
+          recipientMailId: 'recipient',
+        },
+      ],
+      forwardToEmails: [],
+      selectedForwardTo: 'forward@example.com',
+    });
+
+    deactivateHmeMock.mockRejectedValueOnce(new Error('deactivate failed'));
+    reactivateHmeMock.mockRejectedValueOnce(new Error('reactivate failed'));
+    deleteHmeMock.mockRejectedValueOnce(new Error('delete failed'));
+
+    render(<Popup />);
+
+    const deactivateButton = await screen.findByRole('button', {
+      name: /Deactivate/i,
+    });
+    await user.click(deactivateButton);
+    await waitFor(() =>
+      expect(screen.getByText(/deactivate failed/i)).toBeInTheDocument()
+    );
+
+    const searchInput = screen.getByRole('searchbox', {
+      name: /Search through your Hide My Email\+ aliases/i,
+    });
+    await user.clear(searchInput);
+    await user.type(searchInput, 'Inactive alias');
+
+    const inactiveButton = await screen.findByRole('button', {
+      name: /Inactive alias/i,
+    });
+    await user.click(inactiveButton);
+
+    const reactivateButton = await screen.findByRole('button', {
+      name: /Reactivate/i,
+    });
+    await user.click(reactivateButton);
+    await waitFor(() =>
+      expect(screen.getByText(/reactivate failed/i)).toBeInTheDocument()
+    );
+
+    const deleteButton = await screen.findByRole('button', { name: /^Delete$/i });
+    await user.click(deleteButton);
+    await waitFor(() =>
+      expect(screen.getByText(/delete failed/i)).toBeInTheDocument()
+    );
+  });
 });

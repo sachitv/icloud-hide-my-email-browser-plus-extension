@@ -7,6 +7,7 @@ import {
   vi,
   type Mock,
 } from 'vitest';
+import { waitFor } from '@testing-library/react';
 import { MessageType } from '../src/messages';
 
 const arrayBufferDescriptor = Object.getOwnPropertyDescriptor(
@@ -217,6 +218,31 @@ describe('content script email button integration', () => {
     expect(button?.hasAttribute('disabled')).toBe(true);
   });
 
+  it('waits for DOMContentLoaded before bootstrapping when the document is still loading', async () => {
+    Object.defineProperty(document, 'readyState', {
+      configurable: true,
+      value: 'loading',
+    });
+    document.body.innerHTML = '<input type="email" id="email" />';
+
+    const domReadyPromise = import('../src/pages/Content/script').then(
+      async ({ default: main }) => {
+        const mainPromise = main();
+        await Promise.resolve();
+        expect(runtimeSendMessageMock).not.toHaveBeenCalled();
+        document.dispatchEvent(new Event('DOMContentLoaded'));
+        await expect(mainPromise).resolves.toBeUndefined();
+      }
+    );
+
+    await domReadyPromise.finally(() => {
+      Object.defineProperty(document, 'readyState', {
+        configurable: true,
+        value: 'complete',
+      });
+    });
+  });
+
   // Ensures button markup is skipped entirely when button autofill is disabled.
   it('skips button support when autofill button is disabled', async () => {
     getBrowserStorageValueMock.mockImplementation(async (key: string) => {
@@ -262,6 +288,41 @@ describe('content script email button integration', () => {
     });
 
     expect(input.value).toBe('autofill@example.com');
+  });
+
+  it('re-displays the signed-out copy when alias generation fails', async () => {
+    runtimeSendMessageMock.mockRejectedValueOnce(new Error('generate failed'));
+    getBrowserStorageValueMock.mockImplementation(async (key: string) => {
+      if (key === 'iCloudHmeOptions') {
+        return {
+          autofill: { button: true, contextMenu: true },
+        };
+      }
+      if (key === 'clientState') {
+        return {
+          setupUrl: 'https://example.com/setup',
+          webservices: {},
+        };
+      }
+      return undefined;
+    });
+
+    const input = createInputElement();
+
+    const { default: main } = await import('../src/pages/Content/script');
+    await main();
+
+    focusInput(input);
+    await Promise.resolve();
+
+    const host = Array.from(document.body.children).find(
+      (el): el is HTMLElement => el instanceof HTMLElement && !!el.shadowRoot
+    );
+    const button = host?.shadowRoot?.querySelector('button');
+    await waitFor(() =>
+      expect(button?.textContent).toBe('Please sign in to iCloud')
+    );
+    expect(button?.hasAttribute('disabled')).toBe(true);
   });
 
   // Covers scroll event handling to keep the floating button aligned to inputs.
@@ -338,6 +399,98 @@ describe('content script email button integration', () => {
 
     input.dispatchEvent(new Event('blur'));
     expect(host?.isConnected).toBe(false);
+  });
+
+  it('returns early when no append target is available', async () => {
+    const originalBody = document.body;
+    const originalDocumentElement = document.documentElement;
+
+    Object.defineProperty(document, 'body', {
+      configurable: true,
+      value: null,
+    });
+    Object.defineProperty(document, 'documentElement', {
+      configurable: true,
+      value: null,
+    });
+
+    const { default: main } = await import('../src/pages/Content/script');
+    await expect(main()).resolves.toBeUndefined();
+
+    Object.defineProperty(document, 'body', {
+      configurable: true,
+      value: originalBody,
+    });
+    Object.defineProperty(document, 'documentElement', {
+      configurable: true,
+      value: originalDocumentElement,
+    });
+  });
+
+  it('removes button support when inputs are detached from the DOM', async () => {
+    const observerCallbacks: MutationCallback[] = [];
+    const OriginalMutationObserver = MutationObserver;
+    class MockMutationObserver {
+      callback: MutationCallback;
+      constructor(callback: MutationCallback) {
+        this.callback = callback;
+        observerCallbacks.push(callback);
+      }
+      observe() {}
+      disconnect() {}
+      takeRecords(): MutationRecord[] {
+        return [];
+      }
+    }
+    vi.stubGlobal('MutationObserver', MockMutationObserver as unknown as typeof MutationObserver);
+
+    getBrowserStorageValueMock.mockImplementation(async (key: string) => {
+      if (key === 'iCloudHmeOptions') {
+        return {
+          autofill: { button: true, contextMenu: true },
+        };
+      }
+      if (key === 'clientState') {
+        return {
+          setupUrl: 'https://example.com/setup',
+          webservices: {},
+        };
+      }
+      return undefined;
+    });
+
+    const input = createInputElement();
+
+    const { default: main } = await import('../src/pages/Content/script');
+    await main();
+
+    focusInput(input);
+    await Promise.resolve();
+
+    const host = Array.from(document.body.children).find(
+      (el): el is HTMLElement => el instanceof HTMLElement && !!el.shadowRoot
+    ) as HTMLElement | undefined;
+    expect(host).toBeDefined();
+
+    const container = document.createElement('div');
+    container.appendChild(input);
+
+    const mutation = {
+      type: 'childList',
+      target: document.body,
+      addedNodes: [],
+      removedNodes: [container],
+      attributeName: null,
+      attributeNamespace: null,
+      nextSibling: null,
+      oldValue: null,
+      previousSibling: null,
+    } as unknown as MutationRecord;
+
+    observerCallbacks[0]?.([mutation], {} as MutationObserver);
+    expect(host.isConnected).toBe(false);
+
+    vi.stubGlobal('MutationObserver', OriginalMutationObserver);
   });
 
   // Verifies error and empty payload handling for generate responses.
