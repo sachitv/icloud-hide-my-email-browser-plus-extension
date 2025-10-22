@@ -32,6 +32,7 @@
     "prebuild:firefox": "rm -rf build",
     "prebuild": "rm -rf build",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "publish": "publish-extension",
     "report:licenses": "node utils/generateLicenseTable.mjs > ATTRIBUTIONS.md && npx prettier --write ATTRIBUTIONS.md",
     "start:brave": "wxt --browser=brave",

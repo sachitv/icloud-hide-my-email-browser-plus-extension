@@ -1,6 +1,8 @@
 name: tests
 permissions:
   contents: read
+  checks: write
+  pull-requests: write
 
 on:
   pull_request:
@@ -82,8 +84,23 @@ jobs:
           cache: 'npm'
       - name: Install npm deps
         run: npm ci
-      - name: Run unit tests
-        run: npm test
+      - name: Prepare coverage directory
+        run: mkdir -p coverage
+      - name: Run unit tests with coverage
+        run: npm run test:coverage -- --reporter=default --reporter=junit --outputFile=coverage/junit.xml
+      - name: Publish test report
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: vitest
+          path: coverage/junit.xml
+          reporter: jest-junit
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage
 
   build-brave:
     runs-on: ubuntu-24.04-arm
@@ -210,4 +227,3 @@ jobs:
         run: npm ci
       - name: Check dependency licenses
         run: npm run check:licenses -- --verbose
-

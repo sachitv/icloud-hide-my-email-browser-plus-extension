@@ -33,6 +33,31 @@ export default defineConfig({
     environment: 'happy-dom',
     include: ['tests/**/*.test.ts', 'tests/**/*.test.tsx'],
     setupFiles: ['tests/setupTests.ts'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html', 'lcov'],
+      reportsDirectory: 'coverage',
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: [
+        '**/*.d.ts',
+        'src/pages/**/index.ts',
+        'src/pages/**/index.tsx',
+        'src/pages/Userguide/**',
+        'wxt.config.ts',
+        'tailwind.config.js',
+        'postcss.config.js',
+        'vitest.config.mts',
+        'build/**',
+      ],
+      thresholds: {
+        global: {
+          statements: 90,
+          branches: 90,
+          functions: 90,
+          lines: 90,
+        },
+      },
+    },
   },
   esbuild: {
     target: 'es2022',

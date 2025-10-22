@@ -66,5 +66,6 @@ Run all commands from the repository root.
 
 - Follow conventional commit prefixes (`feat:`, `fix:`, `chore:`) used in history.
 - Group related changes and keep refactors scoped to the affected module.
+- Before committing, run the formatting and linting scripts defined in `package.json` (e.g. `npm run biome:format`, `npm run lint`, `npm run prettier`) so the diff stays clean.
 - Lint and formatter checks should pass prior to submitting changes.
 - When UI changes affect Popup, Options, or Userguide pages, provide updated screenshots or GIFs mirroring those under `src/assets/img`.

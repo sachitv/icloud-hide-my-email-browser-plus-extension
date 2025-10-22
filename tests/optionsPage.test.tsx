@@ -114,6 +114,7 @@ describe('Options page UI', () => {
     webExtensionPolyfillMock.storage.local.remove.mockReset();
   });
 
+  // Baseline: with no stored client state the page should show the sign-in CTA.
   it('surfaces a sign-in prompt when no client state is available', async () => {
     storageStateMocks.iCloudHmeOptions = {
       state: DEFAULT_STORE.iCloudHmeOptions,
@@ -139,6 +140,29 @@ describe('Options page UI', () => {
     expect(listHmeMock).not.toHaveBeenCalled();
   });
 
+  // Smoke test to keep static copy (disclaimer + sections) covered.
+  it('renders disclaimer and section headings', () => {
+    storageStateMocks.iCloudHmeOptions = {
+      state: DEFAULT_STORE.iCloudHmeOptions,
+      isLoading: false,
+    };
+    storageStateMocks.clientState = {
+      state: undefined,
+      spy: vi.fn(),
+      isLoading: false,
+    };
+
+    render(<Options />);
+
+    expect(screen.getByText(/Disclaimer/i)).toBeInTheDocument();
+    expect(screen.getByText(/Forward To Address/i)).toBeInTheDocument();
+    expect(screen.getByText(/Autofill/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/This extension is not endorsed by/i)
+    ).toBeInTheDocument();
+  });
+
+  // Happy path: authenticated client lists aliases and updates storage on submit.
   it('lists available forwarding targets and updates options when toggled', async () => {
     const initialOptions = structuredClone(DEFAULT_STORE.iCloudHmeOptions);
     storageStateMocks.iCloudHmeOptions = {
@@ -199,5 +223,94 @@ describe('Options page UI', () => {
         autofill: { button: true, contextMenu: false },
       })
     );
+  });
+
+  // Covers branch where stored credentials exist but the session is invalid.
+  it('shows a sign-in prompt when the stored session is no longer authenticated', async () => {
+    storageStateMocks.iCloudHmeOptions = {
+      state: DEFAULT_STORE.iCloudHmeOptions,
+      isLoading: false,
+    };
+    storageStateMocks.clientState = {
+      state: {
+        setupUrl: 'https://setup.example.com',
+        webservices: {},
+      },
+      spy: vi.fn(),
+      isLoading: false,
+    };
+
+    isAuthenticatedMock.mockResolvedValue(false);
+
+    render(<Options />);
+
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          /To select a new Forward-To address, you first need to sign in/i
+        )
+      ).toBeInTheDocument()
+    );
+  });
+
+  // Ensures listHme exceptions bubble into surfaced errors.
+  it('shows an error when listing forwarding targets fails', async () => {
+    storageStateMocks.iCloudHmeOptions = {
+      state: DEFAULT_STORE.iCloudHmeOptions,
+      isLoading: false,
+    };
+    storageStateMocks.clientState = {
+      state: {
+        setupUrl: 'https://setup.example.com',
+        webservices: {},
+      },
+      spy: vi.fn(),
+      isLoading: false,
+    };
+
+    isAuthenticatedMock.mockResolvedValue(true);
+    listHmeMock.mockRejectedValue(new Error('upstream error'));
+
+    render(<Options />);
+
+    await waitFor(() =>
+      expect(screen.getByText(/upstream error/i)).toBeInTheDocument()
+    );
+  });
+
+  // Guard clause: submitting without a selection should show validation feedback.
+  it('requires selecting a forwarding target before submission', async () => {
+    storageStateMocks.iCloudHmeOptions = {
+      state: DEFAULT_STORE.iCloudHmeOptions,
+      isLoading: false,
+    };
+    storageStateMocks.clientState = {
+      state: {
+        setupUrl: 'https://setup.example.com',
+        webservices: {},
+      },
+      spy: vi.fn(),
+      isLoading: false,
+    };
+
+    isAuthenticatedMock.mockResolvedValue(true);
+    listHmeMock.mockResolvedValue({
+      forwardToEmails: [],
+      selectedForwardTo: undefined,
+    });
+
+    const user = userEvent.setup();
+    render(<Options />);
+
+    await user.click(
+      await screen.findByRole('button', { name: /update forwarding/i })
+    );
+
+    await waitFor(() =>
+      expect(
+        screen.getByText(/No Forward To address has been selected/i)
+      ).toBeInTheDocument()
+    );
+    expect(updateForwardToHmeMock).not.toHaveBeenCalled();
   });
 });
