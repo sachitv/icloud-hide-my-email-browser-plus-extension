@@ -6,7 +6,7 @@ export default defineContentScript({
   matchAboutBlank: true,
   registration: 'manifest',
   cssInjectionMode: 'manifest',
-  main() {
-    void import('../src/pages/Content');
+  async main() {
+    await import('../src/pages/Content');
   },
 });

@@ -8,7 +8,7 @@ import {
 } from '../../messages';
 import { v4 as uuidv4 } from 'uuid';
 import browser from 'webextension-polyfill';
-import { getBrowserStorageValue } from '../../storage';
+import { getBrowserStorageValue, Options } from '../../storage';
 
 const EMAIL_INPUT_QUERY_STRING =
   'input[type="email"], input[name="email"], input[id="email"]';
@@ -115,6 +115,14 @@ type AutofillableInputElement = {
   };
 };
 
+const AUTOFILL_MANAGER_CLEANUP_KEY = Symbol.for(
+  'icloud-hide-my-email/autofill-cleanup'
+);
+
+type CleanupAwareGlobal = typeof globalThis & {
+  [AUTOFILL_MANAGER_CLEANUP_KEY]?: () => void;
+};
+
 const disableButton = (
   btn: HTMLButtonElement,
   cursorClass: string,
@@ -205,11 +213,7 @@ const makeButtonSupport = (
         type: MessageType.GenerateRequest,
         data: btnElementId,
       });
-    } catch (error) {
-      console.debug(
-        'Hide My Email+: Failed to request alias generation',
-        error
-      );
+    } catch (_error) {
       disableButton(btnElement, 'cursor-not-allowed', SIGNED_OUT_COPY);
     }
   };
@@ -284,6 +288,258 @@ const removeButtonSupport = (
   }
 };
 
+class AutofillManager {
+  private readonly appendTarget: HTMLElement;
+
+  private readonly options: Options | undefined;
+
+  private readonly autofillableInputElements: AutofillableInputElement[];
+
+  constructor({
+    appendTarget,
+    options,
+    initialInputElements,
+  }: {
+    appendTarget: HTMLElement;
+    options: Options | undefined;
+    initialInputElements: NodeListOf<HTMLInputElement>;
+  }) {
+    this.appendTarget = appendTarget;
+    this.options = options;
+    this.autofillableInputElements = Array.from(initialInputElements).map(
+      (inputElement) => this.createAutofillableInputElement(inputElement)
+    );
+  }
+
+  handleMessage = (message: Message<unknown>) => {
+    switch (message.type) {
+      case MessageType.Autofill:
+        this.applyAutofillValue(message.data as string | undefined);
+        break;
+      case MessageType.GenerateResponse:
+        this.handleGenerateResponse(
+          message.data as GenerationResponseData | undefined
+        );
+        break;
+      case MessageType.ReservationResponse:
+        this.handleReservationResponse(
+          message.data as ReservationResponseData | undefined
+        );
+        break;
+      case MessageType.ActiveInputElementWrite:
+        this.handleActiveInputElementWrite(
+          message.data as ActiveInputElementWriteData | undefined
+        );
+        break;
+      default:
+        break;
+    }
+  };
+
+  handleMutations: MutationCallback = (mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach(this.processAddedNode);
+      mutation.removedNodes.forEach(this.processRemovedNode);
+    });
+  };
+
+  private createAutofillableInputElement = (
+    inputElement: HTMLInputElement
+  ): AutofillableInputElement => {
+    const shouldCreateButton = this.options?.autofill.button !== false;
+    return {
+      inputElement,
+      buttonSupport: shouldCreateButton
+        ? makeButtonSupport(inputElement, this.appendTarget)
+        : undefined,
+    };
+  };
+
+  private processAddedNode = (node: Node) => {
+    if (!(node instanceof Element)) {
+      return;
+    }
+
+    const directCandidate =
+      node instanceof HTMLInputElement ? [node] : undefined;
+    const addedElements = node.querySelectorAll<HTMLInputElement>(
+      EMAIL_INPUT_QUERY_STRING
+    );
+    [...(directCandidate ?? []), ...addedElements].forEach((element) => {
+      const elementExists = this.autofillableInputElements.some((item) =>
+        element.isEqualNode(item.inputElement)
+      );
+      if (!elementExists) {
+        this.autofillableInputElements.push(
+          this.createAutofillableInputElement(element)
+        );
+      }
+    });
+  };
+
+  private processRemovedNode = (node: Node) => {
+    if (!(node instanceof Element)) {
+      return;
+    }
+
+    const directCandidate =
+      node instanceof HTMLInputElement ? [node] : undefined;
+    const removedElements = node.querySelectorAll<HTMLInputElement>(
+      EMAIL_INPUT_QUERY_STRING
+    );
+    [...(directCandidate ?? []), ...removedElements].forEach((element) => {
+      const foundIndex = this.autofillableInputElements.findIndex((item) =>
+        element.isEqualNode(item.inputElement)
+      );
+      if (foundIndex === -1) {
+        return;
+      }
+
+      const [{ inputElement, buttonSupport }] =
+        this.autofillableInputElements.splice(foundIndex, 1);
+      if (buttonSupport) {
+        removeButtonSupport(inputElement, buttonSupport);
+      }
+    });
+  };
+
+  private findButtonSupportById = (
+    elementId: string | undefined
+  ): AutofillableInputElement['buttonSupport'] => {
+    if (!elementId) {
+      return undefined;
+    }
+
+    return this.autofillableInputElements.find(
+      (item) => item.buttonSupport?.btnElement.id === elementId
+    )?.buttonSupport;
+  };
+
+  private findElementByButtonId = (elementId: string | undefined) => {
+    if (!elementId) {
+      return undefined;
+    }
+
+    return this.autofillableInputElements.find(
+      (item) => item.buttonSupport?.btnElement.id === elementId
+    );
+  };
+
+  private applyAutofillValue = (value: string | undefined) => {
+    if (value === undefined) {
+      return;
+    }
+
+    this.autofillableInputElements.forEach(
+      ({ inputElement, buttonSupport }) => {
+        inputElement.value = value;
+        inputElement.dispatchEvent(new Event('input', { bubbles: true }));
+        if (buttonSupport) {
+          removeButtonSupport(inputElement, buttonSupport);
+        }
+      }
+    );
+  };
+
+  private handleGenerateResponse = (
+    payload: GenerationResponseData | undefined
+  ) => {
+    if (!payload) {
+      return;
+    }
+
+    const buttonSupport = this.findButtonSupportById(payload.elementId);
+    const element = buttonSupport?.btnElement;
+    if (!element) {
+      return;
+    }
+
+    if (payload.error) {
+      disableButton(element, 'cursor-not-allowed', payload.error);
+      return;
+    }
+
+    if (!payload.hme) {
+      return;
+    }
+
+    enableButton(element, 'cursor-pointer', payload.hme);
+  };
+
+  private handleReservationResponse = (
+    payload: ReservationResponseData | undefined
+  ) => {
+    if (!payload) {
+      return;
+    }
+
+    const entry = this.findElementByButtonId(payload.elementId);
+    const btnElement = entry?.buttonSupport?.btnElement;
+    if (!btnElement) {
+      return;
+    }
+
+    if (payload.error) {
+      disableButton(btnElement, 'cursor-not-allowed', payload.error);
+      return;
+    }
+
+    if (!payload.hme) {
+      return;
+    }
+
+    const { inputElement, buttonSupport } = entry;
+    inputElement.value = payload.hme;
+    inputElement.dispatchEvent(new Event('input', { bubbles: true }));
+    inputElement.dispatchEvent(new Event('change', { bubbles: true }));
+    if (buttonSupport) {
+      removeButtonSupport(inputElement, buttonSupport);
+    }
+  };
+
+  private handleActiveInputElementWrite = (
+    payload: ActiveInputElementWriteData | undefined
+  ) => {
+    const { activeElement } = document;
+    if (!activeElement || !(activeElement instanceof HTMLInputElement)) {
+      return;
+    }
+
+    if (!payload) {
+      return;
+    }
+
+    const { text, copyToClipboard } = payload;
+    activeElement.value = text;
+    activeElement.dispatchEvent(new Event('input', { bubbles: true }));
+    activeElement.dispatchEvent(new Event('change', { bubbles: true }));
+    if (copyToClipboard) {
+      navigator.clipboard.writeText(text);
+    }
+
+    const found = this.autofillableInputElements.find((item) =>
+      item.inputElement.isEqualNode(activeElement)
+    );
+    if (found?.buttonSupport) {
+      removeButtonSupport(activeElement, found.buttonSupport);
+    }
+  };
+
+  dispose = () => {
+    this.autofillableInputElements.forEach(
+      ({ inputElement, buttonSupport }) => {
+        if (buttonSupport) {
+          removeButtonSupport(inputElement, buttonSupport);
+        }
+      }
+    );
+    this.autofillableInputElements.splice(
+      0,
+      this.autofillableInputElements.length
+    );
+  };
+}
+
 export default async function main(): Promise<void> {
   await waitForDocumentReady();
 
@@ -292,179 +548,39 @@ export default async function main(): Promise<void> {
     return;
   }
 
+  const cleanupAwareGlobal = globalThis as CleanupAwareGlobal;
+  cleanupAwareGlobal[AUTOFILL_MANAGER_CLEANUP_KEY]?.();
+
   const emailInputElements = document.querySelectorAll<HTMLInputElement>(
     EMAIL_INPUT_QUERY_STRING
   );
 
-  const findButtonSupportById = (elementId: string) =>
-    autofillableInputElements.find(
-      (item) => item.buttonSupport?.btnElement.id === elementId
-    )?.buttonSupport;
-
   const options = await getBrowserStorageValue('iCloudHmeOptions');
 
-  const makeAutofillableInputElement = (
-    inputElement: HTMLInputElement
-  ): AutofillableInputElement => ({
-    inputElement,
-    buttonSupport:
-      options?.autofill.button === false
-        ? undefined
-        : makeButtonSupport(inputElement, appendTarget),
+  const autofillManager = new AutofillManager({
+    appendTarget,
+    options,
+    initialInputElements: emailInputElements,
   });
 
-  const autofillableInputElements = Array.from(emailInputElements).map(
-    makeAutofillableInputElement
-  );
-
-  const mutationCallback: MutationCallback = (mutations) => {
-    mutations.forEach((mutation) => {
-      mutation.addedNodes.forEach((node) => {
-        if (!(node instanceof Element)) {
-          return;
-        }
-
-        const addedElements = node.querySelectorAll<HTMLInputElement>(
-          EMAIL_INPUT_QUERY_STRING
-        );
-        addedElements.forEach((el) => {
-          const elementExists = autofillableInputElements.some((item) =>
-            el.isEqualNode(item.inputElement)
-          );
-          if (!elementExists) {
-            autofillableInputElements.push(makeAutofillableInputElement(el));
-          }
-        });
-      });
-
-      mutation.removedNodes.forEach((node) => {
-        if (!(node instanceof Element)) {
-          return;
-        }
-
-        const removedElements = node.querySelectorAll<HTMLInputElement>(
-          EMAIL_INPUT_QUERY_STRING
-        );
-        removedElements.forEach((el) => {
-          const foundIndex = autofillableInputElements.findIndex((item) =>
-            el.isEqualNode(item.inputElement)
-          );
-          if (foundIndex !== -1) {
-            const [{ inputElement, buttonSupport }] =
-              autofillableInputElements.splice(foundIndex, 1);
-
-            buttonSupport && removeButtonSupport(inputElement, buttonSupport);
-          }
-        });
-      });
-    });
-  };
-
-  const observer = new MutationObserver(mutationCallback);
+  const observer = new MutationObserver(autofillManager.handleMutations);
   observer.observe(appendTarget, {
     childList: true,
     attributes: false,
     subtree: true,
   });
 
-  browser.runtime.onMessage.addListener((uncastedMessage: unknown) => {
+  const runtimeListener = (uncastedMessage: unknown) => {
     const message = uncastedMessage as Message<unknown>;
-
-    switch (message.type) {
-      case MessageType.Autofill:
-        autofillableInputElements.forEach(({ inputElement, buttonSupport }) => {
-          inputElement.value = message.data as string;
-          inputElement.dispatchEvent(new Event('input', { bubbles: true }));
-          buttonSupport && removeButtonSupport(inputElement, buttonSupport);
-        });
-        break;
-      case MessageType.GenerateResponse:
-        {
-          const { hme, elementId, error } =
-            message.data as GenerationResponseData;
-
-          const buttonSupport = findButtonSupportById(elementId);
-          const element = buttonSupport?.btnElement;
-          if (!element) {
-            break;
-          }
-
-          if (error) {
-            disableButton(element, 'cursor-not-allowed', error);
-            break;
-          }
-
-          if (!hme) {
-            break;
-          }
-
-          enableButton(element, 'cursor-pointer', hme);
-        }
-        break;
-      case MessageType.ReservationResponse:
-        {
-          const { hme, error, elementId } =
-            message.data as ReservationResponseData;
-
-          const buttonSupport = findButtonSupportById(elementId);
-          const btnElement = buttonSupport?.btnElement;
-          if (!btnElement) {
-            break;
-          }
-
-          if (error) {
-            disableButton(btnElement, 'cursor-not-allowed', error);
-            break;
-          }
-
-          if (!hme) {
-            break;
-          }
-
-          const found = autofillableInputElements.find(
-            (ael) => ael.buttonSupport?.btnElement.id === btnElement.id
-          );
-          if (!found) {
-            break;
-          }
-
-          const { inputElement, buttonSupport: activeButtonSupport } = found;
-          inputElement.value = hme;
-          inputElement.dispatchEvent(new Event('input', { bubbles: true }));
-          inputElement.dispatchEvent(new Event('change', { bubbles: true }));
-
-          activeButtonSupport &&
-            removeButtonSupport(inputElement, activeButtonSupport);
-        }
-        break;
-      case MessageType.ActiveInputElementWrite:
-        {
-          const { activeElement } = document;
-          if (!activeElement || !(activeElement instanceof HTMLInputElement)) {
-            break;
-          }
-
-          const {
-            data: { text, copyToClipboard },
-          } = message as Message<ActiveInputElementWriteData>;
-          activeElement.value = text;
-          activeElement.dispatchEvent(new Event('input', { bubbles: true }));
-          activeElement.dispatchEvent(new Event('change', { bubbles: true }));
-          copyToClipboard && navigator.clipboard.writeText(text);
-
-          // Remove button if it exists. This should rarely happen as context menu
-          // users are expected to have turned off button support.
-          const found = autofillableInputElements.find((ael) =>
-            ael.inputElement.isEqualNode(activeElement)
-          );
-          found?.buttonSupport &&
-            removeButtonSupport(activeElement, found.buttonSupport);
-        }
-        break;
-      default:
-        break;
-    }
-
+    autofillManager.handleMessage(message);
     return undefined;
-  });
+  };
+
+  browser.runtime.onMessage.addListener(runtimeListener);
+
+  cleanupAwareGlobal[AUTOFILL_MANAGER_CLEANUP_KEY] = () => {
+    observer.disconnect();
+    browser.runtime.onMessage.removeListener(runtimeListener);
+    autofillManager.dispose();
+  };
 }
