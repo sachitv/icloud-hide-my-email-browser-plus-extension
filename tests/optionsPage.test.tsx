@@ -15,14 +15,33 @@ const {
   updateForwardToHmeMock,
   webExtensionPolyfillMock,
 } = vi.hoisted(() => {
-  const store: Record<
-    string,
-    {
-      state?: unknown;
-      isLoading?: boolean;
-      spy?: ReturnType<typeof vi.fn>;
-    }
-  > = {};
+  type StorageEntry = {
+    state?: unknown;
+    isLoading?: boolean;
+    spy?: ReturnType<typeof vi.fn>;
+    setter?: (value: unknown) => void;
+  };
+
+  const store: Record<string, StorageEntry> = {};
+
+  const computeNextValue = (value: unknown, prev: unknown) =>
+    typeof value === 'function'
+      ? (value as (input: unknown) => unknown)(prev)
+      : value;
+
+  const createSetStateWithSpy = (
+    setState: React.Dispatch<React.SetStateAction<unknown>>,
+    spy: ReturnType<typeof vi.fn>
+  ) => {
+    return (value: unknown) => {
+      setState((prev: unknown) => {
+        const nextValue = computeNextValue(value, prev);
+        spy(nextValue);
+        return nextValue;
+      });
+    };
+  };
+
   const useBrowserStorageStateSpy = vi.fn(
     (key: string, initialValue: unknown) => {
       const entry = store[key] ?? (store[key] = {});
@@ -33,16 +52,8 @@ const {
       entry.spy = spy;
       const isLoading = entry.isLoading ?? false;
 
-      const setStateWithSpy = React.useMemo(
-        () => (value: unknown) => {
-          setState((prev: unknown) => {
-            const nextValue = typeof value === 'function' ? value(prev) : value;
-            spy(nextValue);
-            return nextValue;
-          });
-        },
-        [setState, spy]
-      );
+      const setStateWithSpy =
+        entry.setter ?? (entry.setter = createSetStateWithSpy(setState, spy));
 
       return [state, setStateWithSpy, isLoading] as [
         unknown,

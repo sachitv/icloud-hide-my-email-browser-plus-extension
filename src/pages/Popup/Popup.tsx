@@ -2,6 +2,8 @@ import React, {
   useState,
   Dispatch,
   useEffect,
+  useMemo,
+  useCallback,
   ButtonHTMLAttributes,
   DetailedHTMLProps,
   ReactNode,
@@ -619,6 +621,109 @@ const searchHmeEmails = (
   return searchResults.map((result) => result.item);
 };
 
+type HmeListGridProps = {
+  hmeEmails: HmeEmail[];
+  searchPrompt?: string;
+  onSearchPromptChange: (value: string) => void;
+  selectedHmeIdx: number;
+  onSelectHmeIdx: (value: number) => void;
+  client: ICloudClient;
+  onToggleActivation: (hmeEmail: HmeEmail) => void;
+  onDelete: (hmeEmail: HmeEmail) => void;
+};
+
+const HmeListGrid = ({
+  hmeEmails,
+  searchPrompt,
+  onSearchPromptChange,
+  selectedHmeIdx,
+  onSelectHmeIdx,
+  client,
+  onToggleActivation,
+  onDelete,
+}: HmeListGridProps) => {
+  const trimmedSearchPrompt = searchPrompt?.trim();
+  const hasSearchPrompt = Boolean(trimmedSearchPrompt);
+
+  const searchBox = (
+    <div className="relative p-3 rounded-tl-3xl border-b border-slate-800/60 bg-slate-950">
+      <div className="pointer-events-none absolute inset-y-0 flex items-center pl-3">
+        <SearchIcon className="h-4 w-4 text-slate-500" />
+      </div>
+      <input
+        type="search"
+        className="w-full rounded-2xl border border-slate-700 bg-slate-900 py-2 pl-10 pr-3 text-sm text-slate-100 placeholder-slate-500 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/60"
+        placeholder="Search"
+        aria-label="Search through your Hide My Email+ aliases"
+        value={searchPrompt ?? ''}
+        onChange={(event) => onSearchPromptChange(event.target.value)}
+      />
+    </div>
+  );
+
+  const buttonBaseClassName =
+    'w-full truncate border-b border-slate-800/50 bg-slate-950/40 px-3 py-3 text-left text-sm font-medium text-slate-200 transition focus:outline-none focus:ring-2 focus:ring-rainbow-purple/60';
+  const buttonClassName = `${buttonBaseClassName} hover:bg-slate-900/80`;
+  const selectedButtonClassName = `${buttonBaseClassName} bg-gradient-to-r from-[rgba(139,92,246,0.4)] via-[rgba(79,70,229,0.4)] to-[rgba(66,133,244,0.4)] text-white shadow-[inset_0_0_0_1px_rgba(129,140,248,0.4)]`;
+
+  const labelList = hmeEmails.map((hme, idx) => (
+    <button
+      key={hme.anonymousId}
+      aria-current={selectedHmeIdx === idx}
+      type="button"
+      className={
+        idx === selectedHmeIdx ? selectedButtonClassName : buttonClassName
+      }
+      onClick={() => onSelectHmeIdx(idx)}
+    >
+      {hme.isActive ? (
+        hme.label
+      ) : (
+        <span title="Deactivated" className="inline-flex items-center gap-1">
+          <BanIcon className="h-4 w-4 text-rainbow-red" />
+          {hme.label}
+        </span>
+      )}
+    </button>
+  ));
+
+  const noSearchResult = (
+    <div className="break-words p-4 text-center text-slate-500">
+      No results for &quot;{trimmedSearchPrompt}&quot;
+    </div>
+  );
+
+  const selectedHmeEmail = hmeEmails[selectedHmeIdx];
+
+  return (
+    <div
+      className="flex rounded-3xl border border-slate-800/80 bg-slate-950/50 shadow-inner shadow-slate-900/50"
+      style={{ height: 450 }}
+    >
+      <div className="w-[30%] min-w-[220px] max-w-[30%] shrink-0 overflow-y-auto rounded-l-3xl bg-slate-950/70">
+        <div className="sticky top-0 z-10">{searchBox}</div>
+        {hmeEmails.length === 0 && hasSearchPrompt ? noSearchResult : labelList}
+      </div>
+      <div className="basis-[70%] grow overflow-y-auto rounded-r-3xl border-l border-slate-800/60 bg-slate-950/80 p-4">
+        {selectedHmeEmail && (
+          <HmeDetails
+            client={client}
+            hme={selectedHmeEmail}
+            activationCallback={() => onToggleActivation(selectedHmeEmail)}
+            deletionCallback={() => onDelete(selectedHmeEmail)}
+          />
+        )}
+      </div>
+    </div>
+  );
+};
+
+const EmptyHmeState = () => (
+  <div className="text-center text-lg text-slate-500">
+    There are no emails to list
+  </div>
+);
+
 const HmeManager = (props: {
   callback: TransitionCallback<AuthenticatedAndManagingAction>;
   client: ICloudClient;
@@ -630,146 +735,112 @@ const HmeManager = (props: {
   const [searchPrompt, setSearchPrompt] = useState<string>();
 
   useEffect(() => {
-    const fetchHmeList = async () => {
-      setHmeEmailsError(undefined);
-      setIsFetching(true);
+    let isMounted = true;
+
+    setHmeEmailsError(undefined);
+    setIsFetching(true);
+
+    void (async () => {
       try {
         const pms = new PremiumMailSettings(props.client);
         const result = await pms.listHme();
+        if (!isMounted) {
+          return;
+        }
         setFetchedHmeEmails(
-          result.hmeEmails.sort((a, b) => b.createTimestamp - a.createTimestamp)
+          result.hmeEmails
+            .slice()
+            .sort((a, b) => b.createTimestamp - a.createTimestamp)
         );
-      } catch (e) {
-        setHmeEmailsError(e.toString());
+      } catch (error) {
+        if (isMounted) {
+          setHmeEmailsError(
+            error instanceof Error ? error.message : String(error)
+          );
+        }
       } finally {
-        setIsFetching(false);
+        if (isMounted) {
+          setIsFetching(false);
+        }
       }
-    };
+    })();
 
-    fetchHmeList();
+    return () => {
+      isMounted = false;
+    };
   }, [props.client]);
 
-  const activationCallbackFactory = (hmeEmail: HmeEmail) => () => {
-    const newHmeEmail = { ...hmeEmail, isActive: !hmeEmail.isActive };
+  const filteredHmeEmails = useMemo(() => {
+    if (!fetchedHmeEmails) {
+      return [];
+    }
+    const prompt = searchPrompt?.trim();
+    if (!prompt) {
+      return fetchedHmeEmails;
+    }
+    return searchHmeEmails(prompt, fetchedHmeEmails) ?? fetchedHmeEmails;
+  }, [fetchedHmeEmails, searchPrompt]);
+
+  useEffect(() => {
+    if (filteredHmeEmails.length === 0) {
+      if (selectedHmeIdx !== 0) {
+        setSelectedHmeIdx(0);
+      }
+      return;
+    }
+    if (selectedHmeIdx >= filteredHmeEmails.length) {
+      setSelectedHmeIdx(filteredHmeEmails.length - 1);
+    }
+  }, [filteredHmeEmails, selectedHmeIdx]);
+
+  const handleSearchPromptChange = useCallback((value: string) => {
+    setSearchPrompt(value);
+    setSelectedHmeIdx(0);
+  }, []);
+
+  const handleSelectHmeIndex = useCallback((index: number) => {
+    setSelectedHmeIdx(index);
+  }, []);
+
+  const toggleHmeActivation = useCallback((target: HmeEmail) => {
     setFetchedHmeEmails((prevFetchedHmeEmails) =>
       prevFetchedHmeEmails?.map((item) =>
-        deepEqual(item, hmeEmail) ? newHmeEmail : item
+        deepEqual(item, target) ? { ...item, isActive: !item.isActive } : item
       )
     );
-  };
+  }, []);
 
-  const deletionCallbackFactory = (hmeEmail: HmeEmail) => () => {
+  const removeHmeEmail = useCallback((target: HmeEmail) => {
     setFetchedHmeEmails((prevFetchedHmeEmails) =>
-      prevFetchedHmeEmails?.filter((item) => !deepEqual(item, hmeEmail))
+      prevFetchedHmeEmails?.filter((item) => !deepEqual(item, target))
     );
-  };
+  }, []);
 
-  const hmeListGrid = (fetchedHmeEmails: HmeEmail[]) => {
-    const hmeEmails =
-      searchHmeEmails(searchPrompt || '', fetchedHmeEmails) || fetchedHmeEmails;
-
-    if (selectedHmeIdx >= hmeEmails.length) {
-      setSelectedHmeIdx(hmeEmails.length - 1);
-    }
-
-    const selectedHmeEmail = hmeEmails[selectedHmeIdx];
-
-    const searchBox = (
-      <div className="relative p-3 rounded-tl-3xl border-b border-slate-800/60 bg-slate-950">
-        <div className="pointer-events-none absolute inset-y-0 flex items-center pl-3">
-          <SearchIcon className="h-4 w-4 text-slate-500" />
-        </div>
-        <input
-          type="search"
-          className="w-full rounded-2xl border border-slate-700 bg-slate-900 py-2 pl-10 pr-3 text-sm text-slate-100 placeholder-slate-500 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/60"
-          placeholder="Search"
-          aria-label="Search through your Hide My Email+ aliases"
-          onChange={(e) => {
-            setSearchPrompt(e.target.value);
-            setSelectedHmeIdx(0);
-          }}
-        />
-      </div>
+  let mainContent: ReactNode;
+  if (isFetching) {
+    mainContent = <Spinner />;
+  } else if (hmeEmailsError) {
+    mainContent = <ErrorMessage>{hmeEmailsError}</ErrorMessage>;
+  } else if (!fetchedHmeEmails || fetchedHmeEmails.length === 0) {
+    mainContent = <EmptyHmeState />;
+  } else {
+    mainContent = (
+      <HmeListGrid
+        client={props.client}
+        hmeEmails={filteredHmeEmails}
+        searchPrompt={searchPrompt}
+        onSearchPromptChange={handleSearchPromptChange}
+        selectedHmeIdx={selectedHmeIdx}
+        onSelectHmeIdx={handleSelectHmeIndex}
+        onToggleActivation={toggleHmeActivation}
+        onDelete={removeHmeEmail}
+      />
     );
-
-    const btnBaseClassName =
-      'w-full truncate border-b border-slate-800/50 bg-slate-950/40 px-3 py-3 text-left text-sm font-medium text-slate-200 transition focus:outline-none focus:ring-2 focus:ring-rainbow-purple/60';
-    const btnClassName = `${btnBaseClassName} hover:bg-slate-900/80`;
-    const selectedBtnClassName = `${btnBaseClassName} bg-gradient-to-r from-[rgba(139,92,246,0.4)] via-[rgba(79,70,229,0.4)] to-[rgba(66,133,244,0.4)] text-white shadow-[inset_0_0_0_1px_rgba(129,140,248,0.4)]`;
-
-    const labelList = hmeEmails.map((hme, idx) => (
-      <button
-        key={idx}
-        aria-current={selectedHmeIdx === idx}
-        type="button"
-        className={idx === selectedHmeIdx ? selectedBtnClassName : btnClassName}
-        onClick={() => setSelectedHmeIdx(idx)}
-      >
-        {hme.isActive ? (
-          hme.label
-        ) : (
-          <span title="Deactivated" className="inline-flex items-center gap-1">
-            <BanIcon className="h-4 w-4 text-rainbow-red" />
-            {hme.label}
-          </span>
-        )}
-      </button>
-    ));
-
-    const noSearchResult = (
-      <div className="break-words p-4 text-center text-slate-500">
-        No results for &quot;{searchPrompt}&quot;
-      </div>
-    );
-
-    return (
-      <div
-        className="flex rounded-3xl border border-slate-800/80 bg-slate-950/50 shadow-inner shadow-slate-900/50"
-        style={{ height: 450 }}
-      >
-        <div className="w-[30%] min-w-[220px] max-w-[30%] shrink-0 overflow-y-auto rounded-l-3xl bg-slate-950/70">
-          <div className="sticky top-0 z-10">{searchBox}</div>
-          {hmeEmails.length === 0 && searchPrompt ? noSearchResult : labelList}
-        </div>
-        <div className="basis-[70%] grow overflow-y-auto rounded-r-3xl border-l border-slate-800/60 bg-slate-950/80 p-4">
-          {selectedHmeEmail && (
-            <HmeDetails
-              client={props.client}
-              hme={selectedHmeEmail}
-              activationCallback={activationCallbackFactory(selectedHmeEmail)}
-              deletionCallback={deletionCallbackFactory(selectedHmeEmail)}
-            />
-          )}
-        </div>
-      </div>
-    );
-  };
-
-  const emptyState = (
-    <div className="text-center text-lg text-slate-500">
-      There are no emails to list
-    </div>
-  );
-
-  const resolveMainChildComponent = (): ReactNode => {
-    if (isFetching) {
-      return <Spinner />;
-    }
-
-    if (hmeEmailsError) {
-      return <ErrorMessage>{hmeEmailsError}</ErrorMessage>;
-    }
-
-    if (!fetchedHmeEmails || fetchedHmeEmails.length === 0) {
-      return emptyState;
-    }
-
-    return hmeListGrid(fetchedHmeEmails);
-  };
+  }
 
   return (
     <TitledComponent hideHeader>
-      {resolveMainChildComponent()}
+      {mainContent}
       <div className="grid grid-cols-2 pt-3">
         <div>
           <FooterButton

@@ -41,14 +41,17 @@ if (typeof SharedArrayBuffer !== 'undefined') {
 const {
   runtimeSendMessageMock,
   runtimeOnMessageAddListenerMock,
+  runtimeOnMessageRemoveListenerMock,
   storageLocalGetMock,
 } = vi.hoisted(() => {
   const sendMessage = vi.fn<[], Promise<void>>().mockResolvedValue();
   const onMessageAddListener = vi.fn();
+  const onMessageRemoveListener = vi.fn();
   const storageGet = vi.fn();
   return {
     runtimeSendMessageMock: sendMessage,
     runtimeOnMessageAddListenerMock: onMessageAddListener,
+    runtimeOnMessageRemoveListenerMock: onMessageRemoveListener,
     storageLocalGetMock: storageGet,
   };
 });
@@ -68,6 +71,7 @@ vi.mock('webextension-polyfill', () => ({
       sendMessage: runtimeSendMessageMock,
       onMessage: {
         addListener: runtimeOnMessageAddListenerMock,
+        removeListener: runtimeOnMessageRemoveListenerMock,
       },
     },
     storage: {
@@ -130,6 +134,12 @@ describe('content script email button integration', () => {
     runtimeOnMessageAddListenerMock.mockReset();
     runtimeOnMessageAddListenerMock.mockImplementation((listener) => {
       runtimeMessageListener = listener;
+    });
+    runtimeOnMessageRemoveListenerMock.mockReset();
+    runtimeOnMessageRemoveListenerMock.mockImplementation((listener) => {
+      if (runtimeMessageListener === listener) {
+        runtimeMessageListener = undefined;
+      }
     });
     storageLocalGetMock.mockReset();
     getBrowserStorageValueMock.mockReset();
