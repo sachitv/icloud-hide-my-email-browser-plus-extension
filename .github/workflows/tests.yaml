@@ -72,9 +72,19 @@ jobs:
             exit 1;
           }
 
+  validate-pr-title:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - name: semantic-pull-request
+        uses: amannn/action-semantic-pull-request@v6.1.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   unit-tests:
     runs-on: ubuntu-24.04-arm
-    needs: lint
+    needs:
+      - lint
+      - validate-pr-title
     steps:
       - uses: actions/checkout@v5
       - name: Use Node.js 22.x
