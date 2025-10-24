@@ -104,6 +104,7 @@ jobs:
           path: coverage
       - name: Codecov
         uses: codecov/codecov-action@v5
+        if: github.event_name == 'push' || github.event.pull_request.head.repo.fork == false
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
