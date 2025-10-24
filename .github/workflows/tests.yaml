@@ -86,8 +86,6 @@ jobs:
     runs-on: ubuntu-24.04-arm
     needs:
       - lint
-      - validate-pr-title
-    if: ${{ needs.lint.result == 'success' && (needs.validate-pr-title.result == 'success' || needs.validate-pr-title.result == 'skipped') }}
     steps:
       - uses: actions/checkout@v5
       - name: Use Node.js 22.x
