@@ -90,7 +90,7 @@ jobs:
         run: npm run test:coverage -- --reporter=default --reporter=junit --outputFile=coverage/junit.xml
       - name: Publish test report
         if: always()
-        uses: dorny/test-reporter@v1
+        uses: dorny/test-reporter@v2
         with:
           name: vitest
           path: coverage/junit.xml
