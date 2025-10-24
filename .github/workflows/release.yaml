@@ -259,14 +259,19 @@ jobs:
         with:
           name: sources-package
           path: artifacts
+      - name: Changelog from Conventional Commits
+        id: changelog
+        uses: requarks/changelog-action@v1.10.3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: v${{ needs.version.outputs.extension_version }}
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
           draft: ${{ github.event.inputs.release == 'draft' }}
           tag_name: v${{ needs.version.outputs.extension_version }}
           name: v${{ needs.version.outputs.extension_version }}
-          body: |
-            Automated release for version v${{ needs.version.outputs.extension_version }}
+          body: ${{ steps.changelog.outputs.changes }}
           files: |
             artifacts/icloud-hide-my-email-plus-browser-extension-${{ needs.version.outputs.extension_version }}-brave.zip
             artifacts/icloud-hide-my-email-plus-browser-extension-${{ needs.version.outputs.extension_version }}-chrome.zip
