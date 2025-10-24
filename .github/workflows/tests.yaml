@@ -6,6 +6,7 @@ permissions:
 
 on:
   pull_request:
+  push:
     branches:
       - main
 
@@ -111,6 +112,11 @@ jobs:
         with:
           name: coverage-report
           path: coverage
+      - name: Codecov
+        uses: codecov/codecov-action@v5
+        if: github.event_name == 'push' || github.event.pull_request.head.repo.fork == false
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   build-brave:
     runs-on: ubuntu-24.04-arm
