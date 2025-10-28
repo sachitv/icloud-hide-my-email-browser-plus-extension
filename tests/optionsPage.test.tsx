@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import * as iCloudClient from '../src/iCloudClient';
 import Options from '../src/pages/Options/Options';
 import { DEFAULT_STORE } from '../src/storage';
 import React from 'react';
@@ -54,15 +55,14 @@ const {
   const isAuthenticatedMock = vi.fn();
   const listHmeMock = vi.fn();
   const updateForwardToHmeMock = vi.fn();
-  const ICloudClientConstructorMock = vi.fn<
-    () => { isAuthenticated: typeof isAuthenticatedMock }
-  >(() => ({
-    isAuthenticated: isAuthenticatedMock,
-  }));
-  const PremiumMailSettingsMock = vi.fn(() => ({
-    listHme: listHmeMock,
-    updateForwardToHme: updateForwardToHmeMock,
-  }));
+  class ICloudClientConstructorMock {
+    isAuthenticated = isAuthenticatedMock;
+  }
+
+  class PremiumMailSettingsMock {
+    listHme = listHmeMock;
+    updateForwardToHme = updateForwardToHmeMock;
+  }
   const webExtensionPolyfillMock = {
     storage: {
       local: {
@@ -104,8 +104,6 @@ describe('Options page UI', () => {
       delete storageStateMocks[key];
     });
     useBrowserStorageStateSpy.mockClear();
-    ICloudClientConstructorMock.mockClear();
-    PremiumMailSettingsMock.mockClear();
     isAuthenticatedMock.mockReset();
     listHmeMock.mockReset();
     updateForwardToHmeMock.mockReset();
@@ -136,7 +134,13 @@ describe('Options page UI', () => {
       ).toBeInTheDocument()
     );
 
-    expect(ICloudClientConstructorMock).not.toHaveBeenCalled();
+    const iCloudClientSpy = vi.spyOn(iCloudClient, 'default');
+    const premiumMailSettingsSpy = vi.spyOn(
+      iCloudClient,
+      'PremiumMailSettings'
+    );
+    expect(iCloudClientSpy).not.toHaveBeenCalled();
+    expect(premiumMailSettingsSpy).not.toHaveBeenCalled();
     expect(listHmeMock).not.toHaveBeenCalled();
   });
 

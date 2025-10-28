@@ -10,6 +10,7 @@ import {
   it,
   vi,
 } from 'vitest';
+import * as iCloudClient from '../src/iCloudClient';
 import Popup from '../src/pages/Popup/Popup';
 import { PopupState } from '../src/pages/Popup/stateMachine';
 import { CONTEXT_MENU_ITEM_ID } from '../src/pages/Background/constants';
@@ -70,17 +71,18 @@ const {
     }
   }
 
-  const PremiumMailSettingsConstructorMock = vi.fn((client: unknown) => ({
-    client,
-    listHme: listHmeMock,
-    generateHme: generateHmeMock,
-    reserveHme: reserveHmeMock,
-    updateHmeMetadata: updateHmeMetadataMock,
-    deactivateHme: deactivateHmeMock,
-    reactivateHme: reactivateHmeMock,
-    deleteHme: deleteHmeMock,
-    updateForwardToHme: vi.fn(),
-  }));
+  class PremiumMailSettingsConstructorMock {
+    constructor(readonly client: unknown) {}
+
+    listHme = listHmeMock;
+    generateHme = generateHmeMock;
+    reserveHme = reserveHmeMock;
+    updateHmeMetadata = updateHmeMetadataMock;
+    deactivateHme = deactivateHmeMock;
+    reactivateHme = reactivateHmeMock;
+    deleteHme = deleteHmeMock;
+    updateForwardToHme = vi.fn();
+  }
 
   return {
     useBrowserStorageStateMock,
@@ -174,7 +176,10 @@ describe('Popup UI', () => {
     listHmeMock.mockReset();
     generateHmeMock.mockReset();
     reserveHmeMock.mockReset();
-    PremiumMailSettingsConstructorMock.mockReset();
+    vi.spyOn(
+      PremiumMailSettingsConstructorMock.prototype,
+      'constructor'
+    ).mockClear();
     useBrowserStorageStateMock.mockReset();
     contextMenuUpdateMock.mockReset();
     runtimeGetUrlMock.mockReset();
@@ -276,9 +281,11 @@ describe('Popup UI', () => {
 
     render(<Popup />);
 
-    await waitFor(() =>
-      expect(PremiumMailSettingsConstructorMock).toHaveBeenCalled()
+    const premiumMailSettingsSpy = vi.spyOn(
+      iCloudClient,
+      'PremiumMailSettings'
     );
+    await waitFor(() => expect(premiumMailSettingsSpy).toHaveBeenCalled());
 
     expect(
       await screen.findByRole('button', { name: /Use this email/i })
