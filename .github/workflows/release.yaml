@@ -177,22 +177,22 @@ jobs:
       - name: Install npm deps
         run: npm ci
       - name: Download packaged Chrome artifact
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: chrome-package
           path: artifacts
       - name: Download packaged Firefox artifact
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: firefox-package
           path: artifacts
       - name: Download packaged Edge artifact
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: edge-package
           path: artifacts
       - name: Download packaged sources artifact
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: sources-package
           path: artifacts
@@ -235,27 +235,27 @@ jobs:
       - version
     steps:
       - name: Download Brave artifact
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: brave-package
           path: artifacts
       - name: Download Chrome artifact
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: chrome-package
           path: artifacts
       - name: Download Edge artifact
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: edge-package
           path: artifacts
       - name: Download Firefox artifact
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: firefox-package
           path: artifacts
       - name: Download sources artifact
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: sources-package
           path: artifacts
