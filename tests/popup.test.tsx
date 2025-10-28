@@ -70,17 +70,21 @@ const {
     }
   }
 
-  const PremiumMailSettingsConstructorMock = vi.fn((client: unknown) => ({
-    client,
-    listHme: listHmeMock,
-    generateHme: generateHmeMock,
-    reserveHme: reserveHmeMock,
-    updateHmeMetadata: updateHmeMetadataMock,
-    deactivateHme: deactivateHmeMock,
-    reactivateHme: reactivateHmeMock,
-    deleteHme: deleteHmeMock,
-    updateForwardToHme: vi.fn(),
-  }));
+  const PremiumMailSettingsConstructorMock = vi.fn(function (
+    client: unknown
+  ) {
+    return {
+      client,
+      listHme: listHmeMock,
+      generateHme: generateHmeMock,
+      reserveHme: reserveHmeMock,
+      updateHmeMetadata: updateHmeMetadataMock,
+      deactivateHme: deactivateHmeMock,
+      reactivateHme: reactivateHmeMock,
+      deleteHme: deleteHmeMock,
+      updateForwardToHme: vi.fn(),
+    };
+  });
 
   return {
     useBrowserStorageStateMock,
