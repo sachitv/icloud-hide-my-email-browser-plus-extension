@@ -108,7 +108,7 @@ jobs:
           reporter: jest-junit
       - name: Upload coverage artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: coverage-report
           path: coverage
@@ -140,7 +140,7 @@ jobs:
           fi
           mv "$ZIP_WITH_VERSION" build/icloud-hide-my-email-plus-browser-extension-brave.zip
       - name: Upload Brave artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: icloud-hide-my-email-plus-browser-extension-brave
           path: build/icloud-hide-my-email-plus-browser-extension-brave.zip
@@ -167,7 +167,7 @@ jobs:
           fi
           mv "$ZIP_WITH_VERSION" build/icloud-hide-my-email-plus-browser-extension-chrome.zip
       - name: Upload Chrome artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: icloud-hide-my-email-plus-browser-extension-chrome
           path: build/icloud-hide-my-email-plus-browser-extension-chrome.zip
@@ -194,7 +194,7 @@ jobs:
           fi
           mv "$ZIP_WITH_VERSION" build/icloud-hide-my-email-plus-browser-extension-edge.zip
       - name: Upload Edge artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: icloud-hide-my-email-plus-browser-extension-edge
           path: build/icloud-hide-my-email-plus-browser-extension-edge.zip
@@ -223,7 +223,7 @@ jobs:
       - name: Lint Firefox bundle
         run: npx web-ext lint --source-dir build/firefox-mv3
       - name: Upload Firefox artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: icloud-hide-my-email-plus-browser-extension-firefox
           path: build/icloud-hide-my-email-plus-browser-extension-firefox.zip
