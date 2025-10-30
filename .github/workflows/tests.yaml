@@ -12,6 +12,7 @@ on:
 
 jobs:
   detect-license-changes:
+    if: github.actor != 'attributions-bot'
     runs-on: ubuntu-24.04-arm
     outputs:
       licenses: ${{ steps.filter.outputs.licenses }}
@@ -31,6 +32,7 @@ jobs:
               - 'utils/checkLicenses.mjs'
 
   format:
+    if: github.actor != 'attributions-bot'
     runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v5
@@ -74,7 +76,7 @@ jobs:
           }
 
   validate-pr-title:
-    if: ${{ github.event_name == 'pull_request' }}
+    if: github.event_name == 'pull_request' && github.actor != 'attributions-bot'
     runs-on: ubuntu-24.04-arm
     steps:
       - name: semantic-pull-request
