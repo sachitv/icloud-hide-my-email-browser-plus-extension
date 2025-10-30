@@ -54,13 +54,13 @@ const {
   const isAuthenticatedMock = vi.fn();
   const listHmeMock = vi.fn();
   const updateForwardToHmeMock = vi.fn();
-  const ICloudClientConstructorMock = vi.fn(
-    function (this: { isAuthenticated: typeof isAuthenticatedMock }) {
-      return {
-        isAuthenticated: isAuthenticatedMock,
-      };
-    }
-  );
+  const ICloudClientConstructorMock = vi.fn(function (this: {
+    isAuthenticated: typeof isAuthenticatedMock;
+  }) {
+    return {
+      isAuthenticated: isAuthenticatedMock,
+    };
+  });
   const PremiumMailSettingsMock = vi.fn(function () {
     return {
       listHme: listHmeMock,

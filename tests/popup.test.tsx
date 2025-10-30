@@ -70,9 +70,7 @@ const {
     }
   }
 
-  const PremiumMailSettingsConstructorMock = vi.fn(function (
-    client: unknown
-  ) {
+  const PremiumMailSettingsConstructorMock = vi.fn(function (client: unknown) {
     return {
       client,
       listHme: listHmeMock,
