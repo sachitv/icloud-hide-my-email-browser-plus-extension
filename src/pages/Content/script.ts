@@ -317,47 +317,89 @@ export default async function main(): Promise<void> {
     makeAutofillableInputElement
   );
 
+  const addAutofillableInputElement = (
+    inputElement: HTMLInputElement
+  ): void => {
+    for (const item of autofillableInputElements) {
+      if (inputElement.isEqualNode(item.inputElement)) {
+        return;
+      }
+    }
+
+    autofillableInputElements.push(
+      makeAutofillableInputElement(inputElement)
+    );
+  };
+
+  const removeAutofillableInputElement = (
+    inputElement: HTMLInputElement
+  ): void => {
+    let foundIndex = -1;
+
+    for (let index = 0; index < autofillableInputElements.length; index += 1) {
+      const candidate = autofillableInputElements[index];
+      if (inputElement.isEqualNode(candidate.inputElement)) {
+        foundIndex = index;
+        break;
+      }
+    }
+
+    if (foundIndex === -1) {
+      return;
+    }
+
+    const [{ inputElement: storedInputElement, buttonSupport }] =
+      autofillableInputElements.splice(foundIndex, 1);
+
+    if (buttonSupport) {
+      removeButtonSupport(storedInputElement, buttonSupport);
+    }
+  };
+
+  const isQuerySelectorHost = (
+    node: Node
+  ): node is Element | DocumentFragment =>
+    node instanceof Element || node instanceof DocumentFragment;
+
+  const processEmailInputs = (
+    node: Node,
+    handler: (inputElement: HTMLInputElement) => void
+  ): void => {
+    if (node instanceof HTMLInputElement) {
+      handler(node);
+    }
+
+    if (!isQuerySelectorHost(node)) {
+      return;
+    }
+
+    const elements = node.querySelectorAll<HTMLInputElement>(
+      EMAIL_INPUT_QUERY_STRING
+    );
+
+    for (const element of elements) {
+      handler(element);
+    }
+  };
+
+  const handleAddedNode = (node: Node): void => {
+    processEmailInputs(node, addAutofillableInputElement);
+  };
+
+  const handleRemovedNode = (node: Node): void => {
+    processEmailInputs(node, removeAutofillableInputElement);
+  };
+
   const mutationCallback: MutationCallback = (mutations) => {
-    mutations.forEach((mutation) => {
-      mutation.addedNodes.forEach((node) => {
-        if (!(node instanceof Element)) {
-          return;
-        }
+    for (const mutation of mutations) {
+      for (const node of mutation.addedNodes) {
+        handleAddedNode(node);
+      }
 
-        const addedElements = node.querySelectorAll<HTMLInputElement>(
-          EMAIL_INPUT_QUERY_STRING
-        );
-        addedElements.forEach((el) => {
-          const elementExists = autofillableInputElements.some((item) =>
-            el.isEqualNode(item.inputElement)
-          );
-          if (!elementExists) {
-            autofillableInputElements.push(makeAutofillableInputElement(el));
-          }
-        });
-      });
-
-      mutation.removedNodes.forEach((node) => {
-        if (!(node instanceof Element)) {
-          return;
-        }
-
-        const removedElements = node.querySelectorAll<HTMLInputElement>(
-          EMAIL_INPUT_QUERY_STRING
-        );
-        removedElements.forEach((el) => {
-          const foundIndex = autofillableInputElements.findIndex((item) =>
-            el.isEqualNode(item.inputElement)
-          );
-          if (foundIndex !== -1) {
-            const [{ inputElement, buttonSupport }] =
-              autofillableInputElements.splice(foundIndex, 1);
-
-            buttonSupport && removeButtonSupport(inputElement, buttonSupport);
-          }
-        });
-      });
-    });
+      for (const node of mutation.removedNodes) {
+        handleRemovedNode(node);
+      }
+    }
   };
 
   const observer = new MutationObserver(mutationCallback);
