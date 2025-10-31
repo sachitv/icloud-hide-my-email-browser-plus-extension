@@ -20,8 +20,8 @@ function deepEqualInternal(
     return false;
   }
 
-  const objectA = a as object;
-  const objectB = b as object;
+  const objectA = a;
+  const objectB = b;
 
   if (stack.get(objectA) === objectB) {
     return true;
