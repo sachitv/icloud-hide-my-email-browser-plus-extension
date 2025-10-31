@@ -59,6 +59,7 @@
     "@types/chrome": "^0.1.27",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
+    "@types/uuid": "^10.0.0",
     "@types/webextension-polyfill": "^0.12.4",
     "@vitest/coverage-v8": "^4.0.4",
     "happy-dom": "^20.0.8",
