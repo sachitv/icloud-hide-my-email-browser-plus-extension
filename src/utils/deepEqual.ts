@@ -11,7 +11,12 @@ function deepEqualInternal(
     return true;
   }
 
-  if (typeof a !== 'object' || a === null || typeof b !== 'object' || b === null) {
+  if (
+    typeof a !== 'object' ||
+    a === null ||
+    typeof b !== 'object' ||
+    b === null
+  ) {
     return false;
   }
 
@@ -33,7 +38,7 @@ function deepEqualInternal(
   }
 
   return areObjectsEqual(objectA as AnyRecord, objectB as AnyRecord, stack);
-};
+}
 
 /**
  * @private

@@ -134,37 +134,49 @@ describe('deepEqual', () => {
   // Test cases for circular references
   describe('circular references', () => {
     it('should handle circular references in objects', () => {
+      // biome-ignore lint/suspicious/noExplicitAny: Required for testing circular references
       const obj1: any = { a: 1 };
       obj1.b = obj1;
+      // biome-ignore lint/suspicious/noExplicitAny: Required for testing circular references
       const obj2: any = { a: 1 };
       obj2.b = obj2;
       expect(deepEqual(obj1, obj2)).toBe(true);
 
+      // biome-ignore lint/suspicious/noExplicitAny: Required for testing circular references
       const obj3: any = { a: 1 };
       obj3.b = { c: obj3 };
+      // biome-ignore lint/suspicious/noExplicitAny: Required for testing circular references
       const obj4: any = { a: 1 };
       obj4.b = { c: obj4 };
       expect(deepEqual(obj3, obj4)).toBe(true);
     });
 
     it('should handle circular references in arrays', () => {
+      // biome-ignore lint/suspicious/noExplicitAny: Required for testing circular references
       const arr1: any[] = [1];
       arr1.push(arr1);
+      // biome-ignore lint/suspicious/noExplicitAny: Required for testing circular references
       const arr2: any[] = [1];
       arr2.push(arr2);
       expect(deepEqual(arr1, arr2)).toBe(true);
 
+      // biome-ignore lint/suspicious/noExplicitAny: Required for testing circular references
       const arr3: any[] = [1, [2]];
+      // biome-ignore lint/suspicious/noExplicitAny: Required for testing circular references
       (arr3[1] as any[]).push(arr3);
+      // biome-ignore lint/suspicious/noExplicitAny: Required for testing circular references
       const arr4: any[] = [1, [2]];
+      // biome-ignore lint/suspicious/noExplicitAny: Required for testing circular references
       (arr4[1] as any[]).push(arr4);
       expect(deepEqual(arr3, arr4)).toBe(true);
     });
 
     it('should return false for objects with different circular structures', () => {
+      // biome-ignore lint/suspicious/noExplicitAny: Required for testing circular references
       const obj1: any = { a: 1 };
       obj1.b = obj1; // Circular reference to self
 
+      // biome-ignore lint/suspicious/noExplicitAny: Required for testing circular references
       const obj2: any = { a: 1 };
       obj2.b = { c: obj2 }; // Circular reference within a nested object
 
