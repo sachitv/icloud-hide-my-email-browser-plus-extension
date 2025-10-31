@@ -102,28 +102,33 @@ const SelectFwdToForm = () => {
 
   return (
     <form className="space-y-4" onSubmit={onSelectedFwdToSubmit}>
-      {fwdToEmails?.map((fwdToEmail, key) => (
-        <div
-          className="flex items-center gap-3 rounded-2xl border border-slate-800/60 bg-slate-950/50 px-4 py-3 shadow-inner shadow-slate-900/30"
-          key={key}
-        >
-          <input
-            onChange={() => setSelectedFwdToEmail(fwdToEmail)}
-            checked={fwdToEmail === selectedFwdToEmail}
-            id={`radio-${key}`}
-            type="radio"
-            disabled={isSubmitting}
-            name={`fwdto-radio-${key}`}
-            className="h-4 w-4 cursor-pointer accent-rainbow-purple"
-          />
-          <label
-            htmlFor={`radio-${key}`}
-            className="cursor-pointer text-sm font-medium text-slate-100"
+      {fwdToEmails?.map((fwdToEmail) => {
+        const encodedEmail = encodeURIComponent(fwdToEmail);
+        const inputId = `fwdto-radio-${encodedEmail}`;
+
+        return (
+          <div
+            className="flex items-center gap-3 rounded-2xl border border-slate-800/60 bg-slate-950/50 px-4 py-3 shadow-inner shadow-slate-900/30"
+            key={fwdToEmail}
           >
-            {fwdToEmail}
-          </label>
-        </div>
-      ))}
+            <input
+              onChange={() => setSelectedFwdToEmail(fwdToEmail)}
+              checked={fwdToEmail === selectedFwdToEmail}
+              id={inputId}
+              type="radio"
+              disabled={isSubmitting}
+              name="forward-to-email"
+              className="h-4 w-4 cursor-pointer accent-rainbow-purple"
+            />
+            <label
+              htmlFor={inputId}
+              className="cursor-pointer text-sm font-medium text-slate-100"
+            >
+              {fwdToEmail}
+            </label>
+          </div>
+        );
+      })}
       <LoadingButton loading={isSubmitting}>Update forwarding</LoadingButton>
       {updateFwdToError && <ErrorMessage>{updateFwdToError}</ErrorMessage>}
     </form>

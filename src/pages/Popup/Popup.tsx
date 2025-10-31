@@ -214,7 +214,9 @@ async function performDeauthSideEffects(): Promise<void> {
       title: SIGNED_OUT_CTA_COPY,
       enabled: false,
     })
-    .catch(console.debug);
+    .catch((error) => {
+      console.debug(error);
+    });
 }
 
 const SignOutButton = (props: {
