@@ -130,4 +130,51 @@ describe('deepEqual', () => {
     expect(deepEqual(obj1, obj2)).toBe(true);
     expect(deepEqual(obj1, obj3)).toBe(false);
   });
+
+  // Test cases for circular references
+  describe('circular references', () => {
+    it('should handle circular references in objects', () => {
+      const obj1: any = { a: 1 };
+      obj1.b = obj1;
+      const obj2: any = { a: 1 };
+      obj2.b = obj2;
+      expect(deepEqual(obj1, obj2)).toBe(true);
+
+      const obj3: any = { a: 1 };
+      obj3.b = { c: obj3 };
+      const obj4: any = { a: 1 };
+      obj4.b = { c: obj4 };
+      expect(deepEqual(obj3, obj4)).toBe(true);
+    });
+
+    it('should handle circular references in arrays', () => {
+      const arr1: any[] = [1];
+      arr1.push(arr1);
+      const arr2: any[] = [1];
+      arr2.push(arr2);
+      expect(deepEqual(arr1, arr2)).toBe(true);
+
+      const arr3: any[] = [1, [2]];
+      (arr3[1] as any[]).push(arr3);
+      const arr4: any[] = [1, [2]];
+      (arr4[1] as any[]).push(arr4);
+      expect(deepEqual(arr3, arr4)).toBe(true);
+    });
+
+    it('should return false for objects with different circular structures', () => {
+      const obj1: any = { a: 1 };
+      obj1.b = obj1; // Circular reference to self
+
+      const obj2: any = { a: 1 };
+      obj2.b = { c: obj2 }; // Circular reference within a nested object
+
+      expect(deepEqual(obj1, obj2)).toBe(false);
+    });
+  });
+
+  it('should return false for objects with different number of keys', () => {
+    const obj1 = { a: 1, b: 2 };
+    const obj2 = { a: 1 };
+    expect(deepEqual(obj1, obj2)).toBe(false);
+  });
 });
