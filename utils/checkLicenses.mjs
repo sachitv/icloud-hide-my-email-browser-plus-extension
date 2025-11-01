@@ -138,17 +138,18 @@ function licenseValueToString(value) {
   return String(value);
 }
 
-async function main() {
+async function getLicenseData() {
   const start = path.resolve(process.cwd());
 
   // Build the dependency graph (direct + transitive) with license metadata.
-  const results = await initAsync({
+  return await initAsync({
     start,
     json: true,
   });
+}
 
+function processDependencies(results) {
   const failures = [];
-
   const tableRows = [];
 
   for (const [dependency, info] of Object.entries(results)) {
@@ -183,32 +184,47 @@ async function main() {
     }
   }
 
+  return { failures, tableRows };
+}
+
+function logVerboseOutput(tableRows) {
+  // Sort for consistent CI output.
+  tableRows.sort((a, b) => a.dependency.localeCompare(b.dependency));
+  console.log('Dependency license inventory (including transitives):');
+  console.table(tableRows);
+}
+
+function handleValidationFailures(failures) {
+  console.error(
+    'Found dependencies that are not covered by the approved permissive licenses:\n'
+  );
+  for (const failure of failures) {
+    console.error(`- ${failure.dependency}`);
+    console.error(`  license: ${failure.licenses || 'UNKNOWN'}`);
+    if (failure.repository) {
+      console.error(`  repo: ${failure.repository}`);
+    }
+    if (failure.message) {
+      console.error(`  note: ${failure.message}`);
+    }
+    console.error('');
+  }
+  console.error(
+    'Update the whitelist in utils/checkLicenses.mjs if additional permissive licenses should be allowed.'
+  );
+  process.exitCode = 1;
+}
+
+async function main() {
+  const results = await getLicenseData();
+  const { failures, tableRows } = processDependencies(results);
+
   if (verbose) {
-    // Sort for consistent CI output.
-    tableRows.sort((a, b) => a.dependency.localeCompare(b.dependency));
-    console.log('Dependency license inventory (including transitives):');
-    console.table(tableRows);
+    logVerboseOutput(tableRows);
   }
 
   if (failures.length > 0) {
-    console.error(
-      'Found dependencies that are not covered by the approved permissive licenses:\n'
-    );
-    for (const failure of failures) {
-      console.error(`- ${failure.dependency}`);
-      console.error(`  license: ${failure.licenses || 'UNKNOWN'}`);
-      if (failure.repository) {
-        console.error(`  repo: ${failure.repository}`);
-      }
-      if (failure.message) {
-        console.error(`  note: ${failure.message}`);
-      }
-      console.error('');
-    }
-    console.error(
-      'Update the whitelist in utils/checkLicenses.mjs if additional permissive licenses should be allowed.'
-    );
-    process.exitCode = 1;
+    handleValidationFailures(failures);
     return;
   }
 
