@@ -24,7 +24,7 @@ class ICloudClient {
     const response = await fetch(url, {
       method,
       headers,
-      body: data !== undefined ? JSON.stringify(data) : undefined,
+      body: data ? JSON.stringify(data) : undefined,
     });
 
     if (response.ok) {
