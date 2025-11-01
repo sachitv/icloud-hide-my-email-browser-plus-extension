@@ -9,6 +9,7 @@ import {
 } from 'vitest';
 import { waitFor } from '@testing-library/react';
 import { MessageType } from '../src/messages';
+import type { Store } from '../src/storage';
 
 const {
   runtimeSendMessageMock,
@@ -89,6 +90,52 @@ const focusInput = (input: HTMLInputElement) => {
   input.dispatchEvent(event);
 };
 
+const DEFAULT_STORAGE_VALUES: Pick<Store, 'iCloudHmeOptions' | 'clientState'> =
+  {
+    iCloudHmeOptions: {
+      autofill: { button: true, contextMenu: true },
+    },
+    clientState: {
+      setupUrl: 'https://example.com/setup',
+      webservices: {},
+    },
+  };
+
+type StorageOverrides = Partial<
+  Pick<Store, 'iCloudHmeOptions' | 'clientState'>
+>;
+
+const mockStorageState = (overrides: StorageOverrides = {}) => {
+  const options =
+    'iCloudHmeOptions' in overrides
+      ? overrides.iCloudHmeOptions
+      : DEFAULT_STORAGE_VALUES.iCloudHmeOptions;
+  const clientState =
+    'clientState' in overrides
+      ? overrides.clientState
+      : DEFAULT_STORAGE_VALUES.clientState;
+
+  getBrowserStorageValueMock.mockImplementation(async (key: string) => {
+    if (key === 'iCloudHmeOptions') {
+      return options;
+    }
+    if (key === 'clientState') {
+      return clientState;
+    }
+    return undefined;
+  });
+};
+
+const runContentScript = async () => {
+  const { default: main } = await import('../src/pages/Content/script');
+  await main();
+};
+
+const findShadowHost = () =>
+  Array.from(document.body.children).find(
+    (el): el is HTMLElement => el instanceof HTMLElement && !!el.shadowRoot
+  );
+
 describe('content script email button integration', () => {
   beforeEach(() => {
     vi.resetModules();
@@ -113,6 +160,7 @@ describe('content script email button integration', () => {
       configurable: true,
       value: { writeText: clipboardWriteTextMock },
     });
+    mockStorageState();
   });
 
   afterAll(() => {
@@ -131,31 +179,18 @@ describe('content script email button integration', () => {
 
   // Signed-out fallback when generation is attempted without client state.
   it('surfaces the signed-out prompt when generation fails with an auth error', async () => {
-    getBrowserStorageValueMock.mockImplementation(async (key: string) => {
-      if (key === 'iCloudHmeOptions') {
-        return {
-          autofill: { button: true, contextMenu: true },
-        };
-      }
-      if (key === 'clientState') {
-        return undefined;
-      }
-      return undefined;
-    });
+    mockStorageState({ clientState: undefined });
 
     const input = createInputElement();
 
-    const { default: main } = await import('../src/pages/Content/script');
-    await main();
+    await runContentScript();
 
     expect(runtimeMessageListener).toBeDefined();
 
     focusInput(input);
     await Promise.resolve();
 
-    const host = Array.from(document.body.children).find(
-      (el): el is HTMLElement => el instanceof HTMLElement && !!el.shadowRoot
-    );
+    const host = findShadowHost();
     expect(host).toBeDefined();
 
     const button = host?.shadowRoot?.querySelector('button');
@@ -217,25 +252,13 @@ describe('content script email button integration', () => {
 
   // Ensures button markup is skipped entirely when button autofill is disabled.
   it('skips button support when autofill button is disabled', async () => {
-    getBrowserStorageValueMock.mockImplementation(async (key: string) => {
-      if (key === 'iCloudHmeOptions') {
-        return {
-          autofill: { button: false, contextMenu: true },
-        };
-      }
-      if (key === 'clientState') {
-        return {
-          setupUrl: 'https://example.com/setup',
-          webservices: {},
-        };
-      }
-      return undefined;
+    mockStorageState({
+      iCloudHmeOptions: { autofill: { button: false, contextMenu: true } },
     });
 
     const input = createInputElement();
 
-    const { default: main } = await import('../src/pages/Content/script');
-    await main();
+    await runContentScript();
 
     focusInput(input);
     await Promise.resolve();
@@ -264,32 +287,14 @@ describe('content script email button integration', () => {
 
   it('re-displays the signed-out copy when alias generation fails', async () => {
     runtimeSendMessageMock.mockRejectedValueOnce(new Error('generate failed'));
-    getBrowserStorageValueMock.mockImplementation(async (key: string) => {
-      if (key === 'iCloudHmeOptions') {
-        return {
-          autofill: { button: true, contextMenu: true },
-        };
-      }
-      if (key === 'clientState') {
-        return {
-          setupUrl: 'https://example.com/setup',
-          webservices: {},
-        };
-      }
-      return undefined;
-    });
-
     const input = createInputElement();
 
-    const { default: main } = await import('../src/pages/Content/script');
-    await main();
+    await runContentScript();
 
     focusInput(input);
     await Promise.resolve();
 
-    const host = Array.from(document.body.children).find(
-      (el): el is HTMLElement => el instanceof HTMLElement && !!el.shadowRoot
-    );
+    const host = findShadowHost();
     const button = host?.shadowRoot?.querySelector('button');
     await waitFor(() =>
       expect(button?.textContent).toBe('Please sign in to iCloud')
@@ -299,17 +304,7 @@ describe('content script email button integration', () => {
 
   // Covers scroll event handling to keep the floating button aligned to inputs.
   it('repositions the button when a scrollable ancestor scrolls', async () => {
-    getBrowserStorageValueMock.mockImplementation(async (key: string) => {
-      if (key === 'iCloudHmeOptions') {
-        return {
-          autofill: { button: true, contextMenu: true },
-        };
-      }
-      if (key === 'clientState') {
-        return undefined;
-      }
-      return undefined;
-    });
+    mockStorageState({ clientState: undefined });
 
     const container = document.createElement('div');
     container.style.height = '80px';
@@ -333,15 +328,12 @@ describe('content script email button integration', () => {
     container.appendChild(input);
     document.body.appendChild(container);
 
-    const { default: main } = await import('../src/pages/Content/script');
-    await main();
+    await runContentScript();
 
     focusInput(input);
     await Promise.resolve();
 
-    const host = Array.from(document.body.children).find(
-      (el): el is HTMLElement => el instanceof HTMLElement && !!el.shadowRoot
-    );
+    const host = findShadowHost();
     expect(host).toBeDefined();
 
     const button = host?.shadowRoot?.querySelector('button') as
@@ -400,35 +392,17 @@ describe('content script email button integration', () => {
   });
 
   it('removes button support when inputs are detached from the DOM', async () => {
-    getBrowserStorageValueMock.mockImplementation(async (key: string) => {
-      if (key === 'iCloudHmeOptions') {
-        return {
-          autofill: { button: true, contextMenu: true },
-        };
-      }
-      if (key === 'clientState') {
-        return {
-          setupUrl: 'https://example.com/setup',
-          webservices: {},
-        };
-      }
-      return undefined;
-    });
-
     const rawInput = createInputElement();
     const container = document.createElement('div');
     document.body.appendChild(container);
     container.appendChild(rawInput);
 
-    const { default: main } = await import('../src/pages/Content/script');
-    await main();
+    await runContentScript();
 
     focusInput(rawInput);
     await Promise.resolve();
 
-    const host = Array.from(document.body.children).find(
-      (el): el is HTMLElement => el instanceof HTMLElement && !!el.shadowRoot
-    );
+    const host = findShadowHost();
     expect(host).toBeDefined();
 
     container.remove();
@@ -437,22 +411,8 @@ describe('content script email button integration', () => {
 
   // Ensures newly inserted inputs discovered via mutation observers receive button support.
   it('registers button support for inputs added via DOM mutations', async () => {
-    getBrowserStorageValueMock.mockImplementation(async (key: string) => {
-      if (key === 'iCloudHmeOptions') {
-        return { autofill: { button: true, contextMenu: true } };
-      }
-      if (key === 'clientState') {
-        return {
-          setupUrl: 'https://example.com/setup',
-          webservices: {},
-        };
-      }
-      return undefined;
-    });
-
     document.body.innerHTML = '';
-    const { default: main } = await import('../src/pages/Content/script');
-    await main();
+    await runContentScript();
 
     const newEmail = document.createElement('input');
     newEmail.type = 'email';
@@ -476,23 +436,9 @@ describe('content script email button integration', () => {
   });
 
   it('skips duplicate email inputs discovered via mutations', async () => {
-    getBrowserStorageValueMock.mockImplementation(async (key: string) => {
-      if (key === 'iCloudHmeOptions') {
-        return { autofill: { button: true, contextMenu: true } };
-      }
-      if (key === 'clientState') {
-        return {
-          setupUrl: 'https://example.com/setup',
-          webservices: {},
-        };
-      }
-      return undefined;
-    });
-
     const originalInput = createInputElement();
 
-    const { default: main } = await import('../src/pages/Content/script');
-    await main();
+    await runContentScript();
 
     focusInput(originalInput);
     await Promise.resolve();
@@ -534,26 +480,12 @@ describe('content script email button integration', () => {
 
   // Guards against non-element nodes emitted from mutation observer removals.
   it('ignores removed nodes that are not elements', async () => {
-    getBrowserStorageValueMock.mockImplementation(async (key: string) => {
-      if (key === 'iCloudHmeOptions') {
-        return { autofill: { button: true, contextMenu: true } };
-      }
-      if (key === 'clientState') {
-        return {
-          setupUrl: 'https://example.com/setup',
-          webservices: {},
-        };
-      }
-      return undefined;
-    });
-
     const rawInput = createInputElement();
     const container = document.createElement('div');
     document.body.appendChild(container);
     container.appendChild(rawInput);
 
-    const { default: main } = await import('../src/pages/Content/script');
-    await main();
+    await runContentScript();
 
     const textNode = document.createTextNode('removed text');
     document.body.appendChild(textNode);
@@ -562,40 +494,20 @@ describe('content script email button integration', () => {
 
     focusInput(rawInput);
     await Promise.resolve();
-    const host = Array.from(document.body.children).find(
-      (el): el is HTMLElement => el instanceof HTMLElement && !!el.shadowRoot
-    );
+    const host = findShadowHost();
     expect(host).toBeDefined();
   });
 
   // Verifies error and empty payload handling for generate responses.
   it('renders errors from generation responses and ignores empty payloads', async () => {
-    getBrowserStorageValueMock.mockImplementation(async (key: string) => {
-      if (key === 'iCloudHmeOptions') {
-        return {
-          autofill: { button: true, contextMenu: true },
-        };
-      }
-      if (key === 'clientState') {
-        return {
-          setupUrl: 'https://example.com/setup',
-          webservices: {},
-        };
-      }
-      return undefined;
-    });
-
     const input = createInputElement();
 
-    const { default: main } = await import('../src/pages/Content/script');
-    await main();
+    await runContentScript();
 
     focusInput(input);
     await Promise.resolve();
 
-    const host = Array.from(document.body.children).find(
-      (el): el is HTMLElement => el instanceof HTMLElement && !!el.shadowRoot
-    );
+    const host = findShadowHost();
     const button = host?.shadowRoot?.querySelector('button');
     expect(button).toBeDefined();
 
@@ -622,34 +534,16 @@ describe('content script email button integration', () => {
 
   // Happy path flow: generation success, reservation handling, and cleanup.
   it('renders the generated alias and handles reservation responses', async () => {
-    getBrowserStorageValueMock.mockImplementation(async (key: string) => {
-      if (key === 'iCloudHmeOptions') {
-        return {
-          autofill: { button: true, contextMenu: true },
-        };
-      }
-      if (key === 'clientState') {
-        return {
-          setupUrl: 'https://example.com/setup',
-          webservices: {},
-        };
-      }
-      return undefined;
-    });
-
     const input = createInputElement();
 
-    const { default: main } = await import('../src/pages/Content/script');
-    await main();
+    await runContentScript();
 
     expect(runtimeMessageListener).toBeDefined();
 
     focusInput(input);
     await Promise.resolve();
 
-    const host = Array.from(document.body.children).find(
-      (el): el is HTMLElement => el instanceof HTMLElement && !!el.shadowRoot
-    );
+    const host = findShadowHost();
     expect(host).toBeDefined();
 
     const button = host?.shadowRoot?.querySelector('button') as
@@ -703,32 +597,14 @@ describe('content script email button integration', () => {
 
   // Ensures background-triggered autofill updates inputs and removes buttons.
   it('applies autofill messages and removes button support', async () => {
-    getBrowserStorageValueMock.mockImplementation(async (key: string) => {
-      if (key === 'iCloudHmeOptions') {
-        return {
-          autofill: { button: true, contextMenu: true },
-        };
-      }
-      if (key === 'clientState') {
-        return {
-          setupUrl: 'https://example.com/setup',
-          webservices: {},
-        };
-      }
-      return undefined;
-    });
-
     const input = createInputElement();
 
-    const { default: main } = await import('../src/pages/Content/script');
-    await main();
+    await runContentScript();
 
     focusInput(input);
     await Promise.resolve();
 
-    const hostBefore = Array.from(document.body.children).find(
-      (el): el is HTMLElement => el instanceof HTMLElement && !!el.shadowRoot
-    );
+    const hostBefore = findShadowHost();
     expect(hostBefore).toBeDefined();
 
     runtimeMessageListener?.({
@@ -738,40 +614,20 @@ describe('content script email button integration', () => {
 
     expect(input.value).toBe('autofill@example.com');
 
-    const hostAfter = Array.from(document.body.children).find(
-      (el): el is HTMLElement => el instanceof HTMLElement && !!el.shadowRoot
-    );
+    const hostAfter = findShadowHost();
     expect(hostAfter).toBeUndefined();
   });
 
   // Covers reservation error responses and missing payload fallbacks.
   it('renders reservation errors and ignores missing payloads', async () => {
-    getBrowserStorageValueMock.mockImplementation(async (key: string) => {
-      if (key === 'iCloudHmeOptions') {
-        return {
-          autofill: { button: true, contextMenu: true },
-        };
-      }
-      if (key === 'clientState') {
-        return {
-          setupUrl: 'https://example.com/setup',
-          webservices: {},
-        };
-      }
-      return undefined;
-    });
-
     const input = createInputElement();
 
-    const { default: main } = await import('../src/pages/Content/script');
-    await main();
+    await runContentScript();
 
     focusInput(input);
     await Promise.resolve();
 
-    const host = Array.from(document.body.children).find(
-      (el): el is HTMLElement => el instanceof HTMLElement && !!el.shadowRoot
-    );
+    const host = findShadowHost();
     const button = host?.shadowRoot?.querySelector('button') as
       | HTMLButtonElement
       | undefined;
@@ -809,32 +665,14 @@ describe('content script email button integration', () => {
 
   // Ensures outdated reservation responses are ignored after DOM changes.
   it('ignores reservation responses when no matching input remains', async () => {
-    getBrowserStorageValueMock.mockImplementation(async (key: string) => {
-      if (key === 'iCloudHmeOptions') {
-        return {
-          autofill: { button: true, contextMenu: true },
-        };
-      }
-      if (key === 'clientState') {
-        return {
-          setupUrl: 'https://example.com/setup',
-          webservices: {},
-        };
-      }
-      return undefined;
-    });
-
     const input = createInputElement();
 
-    const { default: main } = await import('../src/pages/Content/script');
-    await main();
+    await runContentScript();
 
     focusInput(input);
     await Promise.resolve();
 
-    const host = Array.from(document.body.children).find(
-      (el): el is HTMLElement => el instanceof HTMLElement && !!el.shadowRoot
-    );
+    const host = findShadowHost();
     const button = host?.shadowRoot?.querySelector('button');
     expect(button).toBeDefined();
 
@@ -891,34 +729,17 @@ describe('content script email button integration', () => {
   // Confirms ActiveInputElementWrite mutates the focused input and clipboard.
   it('writes to the active input element and copies to clipboard when requested', async () => {
     const hostRemovalSpy = vi.fn();
-    getBrowserStorageValueMock.mockImplementation(async (key: string) => {
-      if (key === 'iCloudHmeOptions') {
-        return {
-          autofill: { button: true, contextMenu: true },
-        };
-      }
-      if (key === 'clientState') {
-        return {
-          setupUrl: 'https://example.com/setup',
-          webservices: {},
-        };
-      }
-      return undefined;
-    });
 
     const input = createInputElement();
     input.addEventListener('input', hostRemovalSpy);
     input.addEventListener('change', hostRemovalSpy);
 
-    const { default: main } = await import('../src/pages/Content/script');
-    await main();
+    await runContentScript();
 
     focusInput(input);
     await Promise.resolve();
 
-    const host = Array.from(document.body.children).find(
-      (el): el is HTMLElement => el instanceof HTMLElement && !!el.shadowRoot
-    );
+    const host = findShadowHost();
     expect(host).toBeDefined();
 
     Object.defineProperty(document, 'activeElement', {
@@ -949,17 +770,9 @@ describe('content script email button integration', () => {
 
   // Guards against ActiveInputElementWrite when focus is outside an input.
   it('ignores active element writes when no input is focused', async () => {
-    getBrowserStorageValueMock.mockImplementation(async (key: string) => {
-      if (key === 'iCloudHmeOptions') {
-        return {
-          autofill: { button: true, contextMenu: true },
-        };
-      }
-      return undefined;
-    });
+    mockStorageState({ clientState: undefined });
 
-    const { default: main } = await import('../src/pages/Content/script');
-    await main();
+    await runContentScript();
 
     Object.defineProperty(document, 'activeElement', {
       configurable: true,
@@ -979,17 +792,9 @@ describe('content script email button integration', () => {
 
   // Covers reservation messages with unknown button ids.
   it('ignores reservation responses when no button is present', async () => {
-    getBrowserStorageValueMock.mockImplementation(async (key: string) => {
-      if (key === 'iCloudHmeOptions') {
-        return {
-          autofill: { button: true, contextMenu: true },
-        };
-      }
-      return undefined;
-    });
+    mockStorageState({ clientState: undefined });
 
-    const { default: main } = await import('../src/pages/Content/script');
-    await main();
+    await runContentScript();
 
     runtimeMessageListener?.({
       type: MessageType.ReservationResponse,
@@ -1010,10 +815,9 @@ describe('content script email button integration', () => {
 
   // Exercises the default case to ensure unknown messages are ignored.
   it('falls back to the default branch for unknown messages', async () => {
-    getBrowserStorageValueMock.mockResolvedValue(undefined);
+    mockStorageState({ iCloudHmeOptions: undefined, clientState: undefined });
 
-    const { default: main } = await import('../src/pages/Content/script');
-    await main();
+    await runContentScript();
 
     expect(() =>
       runtimeMessageListener?.({
