@@ -186,7 +186,7 @@ const makeButtonSupport = (
     btnElement.style.width = `${rect.width}px`;
   };
 
-  const inputOnFocusCallback = async () => {
+  const inputOnFocusCallback = (_event: FocusEvent) => {
     disableButton(btnElement, 'cursor-progress', LOADING_COPY);
     appendTarget.appendChild(hostElement);
     repositionButton();
@@ -197,24 +197,28 @@ const makeButtonSupport = (
     );
     globalThis.addEventListener('resize', repositionButton);
 
-    const clientState = await getBrowserStorageValue('clientState');
-    if (clientState === undefined) {
-      disableButton(btnElement, 'cursor-not-allowed', SIGNED_OUT_COPY);
-      return;
-    }
+    const handleAsyncFocus = async () => {
+      const clientState = await getBrowserStorageValue('clientState');
+      if (clientState === undefined) {
+        disableButton(btnElement, 'cursor-not-allowed', SIGNED_OUT_COPY);
+        return;
+      }
 
-    try {
-      await browser.runtime.sendMessage({
-        type: MessageType.GenerateRequest,
-        data: btnElementId,
-      });
-    } catch (error) {
-      console.debug(
-        'Hide My Email+: Failed to request alias generation',
-        error
-      );
-      disableButton(btnElement, 'cursor-not-allowed', SIGNED_OUT_COPY);
-    }
+      try {
+        await browser.runtime.sendMessage({
+          type: MessageType.GenerateRequest,
+          data: btnElementId,
+        });
+      } catch (error) {
+        console.debug(
+          'Hide My Email+: Failed to request alias generation',
+          error
+        );
+        disableButton(btnElement, 'cursor-not-allowed', SIGNED_OUT_COPY);
+      }
+    };
+
+    void handleAsyncFocus();
   };
 
   inputElement.addEventListener('focus', inputOnFocusCallback, eventOptions);
@@ -255,6 +259,7 @@ const makeButtonSupport = (
   return {
     btnElement,
     hostElement,
+    appendTarget,
     inputOnFocusCallback,
     inputOnBlurCallback,
     focusListenerOptions: eventOptions,

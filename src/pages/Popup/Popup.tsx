@@ -91,10 +91,9 @@ const SignInInstructions = () => {
             . Complete the flow, including{' '}
             <span className="font-semibold text-white">
               two-factor authentication
-            </span>{' '}
-            and{' '}
-            <span className="font-semibold text-white">Trust This Browser</span>
-            .
+            </span>
+            {' and '}
+            <span className="font-semibold text-white">Trust This Browser</span>.
           </p>
         </div>
         <div
