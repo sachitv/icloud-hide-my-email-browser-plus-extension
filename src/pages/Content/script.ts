@@ -317,47 +317,62 @@ export default async function main(): Promise<void> {
     makeAutofillableInputElement
   );
 
+  const addAutofillableInputElementIfMissing = (
+    inputElement: HTMLInputElement
+  ) => {
+    const exists = autofillableInputElements.some((item) =>
+      inputElement.isEqualNode(item.inputElement)
+    );
+    if (!exists) {
+      autofillableInputElements.push(makeAutofillableInputElement(inputElement));
+    }
+  };
+
+  const removeAutofillableInputElementIfPresent = (
+    inputElement: HTMLInputElement
+  ) => {
+    const foundIndex = autofillableInputElements.findIndex((item) =>
+      inputElement.isEqualNode(item.inputElement)
+    );
+    if (foundIndex === -1) {
+      return;
+    }
+
+    const [{ inputElement: storedInputElement, buttonSupport }] =
+      autofillableInputElements.splice(foundIndex, 1);
+    if (buttonSupport) {
+      removeButtonSupport(storedInputElement, buttonSupport);
+    }
+  };
+
   const mutationCallback: MutationCallback = (mutations) => {
-    mutations.forEach((mutation) => {
-      mutation.addedNodes.forEach((node) => {
+    for (const mutation of mutations) {
+      for (const node of mutation.addedNodes) {
         if (!(node instanceof Element)) {
-          return;
+          continue;
         }
 
         const addedElements = node.querySelectorAll<HTMLInputElement>(
           EMAIL_INPUT_QUERY_STRING
         );
-        addedElements.forEach((el) => {
-          const elementExists = autofillableInputElements.some((item) =>
-            el.isEqualNode(item.inputElement)
-          );
-          if (!elementExists) {
-            autofillableInputElements.push(makeAutofillableInputElement(el));
-          }
-        });
-      });
+        for (const element of addedElements) {
+          addAutofillableInputElementIfMissing(element);
+        }
+      }
 
-      mutation.removedNodes.forEach((node) => {
+      for (const node of mutation.removedNodes) {
         if (!(node instanceof Element)) {
-          return;
+          continue;
         }
 
         const removedElements = node.querySelectorAll<HTMLInputElement>(
           EMAIL_INPUT_QUERY_STRING
         );
-        removedElements.forEach((el) => {
-          const foundIndex = autofillableInputElements.findIndex((item) =>
-            el.isEqualNode(item.inputElement)
-          );
-          if (foundIndex !== -1) {
-            const [{ inputElement, buttonSupport }] =
-              autofillableInputElements.splice(foundIndex, 1);
-
-            buttonSupport && removeButtonSupport(inputElement, buttonSupport);
-          }
-        });
-      });
-    });
+        for (const element of removedElements) {
+          removeAutofillableInputElementIfPresent(element);
+        }
+      }
+    }
   };
 
   const observer = new MutationObserver(mutationCallback);
@@ -367,99 +382,119 @@ export default async function main(): Promise<void> {
     subtree: true,
   });
 
+  const handleAutofillMessage = (value: string) => {
+    for (const { inputElement, buttonSupport } of autofillableInputElements) {
+      inputElement.value = value;
+      inputElement.dispatchEvent(new Event('input', { bubbles: true }));
+      if (buttonSupport) {
+        removeButtonSupport(inputElement, buttonSupport);
+      }
+    }
+  };
+
+  const handleGenerateResponseMessage = ({
+    hme,
+    elementId,
+    error,
+  }: GenerationResponseData) => {
+    const buttonSupport = findButtonSupportById(elementId);
+    const element = buttonSupport?.btnElement;
+    if (!element) {
+      return;
+    }
+
+    if (error) {
+      disableButton(element, 'cursor-not-allowed', error);
+      return;
+    }
+
+    if (!hme) {
+      return;
+    }
+
+    enableButton(element, 'cursor-pointer', hme);
+  };
+
+  const handleReservationResponseMessage = ({
+    hme,
+    error,
+    elementId,
+  }: ReservationResponseData) => {
+    const buttonSupport = findButtonSupportById(elementId);
+    const btnElement = buttonSupport?.btnElement;
+    if (!btnElement) {
+      return;
+    }
+
+    if (error) {
+      disableButton(btnElement, 'cursor-not-allowed', error);
+      return;
+    }
+
+    if (!hme) {
+      return;
+    }
+
+    const found = autofillableInputElements.find(
+      (ael) => ael.buttonSupport?.btnElement.id === btnElement.id
+    );
+    if (!found) {
+      return;
+    }
+
+    const { inputElement, buttonSupport: activeButtonSupport } = found;
+    inputElement.value = hme;
+    inputElement.dispatchEvent(new Event('input', { bubbles: true }));
+    inputElement.dispatchEvent(new Event('change', { bubbles: true }));
+
+    if (activeButtonSupport) {
+      removeButtonSupport(inputElement, activeButtonSupport);
+    }
+  };
+
+  const handleActiveInputElementWriteMessage = ({
+    text,
+    copyToClipboard,
+  }: ActiveInputElementWriteData) => {
+    const { activeElement } = document;
+    if (!activeElement || !(activeElement instanceof HTMLInputElement)) {
+      return;
+    }
+
+    activeElement.value = text;
+    activeElement.dispatchEvent(new Event('input', { bubbles: true }));
+    activeElement.dispatchEvent(new Event('change', { bubbles: true }));
+    if (copyToClipboard) {
+      navigator.clipboard.writeText(text);
+    }
+
+    const found = autofillableInputElements.find((ael) =>
+      ael.inputElement.isEqualNode(activeElement)
+    );
+    if (found?.buttonSupport) {
+      removeButtonSupport(activeElement, found.buttonSupport);
+    }
+  };
+
   browser.runtime.onMessage.addListener((uncastedMessage: unknown) => {
     const message = uncastedMessage as Message<unknown>;
 
     switch (message.type) {
       case MessageType.Autofill:
-        autofillableInputElements.forEach(({ inputElement, buttonSupport }) => {
-          inputElement.value = message.data as string;
-          inputElement.dispatchEvent(new Event('input', { bubbles: true }));
-          buttonSupport && removeButtonSupport(inputElement, buttonSupport);
-        });
+        handleAutofillMessage(message.data as string);
         break;
       case MessageType.GenerateResponse:
-        {
-          const { hme, elementId, error } =
-            message.data as GenerationResponseData;
-
-          const buttonSupport = findButtonSupportById(elementId);
-          const element = buttonSupport?.btnElement;
-          if (!element) {
-            break;
-          }
-
-          if (error) {
-            disableButton(element, 'cursor-not-allowed', error);
-            break;
-          }
-
-          if (!hme) {
-            break;
-          }
-
-          enableButton(element, 'cursor-pointer', hme);
-        }
+        handleGenerateResponseMessage(message.data as GenerationResponseData);
         break;
       case MessageType.ReservationResponse:
-        {
-          const { hme, error, elementId } =
-            message.data as ReservationResponseData;
-
-          const buttonSupport = findButtonSupportById(elementId);
-          const btnElement = buttonSupport?.btnElement;
-          if (!btnElement) {
-            break;
-          }
-
-          if (error) {
-            disableButton(btnElement, 'cursor-not-allowed', error);
-            break;
-          }
-
-          if (!hme) {
-            break;
-          }
-
-          const found = autofillableInputElements.find(
-            (ael) => ael.buttonSupport?.btnElement.id === btnElement.id
-          );
-          if (!found) {
-            break;
-          }
-
-          const { inputElement, buttonSupport: activeButtonSupport } = found;
-          inputElement.value = hme;
-          inputElement.dispatchEvent(new Event('input', { bubbles: true }));
-          inputElement.dispatchEvent(new Event('change', { bubbles: true }));
-
-          activeButtonSupport &&
-            removeButtonSupport(inputElement, activeButtonSupport);
-        }
+        handleReservationResponseMessage(
+          message.data as ReservationResponseData
+        );
         break;
       case MessageType.ActiveInputElementWrite:
-        {
-          const { activeElement } = document;
-          if (!activeElement || !(activeElement instanceof HTMLInputElement)) {
-            break;
-          }
-
-          const {
-            data: { text, copyToClipboard },
-          } = message as Message<ActiveInputElementWriteData>;
-          activeElement.value = text;
-          activeElement.dispatchEvent(new Event('input', { bubbles: true }));
-          activeElement.dispatchEvent(new Event('change', { bubbles: true }));
-          copyToClipboard && navigator.clipboard.writeText(text);
-
-          // Remove button if it exists. This should rarely happen as context menu
-          // users are expected to have turned off button support.
-          const found = autofillableInputElements.find((ael) =>
-            ael.inputElement.isEqualNode(activeElement)
-          );
-          found?.buttonSupport &&
-            removeButtonSupport(activeElement, found.buttonSupport);
-        }
+        handleActiveInputElementWriteMessage(
+          (message as Message<ActiveInputElementWriteData>).data
+        );
         break;
       default:
         break;
