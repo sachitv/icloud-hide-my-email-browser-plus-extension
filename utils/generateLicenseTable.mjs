@@ -75,9 +75,9 @@ async function main() {
       const packages = lock.packages || {};
       const names = new Set();
 
-      Object.entries(packages).forEach(([pkgPath, pkgInfo]) => {
+      for (const [pkgPath, pkgInfo] of Object.entries(packages)) {
         if (!pkgInfo || !pkgInfo.optional) {
-          return;
+          continue;
         }
 
         const segments = pkgPath.split('node_modules/');
@@ -89,7 +89,7 @@ async function main() {
       });
 
       return names;
-    } catch (error) {
+    } catch (_error) {
       return new Set();
     }
   })();
