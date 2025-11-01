@@ -1,33 +1,5 @@
 import { defineConfig } from 'vitest/config';
 
-const arrayBufferResizableDescriptor = Object.getOwnPropertyDescriptor(
-  ArrayBuffer.prototype,
-  'resizable'
-);
-if (arrayBufferResizableDescriptor?.get === undefined) {
-  Object.defineProperty(ArrayBuffer.prototype, 'resizable', {
-    configurable: true,
-    get() {
-      return false;
-    },
-  });
-}
-
-if (typeof SharedArrayBuffer !== 'undefined') {
-  const sharedArrayBufferGrowableDescriptor = Object.getOwnPropertyDescriptor(
-    SharedArrayBuffer.prototype,
-    'growable'
-  );
-  if (sharedArrayBufferGrowableDescriptor?.get === undefined) {
-    Object.defineProperty(SharedArrayBuffer.prototype, 'growable', {
-      configurable: true,
-      get() {
-        return false;
-      },
-    });
-  }
-}
-
 export default defineConfig({
   test: {
     environment: 'happy-dom',

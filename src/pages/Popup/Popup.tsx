@@ -39,7 +39,7 @@ import {
   TitledComponent,
   Link,
 } from '../../commonComponents';
-import { setBrowserStorageValue, Store } from '../../storage';
+import { Store } from '../../storage';
 
 import browser from 'webextension-polyfill';
 import Fuse from 'fuse.js';
@@ -241,14 +241,14 @@ async function performDeauthSideEffects(): Promise<void> {
 const SignOutButton = (props: {
   callback: TransitionCallback<'SIGN_OUT'>;
   client: ICloudClient;
+  setClientState: Dispatch<Store['clientState']>;
 }) => {
   return (
     <FooterButton
       className="bg-transparent text-rose-300 hover:bg-rose-500/10 hover:text-rose-200 focus:ring-rose-300/60"
       onClick={async () => {
         await props.client.signOut();
-        // TODO: call the react state setter instead
-        setBrowserStorageValue('clientState', undefined);
+        props.setClientState(() => undefined);
         performDeauthSideEffects();
         props.callback('SIGN_OUT');
       }}
@@ -334,6 +334,7 @@ const ReservationForm = ({
 const HmeGenerator = (props: {
   callback: TransitionCallback<AuthenticatedAction>;
   client: ICloudClient;
+  setClientState: Dispatch<Store['clientState']>;
 }) => {
   const [hmeEmail, setHmeEmail] = useState<string>();
   const [hmeError, setHmeError] = useState<string>();
@@ -495,7 +496,11 @@ const HmeGenerator = (props: {
           />
         </div>
         <div className="text-right">
-          <SignOutButton {...props} />
+          <SignOutButton
+            callback={props.callback}
+            client={props.client}
+            setClientState={props.setClientState}
+          />
         </div>
       </div>
       <div className="pt-4 text-xs text-slate-400">
@@ -743,7 +748,7 @@ const HmeListView = ({
 
   const labelList = hmeEmails.map((hme, idx) => (
     <button
-      key={idx}
+      key={hme.anonymousId}
       aria-current={selectedIndex === idx}
       type="button"
       className={idx === selectedIndex ? selectedBtnClassName : btnClassName}
@@ -798,6 +803,7 @@ const HmeListView = ({
 const HmeManager = (props: {
   callback: TransitionCallback<AuthenticatedAndManagingAction>;
   client: ICloudClient;
+  setClientState: Dispatch<Store['clientState']>;
 }) => {
   const [fetchedHmeEmails, setFetchedHmeEmails] = useState<HmeEmail[]>();
   const [hmeEmailsError, setHmeEmailsError] = useState<string>();
@@ -812,9 +818,10 @@ const HmeManager = (props: {
       try {
         const pms = new PremiumMailSettings(props.client);
         const result = await pms.listHme();
-        setFetchedHmeEmails(
-          result.hmeEmails.sort((a, b) => b.createTimestamp - a.createTimestamp)
+        const sortedEmails = [...result.hmeEmails].sort(
+          (a, b) => b.createTimestamp - a.createTimestamp
         );
+        setFetchedHmeEmails(sortedEmails);
       } catch (e) {
         setHmeEmailsError(e.toString());
       } finally {
@@ -886,7 +893,11 @@ const HmeManager = (props: {
           />
         </div>
         <div className="text-right">
-          <SignOutButton {...props} />
+          <SignOutButton
+            callback={props.callback}
+            client={props.client}
+            setClientState={props.setClientState}
+          />
         </div>
       </div>
     </TitledComponent>
@@ -904,7 +915,8 @@ const constructClient = (clientState: Store['clientState']): ICloudClient => {
 const transitionToNextStateElement = (
   state: PopupState,
   setState: Dispatch<PopupState>,
-  clientState: Store['clientState']
+  clientState: Store['clientState'],
+  setClientState: Dispatch<Store['clientState']>
 ): ReactElement => {
   switch (state) {
     case PopupState.SignedOut: {
@@ -917,6 +929,7 @@ const transitionToNextStateElement = (
         <HmeGenerator
           callback={callback}
           client={constructClient(clientState)}
+          setClientState={setClientState}
         />
       );
     }
@@ -924,7 +937,11 @@ const transitionToNextStateElement = (
       const callback = (action: AuthenticatedAndManagingAction) =>
         setState(STATE_MACHINE_TRANSITIONS[state][action]);
       return (
-        <HmeManager callback={callback} client={constructClient(clientState)} />
+        <HmeManager
+          callback={callback}
+          client={constructClient(clientState)}
+          setClientState={setClientState}
+        />
       );
     }
     default: {
@@ -990,7 +1007,12 @@ const Popup = () => {
         {isStateLoading || !clientAuthStateSynced ? (
           <Spinner />
         ) : (
-          transitionToNextStateElement(state, setState, clientState)
+          transitionToNextStateElement(
+            state,
+            setState,
+            clientState,
+            setClientState
+          )
         )}
       </div>
     </div>

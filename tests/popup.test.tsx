@@ -21,6 +21,7 @@ const {
   tabsQueryMock,
   setBrowserStorageValueMock,
   popupStateSetterMock,
+  clientStateSetterMock,
   sendMessageToTabMock,
   isAuthenticatedMock,
   signOutMock,
@@ -41,6 +42,7 @@ const {
   const tabsQueryMock = vi.fn();
   const setBrowserStorageValueMock = vi.fn();
   const popupStateSetterMock = vi.fn();
+  const clientStateSetterMock = vi.fn();
   const sendMessageToTabMock = vi.fn().mockResolvedValue(undefined);
 
   const isAuthenticatedMock = vi.fn();
@@ -91,6 +93,7 @@ const {
     tabsQueryMock,
     setBrowserStorageValueMock,
     popupStateSetterMock,
+    clientStateSetterMock,
     sendMessageToTabMock,
     isAuthenticatedMock,
     signOutMock,
@@ -134,10 +137,10 @@ vi.mock('webextension-polyfill', () => ({
 }));
 
 describe('Popup UI', () => {
-  const originalClipboard = navigator.clipboard;
+  const originalClipboard = globalThis.navigator?.clipboard;
 
   beforeAll(() => {
-    Object.defineProperty(window.navigator, 'clipboard', {
+    Object.defineProperty(globalThis.navigator, 'clipboard', {
       configurable: true,
       writable: true,
       value: {
@@ -149,9 +152,9 @@ describe('Popup UI', () => {
   afterAll(() => {
     if (originalClipboard === undefined) {
       // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-      delete (window.navigator as { clipboard?: Clipboard }).clipboard;
+      delete (globalThis.navigator as { clipboard?: Clipboard }).clipboard;
     } else {
-      Object.defineProperty(window.navigator, 'clipboard', {
+      Object.defineProperty(globalThis.navigator, 'clipboard', {
         configurable: true,
         value: originalClipboard,
       });
@@ -183,6 +186,7 @@ describe('Popup UI', () => {
     tabsQueryMock.mockReset();
     setBrowserStorageValueMock.mockReset();
     popupStateSetterMock.mockReset();
+    clientStateSetterMock.mockReset();
     sendMessageToTabMock.mockReset();
     updateHmeMetadataMock.mockReset();
     deactivateHmeMock.mockReset();
@@ -190,7 +194,7 @@ describe('Popup UI', () => {
     deleteHmeMock.mockReset();
     clipboardWriteMock.mockReset();
     clipboardWriteMock.mockResolvedValue(undefined);
-    Object.defineProperty(window.navigator, 'clipboard', {
+    Object.defineProperty(globalThis.navigator, 'clipboard', {
       configurable: true,
       writable: true,
       value: {
@@ -214,7 +218,7 @@ describe('Popup UI', () => {
       }
 
       if (key === 'clientState') {
-        return [clientStateValue, vi.fn(), clientStateLoading];
+        return [clientStateValue, clientStateSetterMock, clientStateLoading];
       }
 
       throw new Error(`Unexpected key ${key}`);
@@ -520,10 +524,15 @@ describe('Popup UI', () => {
     await user.click(screen.getByRole('button', { name: /Sign out/i }));
     await waitFor(() => expect(signOutMock).toHaveBeenCalled());
 
-    expect(setBrowserStorageValueMock).toHaveBeenCalledWith(
-      'clientState',
-      undefined
-    );
+    expect(clientStateSetterMock).toHaveBeenCalledWith(expect.any(Function));
+    const resetCall = clientStateSetterMock.mock.calls
+      .map(([arg]) => arg)
+      .find((arg) => typeof arg === 'function') as
+      | ((prev: unknown) => unknown)
+      | undefined;
+    expect(resetCall).toBeDefined();
+    expect(resetCall?.(undefined)).toBeUndefined();
+    expect(setBrowserStorageValueMock).not.toHaveBeenCalled();
     expect(contextMenuUpdateMock).toHaveBeenCalledWith(
       CONTEXT_MENU_ITEM_ID,
       expect.objectContaining({ enabled: false })

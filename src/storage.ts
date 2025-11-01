@@ -13,7 +13,7 @@ export type Options = {
 
 export type Store = {
   popupState: PopupState;
-  iCloudHmeOptions: Options; // TODO: rename key to options
+  iCloudHmeOptions: Options;
   clientState?: {
     setupUrl: ConstructorParameters<typeof ICloudClient>[0];
     webservices: ConstructorParameters<typeof ICloudClient>[1];

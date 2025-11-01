@@ -31,8 +31,6 @@ export type ActiveInputElementWriteData = {
   copyToClipboard: boolean;
 };
 
-export type ReservationResponseData = GenerationResponseData;
-
 export const sendMessageToTab = async (
   type: MessageType,
   data: unknown,

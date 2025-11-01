@@ -4,7 +4,6 @@ import {
   Message,
   MessageType,
   ReservationRequestData,
-  ReservationResponseData,
 } from '../../messages';
 import { v4 as uuidv4 } from 'uuid';
 import browser from 'webextension-polyfill';
@@ -88,6 +87,14 @@ const SHADOW_BUTTON_STYLES = `
 const className = (shortName: string): string =>
   `${STYLE_CLASS_PREFIX}-${shortName}`;
 
+const removeCursorClasses = (btn: HTMLButtonElement): void => {
+  for (const existing of Array.from(btn.classList)) {
+    if (existing.startsWith(className('cursor-'))) {
+      btn.classList.remove(existing);
+    }
+  }
+};
+
 const waitForDocumentReady = async (): Promise<void> => {
   if (document.readyState !== 'loading') {
     return;
@@ -123,11 +130,7 @@ const disableButton = (
   btn.textContent = copy;
   btn.setAttribute('disabled', 'true');
   btn.classList.remove(className('hover-button'));
-  btn.classList.forEach((name) => {
-    if (name.startsWith(className('cursor-'))) {
-      btn.classList.remove(name);
-    }
-  });
+  removeCursorClasses(btn);
   btn.classList.add(className(cursorClass));
 };
 
@@ -139,11 +142,7 @@ const enableButton = (
   btn.textContent = copy;
   btn.removeAttribute('disabled');
   btn.classList.add(className('hover-button'));
-  btn.classList.forEach((name) => {
-    if (name.startsWith(className('cursor-'))) {
-      btn.classList.remove(name);
-    }
-  });
+  removeCursorClasses(btn);
   btn.classList.add(className(cursorClass));
 };
 
@@ -191,8 +190,12 @@ const makeButtonSupport = (
     disableButton(btnElement, 'cursor-progress', LOADING_COPY);
     appendTarget.appendChild(hostElement);
     repositionButton();
-    window.addEventListener('scroll', repositionButton, scrollListenerOptions);
-    window.addEventListener('resize', repositionButton);
+    globalThis.addEventListener(
+      'scroll',
+      repositionButton,
+      scrollListenerOptions
+    );
+    globalThis.addEventListener('resize', repositionButton);
 
     const clientState = await getBrowserStorageValue('clientState');
     if (clientState === undefined) {
@@ -219,24 +222,35 @@ const makeButtonSupport = (
   const inputOnBlurCallback = () => {
     disableButton(btnElement, 'cursor-not-allowed', LOADING_COPY);
     hostElement.remove();
-    window.removeEventListener(
+    globalThis.removeEventListener(
       'scroll',
       repositionButton,
       scrollListenerOptions
     );
-    window.removeEventListener('resize', repositionButton);
+    globalThis.removeEventListener('resize', repositionButton);
   };
 
   inputElement.addEventListener('blur', inputOnBlurCallback, eventOptions);
 
-  const btnOnMousedownCallback = async (ev: MouseEvent) => {
+  const btnOnMousedownCallback = (ev: MouseEvent) => {
     ev.preventDefault();
     const hme = btnElement.textContent ?? '';
     disableButton(btnElement, 'cursor-progress', LOADING_COPY);
-    await browser.runtime.sendMessage({
-      type: MessageType.ReservationRequest,
-      data: { hme, label: window.location.host, elementId: btnElement.id },
-    } as Message<ReservationRequestData>);
+    const requestReservation = async () => {
+      try {
+        await browser.runtime.sendMessage({
+          type: MessageType.ReservationRequest,
+          data: {
+            hme,
+            label: globalThis.location?.host ?? '',
+            elementId: btnElement.id,
+          },
+        } as Message<ReservationRequestData>);
+      } catch (error) {
+        console.debug('Hide My Email+: Reservation request failed', error);
+      }
+    };
+    void requestReservation();
   };
 
   btnElement.addEventListener('mousedown', btnOnMousedownCallback);
@@ -276,8 +290,12 @@ const removeButtonSupport = (
     inputOnBlurCallback,
     focusListenerOptions
   );
-  window.removeEventListener('scroll', repositionButton, scrollListenerOptions);
-  window.removeEventListener('resize', repositionButton);
+  globalThis.removeEventListener(
+    'scroll',
+    repositionButton,
+    scrollListenerOptions
+  );
+  globalThis.removeEventListener('resize', repositionButton);
   btnElement.remove();
   if (hostElement.isConnected) {
     hostElement.remove();
@@ -424,7 +442,7 @@ const handleGenerateResponseMessage = (
 
 const handleReservationResponseMessage = (
   context: MessageHandlerContext,
-  { hme, error, elementId }: ReservationResponseData
+  { hme, error, elementId }: GenerationResponseData
 ): void => {
   const target = findAutofillableElementByButtonId(
     context.autofillableInputElements,
@@ -497,7 +515,7 @@ const createMessageListener = (
       case MessageType.ReservationResponse:
         handleReservationResponseMessage(
           context,
-          message.data as ReservationResponseData
+          message.data as GenerationResponseData
         );
         break;
       case MessageType.ActiveInputElementWrite:
