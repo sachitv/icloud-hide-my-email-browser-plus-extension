@@ -646,8 +646,7 @@ const HmeListView = ({
 }: HmeListViewProps) => {
   const hmeEmails = useMemo(
     () =>
-      searchHmeEmails(searchPrompt ?? '', fetchedHmeEmails) ??
-      fetchedHmeEmails,
+      searchHmeEmails(searchPrompt ?? '', fetchedHmeEmails) ?? fetchedHmeEmails,
     [fetchedHmeEmails, searchPrompt]
   );
 
