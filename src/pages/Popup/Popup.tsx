@@ -93,7 +93,8 @@ const SignInInstructions = () => {
               two-factor authentication
             </span>
             {' and '}
-            <span className="font-semibold text-white">Trust This Browser</span>.
+            <span className="font-semibold text-white">Trust This Browser</span>
+            .
           </p>
         </div>
         <div
