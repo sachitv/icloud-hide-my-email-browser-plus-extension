@@ -59,6 +59,23 @@ import { isFirefox } from '../../browserUtils';
 
 type TransitionCallback<T extends PopupAction> = (action: T) => void;
 
+const toggleActivationState =
+  (target: HmeEmail) =>
+  (candidate: HmeEmail): HmeEmail =>
+    deepEqual(candidate, target)
+      ? { ...candidate, isActive: !candidate.isActive }
+      : candidate;
+
+const createActivationUpdater =
+  (target: HmeEmail) =>
+  (existingEmails?: HmeEmail[]): HmeEmail[] | undefined =>
+    existingEmails?.map(toggleActivationState(target));
+
+const createDeletionUpdater =
+  (target: HmeEmail) =>
+  (existingEmails?: HmeEmail[]): HmeEmail[] | undefined =>
+    existingEmails?.filter((candidate) => !deepEqual(candidate, target));
+
 const SignInInstructions = () => {
   const userguideUrl = browser.runtime.getURL('userguide.html');
 
@@ -809,18 +826,11 @@ const HmeManager = (props: {
   }, [props.client]);
 
   const activationCallbackFactory = (hmeEmail: HmeEmail) => () => {
-    const newHmeEmail = { ...hmeEmail, isActive: !hmeEmail.isActive };
-    setFetchedHmeEmails((prevFetchedHmeEmails) =>
-      prevFetchedHmeEmails?.map((item) =>
-        deepEqual(item, hmeEmail) ? newHmeEmail : item
-      )
-    );
+    setFetchedHmeEmails(createActivationUpdater(hmeEmail));
   };
 
   const deletionCallbackFactory = (hmeEmail: HmeEmail) => () => {
-    setFetchedHmeEmails((prevFetchedHmeEmails) =>
-      prevFetchedHmeEmails?.filter((item) => !deepEqual(item, hmeEmail))
-    );
+    setFetchedHmeEmails(createDeletionUpdater(hmeEmail));
   };
 
   const handleSelectIndex = useCallback((index: number) => {
