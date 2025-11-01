@@ -1,0 +1,13 @@
+/* Tailwind covers most styling; provide shared focus outlines and reduce brightness adjustments. */
+:root {
+  color-scheme: dark;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid rgba(59, 130, 246, 0.75);
+  outline-offset: 4px;
+  border-radius: 0.75rem;
+}

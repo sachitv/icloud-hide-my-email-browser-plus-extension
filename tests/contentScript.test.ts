@@ -10,34 +10,6 @@ import {
 import { waitFor } from '@testing-library/react';
 import { MessageType } from '../src/messages';
 
-const arrayBufferDescriptor = Object.getOwnPropertyDescriptor(
-  ArrayBuffer.prototype,
-  'resizable'
-);
-if (arrayBufferDescriptor?.get === undefined) {
-  Object.defineProperty(ArrayBuffer.prototype, 'resizable', {
-    configurable: true,
-    get() {
-      return false;
-    },
-  });
-}
-
-if (typeof SharedArrayBuffer !== 'undefined') {
-  const sharedArrayBufferDescriptor = Object.getOwnPropertyDescriptor(
-    SharedArrayBuffer.prototype,
-    'growable'
-  );
-  if (sharedArrayBufferDescriptor?.get === undefined) {
-    Object.defineProperty(SharedArrayBuffer.prototype, 'growable', {
-      configurable: true,
-      get() {
-        return false;
-      },
-    });
-  }
-}
-
 const {
   runtimeSendMessageMock,
   runtimeOnMessageAddListenerMock,
@@ -585,7 +557,7 @@ describe('content script email button integration', () => {
 
     const textNode = document.createTextNode('removed text');
     document.body.appendChild(textNode);
-    document.body.removeChild(textNode);
+    textNode.remove();
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     focusInput(rawInput);
@@ -874,9 +846,15 @@ describe('content script email button integration', () => {
       },
     });
 
-    const originalFind = Array.prototype.find;
+    const nativeFind: typeof Array.prototype.find = Array.prototype.find;
+    const findSpy = vi.spyOn(Array.prototype, 'find');
     let findCallCount = 0;
-    Array.prototype.find = function (predicate, thisArg) {
+
+    findSpy.mockImplementation(function (
+      this: unknown[],
+      predicate: Parameters<typeof nativeFind>[0],
+      thisArg?: Parameters<typeof nativeFind>[1]
+    ) {
       const shouldIntercept =
         Array.isArray(this) &&
         this.every(
@@ -892,21 +870,22 @@ describe('content script email button integration', () => {
         }
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-      return originalFind.call(this, predicate, thisArg);
-    };
-
-    runtimeMessageListener?.({
-      type: MessageType.ReservationResponse,
-      data: {
-        elementId: 'button-uuid',
-        hme: 'alias@example.com',
-      },
+      return nativeFind.call(this, predicate, thisArg);
     });
 
-    expect(button?.textContent).toBe('alias@example.com');
+    try {
+      runtimeMessageListener?.({
+        type: MessageType.ReservationResponse,
+        data: {
+          elementId: 'button-uuid',
+          hme: 'alias@example.com',
+        },
+      });
 
-    Array.prototype.find = originalFind;
+      expect(button?.textContent).toBe('alias@example.com');
+    } finally {
+      findSpy.mockRestore();
+    }
   });
 
   // Confirms ActiveInputElementWrite mutates the focused input and clipboard.
