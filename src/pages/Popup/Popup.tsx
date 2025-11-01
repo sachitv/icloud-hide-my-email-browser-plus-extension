@@ -39,7 +39,7 @@ import {
   TitledComponent,
   Link,
 } from '../../commonComponents';
-import { setBrowserStorageValue, Store } from '../../storage';
+import { Store } from '../../storage';
 
 import browser from 'webextension-polyfill';
 import Fuse from 'fuse.js';

@@ -25,6 +25,8 @@
 - typescript:S7735 — src/iCloudClient.ts:27: Returned on successful responses before throwing for failures to avoid negated conditions.
 - typescript:S7728 — src/pages/Content/script.ts:126 & 142: Replaced `classList.forEach` usage with an explicit helper to strip cursor classes.
 - typescript:S1135 — src/pages/Popup/Popup.tsx:250 & src/storage.ts:16: Replaced the manual storage write with the React state setter and removed the obsolete renaming note.
+- css:S4657 — src/pages/Options/index.css, src/pages/Popup/index.css, src/pages/Userguide/index.css: Removed redundant `background-color` declarations that were being overridden by subsequent shorthand rules.
+- typescript:S1128 — src/pages/Popup/Popup.tsx:42: Deleted the unused `setBrowserStorageValue` import.
 
 ## Remaining Issues
 
