@@ -236,7 +236,7 @@ const makeButtonSupport = (
     ev.preventDefault();
     const hme = btnElement.textContent ?? '';
     disableButton(btnElement, 'cursor-progress', LOADING_COPY);
-    void browser.runtime
+    browser.runtime
       .sendMessage({
         type: MessageType.ReservationRequest,
         data: {

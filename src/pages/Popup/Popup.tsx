@@ -87,8 +87,8 @@ const SignInInstructions = () => {
             To use this extension, sign in to your iCloud account on{' '}
             <Link href="https://icloud.com" aria-label="Go to iCloud.com">
               icloud.com
-            </Link>
-            {' '}. Complete the flow, including{' '}
+            </Link>{' '}
+            . Complete the flow, including{' '}
             <span className="font-semibold text-white">
               two-factor authentication
             </span>
