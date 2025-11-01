@@ -10,6 +10,15 @@ import { v4 as uuidv4 } from 'uuid';
 import browser from 'webextension-polyfill';
 import { getBrowserStorageValue } from '../../storage';
 
+const CLEANUP_CONTROLLER_KEY = Symbol.for('icloudHideMyEmailContentCleanup');
+
+type DocumentWithCleanupController = Document & {
+  [typeof CLEANUP_CONTROLLER_KEY]?: AbortController;
+};
+
+const getCleanupControllerRegistry = () =>
+  document as DocumentWithCleanupController;
+
 const EMAIL_INPUT_QUERY_STRING =
   'input[type="email"], input[name="email"], input[id="email"]';
 
@@ -287,6 +296,12 @@ const removeButtonSupport = (
 export default async function main(): Promise<void> {
   await waitForDocumentReady();
 
+  const cleanupRegistry = getCleanupControllerRegistry();
+  cleanupRegistry[CLEANUP_CONTROLLER_KEY]?.abort();
+
+  const cleanupController = new AbortController();
+  cleanupRegistry[CLEANUP_CONTROLLER_KEY] = cleanupController;
+
   const appendTarget = document.body ?? document.documentElement;
   if (!appendTarget) {
     return;
@@ -317,6 +332,9 @@ export default async function main(): Promise<void> {
     makeAutofillableInputElement
   );
 
+  let observer: MutationObserver | undefined;
+  let messageListener: ((uncastedMessage: unknown) => void) | undefined;
+
   const addAutofillableInputElement = (
     inputElement: HTMLInputElement
   ): void => {
@@ -326,9 +344,7 @@ export default async function main(): Promise<void> {
       }
     }
 
-    autofillableInputElements.push(
-      makeAutofillableInputElement(inputElement)
-    );
+    autofillableInputElements.push(makeAutofillableInputElement(inputElement));
   };
 
   const removeAutofillableInputElement = (
@@ -361,24 +377,41 @@ export default async function main(): Promise<void> {
   ): node is Element | DocumentFragment =>
     node instanceof Element || node instanceof DocumentFragment;
 
+  const isHtmlInputElement = (element: Element): element is HTMLInputElement =>
+    element instanceof HTMLInputElement ||
+    (element.tagName === 'INPUT' && 'value' in element);
+
+  const forwardIfEmailInput = (
+    candidate: Element,
+    handler: (inputElement: HTMLInputElement) => void
+  ) => {
+    if (!isHtmlInputElement(candidate)) {
+      return;
+    }
+
+    if (!candidate.matches(EMAIL_INPUT_QUERY_STRING)) {
+      return;
+    }
+
+    handler(candidate);
+  };
+
   const processEmailInputs = (
     node: Node,
     handler: (inputElement: HTMLInputElement) => void
   ): void => {
     if (node instanceof HTMLInputElement) {
-      handler(node);
+      forwardIfEmailInput(node, handler);
     }
 
     if (!isQuerySelectorHost(node)) {
       return;
     }
 
-    const elements = node.querySelectorAll<HTMLInputElement>(
-      EMAIL_INPUT_QUERY_STRING
-    );
+    const elements = node.querySelectorAll(EMAIL_INPUT_QUERY_STRING);
 
     for (const element of elements) {
-      handler(element);
+      forwardIfEmailInput(element, handler);
     }
   };
 
@@ -402,14 +435,14 @@ export default async function main(): Promise<void> {
     }
   };
 
-  const observer = new MutationObserver(mutationCallback);
+  observer = new MutationObserver(mutationCallback);
   observer.observe(appendTarget, {
     childList: true,
     attributes: false,
     subtree: true,
   });
 
-  browser.runtime.onMessage.addListener((uncastedMessage: unknown) => {
+  messageListener = (uncastedMessage: unknown) => {
     const message = uncastedMessage as Message<unknown>;
 
     switch (message.type) {
@@ -508,5 +541,28 @@ export default async function main(): Promise<void> {
     }
 
     return undefined;
+  };
+
+  browser.runtime.onMessage.addListener(messageListener);
+
+  cleanupController.signal.addEventListener('abort', () => {
+    if (
+      messageListener &&
+      typeof browser.runtime.onMessage.removeListener === 'function'
+    ) {
+      browser.runtime.onMessage.removeListener(messageListener);
+    }
+
+    observer?.disconnect();
+
+    for (const { inputElement, buttonSupport } of autofillableInputElements) {
+      if (buttonSupport) {
+        removeButtonSupport(inputElement, buttonSupport);
+      }
+    }
+
+    autofillableInputElements.length = 0;
+
+    cleanupRegistry[CLEANUP_CONTROLLER_KEY] = undefined;
   });
 }
