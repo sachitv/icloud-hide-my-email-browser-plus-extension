@@ -284,6 +284,236 @@ const removeButtonSupport = (
   }
 };
 
+const findAutofillableElementByButtonId = (
+  elements: AutofillableInputElement[],
+  elementId: string
+): AutofillableInputElement | undefined =>
+  elements.find((item) => item.buttonSupport?.btnElement.id === elementId);
+
+const findButtonSupportById = (
+  elements: AutofillableInputElement[],
+  elementId: string
+): AutofillableInputElement['buttonSupport'] | undefined =>
+  findAutofillableElementByButtonId(elements, elementId)?.buttonSupport;
+
+const addAutofillableInputElementIfMissing = (
+  elements: AutofillableInputElement[],
+  makeAutofillableInputElement: (
+    inputElement: HTMLInputElement
+  ) => AutofillableInputElement,
+  inputElement: HTMLInputElement
+): void => {
+  const exists = elements.some((item) =>
+    inputElement.isEqualNode(item.inputElement)
+  );
+  if (!exists) {
+    elements.push(makeAutofillableInputElement(inputElement));
+  }
+};
+
+const removeAutofillableInputElementIfPresent = (
+  elements: AutofillableInputElement[],
+  inputElement: HTMLInputElement
+): void => {
+  const foundIndex = elements.findIndex((item) =>
+    inputElement.isEqualNode(item.inputElement)
+  );
+  if (foundIndex === -1) {
+    return;
+  }
+
+  const [{ inputElement: storedInputElement, buttonSupport }] = elements.splice(
+    foundIndex,
+    1
+  );
+  if (buttonSupport) {
+    removeButtonSupport(storedInputElement, buttonSupport);
+  }
+};
+
+const forEachAutofillEmailElement = (
+  nodes: NodeList,
+  callback: (element: HTMLInputElement) => void
+): void => {
+  for (const node of nodes) {
+    if (!(node instanceof Element)) {
+      continue;
+    }
+
+    const emailInputs = node.querySelectorAll<HTMLInputElement>(
+      EMAIL_INPUT_QUERY_STRING
+    );
+    for (const element of emailInputs) {
+      callback(element);
+    }
+  }
+};
+
+type MutationContext = {
+  autofillableInputElements: AutofillableInputElement[];
+  makeAutofillableInputElement: (
+    inputElement: HTMLInputElement
+  ) => AutofillableInputElement;
+};
+
+const createMutationCallback = ({
+  autofillableInputElements,
+  makeAutofillableInputElement,
+}: MutationContext): MutationCallback => {
+  return (mutations) => {
+    for (const mutation of mutations) {
+      forEachAutofillEmailElement(mutation.addedNodes, (element) => {
+        addAutofillableInputElementIfMissing(
+          autofillableInputElements,
+          makeAutofillableInputElement,
+          element
+        );
+      });
+
+      forEachAutofillEmailElement(mutation.removedNodes, (element) => {
+        removeAutofillableInputElementIfPresent(
+          autofillableInputElements,
+          element
+        );
+      });
+    }
+  };
+};
+
+type MessageHandlerContext = {
+  autofillableInputElements: AutofillableInputElement[];
+};
+
+const handleAutofillMessage = (
+  { autofillableInputElements }: MessageHandlerContext,
+  value: string
+): void => {
+  for (const { inputElement, buttonSupport } of autofillableInputElements) {
+    inputElement.value = value;
+    inputElement.dispatchEvent(new Event('input', { bubbles: true }));
+    if (buttonSupport) {
+      removeButtonSupport(inputElement, buttonSupport);
+    }
+  }
+};
+
+const handleGenerateResponseMessage = (
+  context: MessageHandlerContext,
+  { hme, elementId, error }: GenerationResponseData
+): void => {
+  const buttonSupport = findButtonSupportById(
+    context.autofillableInputElements,
+    elementId
+  );
+  const element = buttonSupport?.btnElement;
+  if (!element) {
+    return;
+  }
+
+  if (error) {
+    disableButton(element, 'cursor-not-allowed', error);
+    return;
+  }
+
+  if (!hme) {
+    return;
+  }
+
+  enableButton(element, 'cursor-pointer', hme);
+};
+
+const handleReservationResponseMessage = (
+  context: MessageHandlerContext,
+  { hme, error, elementId }: ReservationResponseData
+): void => {
+  const target = findAutofillableElementByButtonId(
+    context.autofillableInputElements,
+    elementId
+  );
+  const btnElement = target?.buttonSupport?.btnElement;
+  if (!btnElement) {
+    return;
+  }
+
+  if (error) {
+    disableButton(btnElement, 'cursor-not-allowed', error);
+    return;
+  }
+
+  if (!hme || !target) {
+    return;
+  }
+
+  const { inputElement, buttonSupport } = target;
+  inputElement.value = hme;
+  inputElement.dispatchEvent(new Event('input', { bubbles: true }));
+  inputElement.dispatchEvent(new Event('change', { bubbles: true }));
+
+  if (buttonSupport) {
+    removeButtonSupport(inputElement, buttonSupport);
+  }
+};
+
+const handleActiveInputElementWriteMessage = (
+  context: MessageHandlerContext,
+  { text, copyToClipboard }: ActiveInputElementWriteData
+): void => {
+  const { activeElement } = document;
+  if (!activeElement || !(activeElement instanceof HTMLInputElement)) {
+    return;
+  }
+
+  activeElement.value = text;
+  activeElement.dispatchEvent(new Event('input', { bubbles: true }));
+  activeElement.dispatchEvent(new Event('change', { bubbles: true }));
+  if (copyToClipboard) {
+    navigator.clipboard.writeText(text);
+  }
+
+  const found = context.autofillableInputElements.find((ael) =>
+    ael.inputElement.isEqualNode(activeElement)
+  );
+  if (found?.buttonSupport) {
+    removeButtonSupport(activeElement, found.buttonSupport);
+  }
+};
+
+const createMessageListener = (
+  context: MessageHandlerContext
+): Parameters<typeof browser.runtime.onMessage.addListener>[0] => {
+  return (uncastedMessage: unknown) => {
+    const message = uncastedMessage as Message<unknown>;
+
+    switch (message.type) {
+      case MessageType.Autofill:
+        handleAutofillMessage(context, message.data as string);
+        break;
+      case MessageType.GenerateResponse:
+        handleGenerateResponseMessage(
+          context,
+          message.data as GenerationResponseData
+        );
+        break;
+      case MessageType.ReservationResponse:
+        handleReservationResponseMessage(
+          context,
+          message.data as ReservationResponseData
+        );
+        break;
+      case MessageType.ActiveInputElementWrite:
+        handleActiveInputElementWriteMessage(
+          context,
+          (message as Message<ActiveInputElementWriteData>).data
+        );
+        break;
+      default:
+        break;
+    }
+
+    return undefined;
+  };
+};
+
 export default async function main(): Promise<void> {
   await waitForDocumentReady();
 
@@ -295,11 +525,6 @@ export default async function main(): Promise<void> {
   const emailInputElements = document.querySelectorAll<HTMLInputElement>(
     EMAIL_INPUT_QUERY_STRING
   );
-
-  const findButtonSupportById = (elementId: string) =>
-    autofillableInputElements.find(
-      (item) => item.buttonSupport?.btnElement.id === elementId
-    )?.buttonSupport;
 
   const options = await getBrowserStorageValue('iCloudHmeOptions');
 
@@ -317,48 +542,10 @@ export default async function main(): Promise<void> {
     makeAutofillableInputElement
   );
 
-  const mutationCallback: MutationCallback = (mutations) => {
-    mutations.forEach((mutation) => {
-      mutation.addedNodes.forEach((node) => {
-        if (!(node instanceof Element)) {
-          return;
-        }
-
-        const addedElements = node.querySelectorAll<HTMLInputElement>(
-          EMAIL_INPUT_QUERY_STRING
-        );
-        addedElements.forEach((el) => {
-          const elementExists = autofillableInputElements.some((item) =>
-            el.isEqualNode(item.inputElement)
-          );
-          if (!elementExists) {
-            autofillableInputElements.push(makeAutofillableInputElement(el));
-          }
-        });
-      });
-
-      mutation.removedNodes.forEach((node) => {
-        if (!(node instanceof Element)) {
-          return;
-        }
-
-        const removedElements = node.querySelectorAll<HTMLInputElement>(
-          EMAIL_INPUT_QUERY_STRING
-        );
-        removedElements.forEach((el) => {
-          const foundIndex = autofillableInputElements.findIndex((item) =>
-            el.isEqualNode(item.inputElement)
-          );
-          if (foundIndex !== -1) {
-            const [{ inputElement, buttonSupport }] =
-              autofillableInputElements.splice(foundIndex, 1);
-
-            buttonSupport && removeButtonSupport(inputElement, buttonSupport);
-          }
-        });
-      });
-    });
-  };
+  const mutationCallback = createMutationCallback({
+    autofillableInputElements,
+    makeAutofillableInputElement,
+  });
 
   const observer = new MutationObserver(mutationCallback);
   observer.observe(appendTarget, {
@@ -367,104 +554,15 @@ export default async function main(): Promise<void> {
     subtree: true,
   });
 
-  browser.runtime.onMessage.addListener((uncastedMessage: unknown) => {
-    const message = uncastedMessage as Message<unknown>;
-
-    switch (message.type) {
-      case MessageType.Autofill:
-        autofillableInputElements.forEach(({ inputElement, buttonSupport }) => {
-          inputElement.value = message.data as string;
-          inputElement.dispatchEvent(new Event('input', { bubbles: true }));
-          buttonSupport && removeButtonSupport(inputElement, buttonSupport);
-        });
-        break;
-      case MessageType.GenerateResponse:
-        {
-          const { hme, elementId, error } =
-            message.data as GenerationResponseData;
-
-          const buttonSupport = findButtonSupportById(elementId);
-          const element = buttonSupport?.btnElement;
-          if (!element) {
-            break;
-          }
-
-          if (error) {
-            disableButton(element, 'cursor-not-allowed', error);
-            break;
-          }
-
-          if (!hme) {
-            break;
-          }
-
-          enableButton(element, 'cursor-pointer', hme);
-        }
-        break;
-      case MessageType.ReservationResponse:
-        {
-          const { hme, error, elementId } =
-            message.data as ReservationResponseData;
-
-          const buttonSupport = findButtonSupportById(elementId);
-          const btnElement = buttonSupport?.btnElement;
-          if (!btnElement) {
-            break;
-          }
-
-          if (error) {
-            disableButton(btnElement, 'cursor-not-allowed', error);
-            break;
-          }
-
-          if (!hme) {
-            break;
-          }
-
-          const found = autofillableInputElements.find(
-            (ael) => ael.buttonSupport?.btnElement.id === btnElement.id
-          );
-          if (!found) {
-            break;
-          }
-
-          const { inputElement, buttonSupport: activeButtonSupport } = found;
-          inputElement.value = hme;
-          inputElement.dispatchEvent(new Event('input', { bubbles: true }));
-          inputElement.dispatchEvent(new Event('change', { bubbles: true }));
-
-          activeButtonSupport &&
-            removeButtonSupport(inputElement, activeButtonSupport);
-        }
-        break;
-      case MessageType.ActiveInputElementWrite:
-        {
-          const { activeElement } = document;
-          if (!activeElement || !(activeElement instanceof HTMLInputElement)) {
-            break;
-          }
-
-          const {
-            data: { text, copyToClipboard },
-          } = message as Message<ActiveInputElementWriteData>;
-          activeElement.value = text;
-          activeElement.dispatchEvent(new Event('input', { bubbles: true }));
-          activeElement.dispatchEvent(new Event('change', { bubbles: true }));
-          copyToClipboard && navigator.clipboard.writeText(text);
-
-          // Remove button if it exists. This should rarely happen as context menu
-          // users are expected to have turned off button support.
-          const found = autofillableInputElements.find((ael) =>
-            ael.inputElement.isEqualNode(activeElement)
-          );
-          found?.buttonSupport &&
-            removeButtonSupport(activeElement, found.buttonSupport);
-        }
-        break;
-      default:
-        break;
-    }
-
-    return undefined;
-  });
+  const messageListenerContext: MessageHandlerContext = {
+    autofillableInputElements,
+  };
+  browser.runtime.onMessage.addListener(
+    createMessageListener(messageListenerContext)
+  );
 }
+
+export const __testUtils = {
+  addAutofillableInputElementIfMissing,
+  removeAutofillableInputElementIfPresent,
+};
