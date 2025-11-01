@@ -4,7 +4,6 @@ import {
   Message,
   MessageType,
   ReservationRequestData,
-  ReservationResponseData,
 } from '../../messages';
 import { v4 as uuidv4 } from 'uuid';
 import browser from 'webextension-polyfill';
@@ -431,7 +430,7 @@ const handleGenerateResponseMessage = (
 
 const handleReservationResponseMessage = (
   context: MessageHandlerContext,
-  { hme, error, elementId }: ReservationResponseData
+  { hme, error, elementId }: GenerationResponseData
 ): void => {
   const target = findAutofillableElementByButtonId(
     context.autofillableInputElements,
@@ -504,7 +503,7 @@ const createMessageListener = (
       case MessageType.ReservationResponse:
         handleReservationResponseMessage(
           context,
-          message.data as ReservationResponseData
+          message.data as GenerationResponseData
         );
         break;
       case MessageType.ActiveInputElementWrite:

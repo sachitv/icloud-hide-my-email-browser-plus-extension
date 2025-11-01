@@ -86,9 +86,8 @@ const SignInInstructions = () => {
           necessary,{' '}
           <span className="font-semibold">
             it&apos;s strongly recommended to tick the &quot;Keep me signed
-            in&quot; box
+            in&quot; box.
           </span>
-          .
         </p>
       </Notice>
     </div>
@@ -137,12 +136,11 @@ const UsageInstructions = () => {
         <p>
           <span className="font-semibold">
             In most cases though, you don&apos;t need to interact with the
-            pop-up UI
-          </span>
-          . The extension will automatically detect email input fields and
-          prompt you to autofill new addresses! Alternatively, you can
-          right-click on any text input field and select the menu item of the
-          extension.
+            pop-up UI.
+          </span>{' '}
+          The extension will automatically detect email input fields and prompt
+          you to autofill new addresses! Alternatively, you can right-click on
+          any text input field and select the menu item of the extension.
         </p>
       </div>
       <div className="space-y-3">

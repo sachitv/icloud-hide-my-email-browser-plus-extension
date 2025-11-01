@@ -743,7 +743,7 @@ const HmeListView = ({
 
   const labelList = hmeEmails.map((hme, idx) => (
     <button
-      key={idx}
+      key={hme.anonymousId}
       aria-current={selectedIndex === idx}
       type="button"
       className={idx === selectedIndex ? selectedBtnClassName : btnClassName}
@@ -812,9 +812,10 @@ const HmeManager = (props: {
       try {
         const pms = new PremiumMailSettings(props.client);
         const result = await pms.listHme();
-        setFetchedHmeEmails(
-          result.hmeEmails.sort((a, b) => b.createTimestamp - a.createTimestamp)
+        const sortedEmails = [...result.hmeEmails].sort(
+          (a, b) => b.createTimestamp - a.createTimestamp
         );
+        setFetchedHmeEmails(sortedEmails);
       } catch (e) {
         setHmeEmailsError(e.toString());
       } finally {

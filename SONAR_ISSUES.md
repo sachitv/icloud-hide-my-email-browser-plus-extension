@@ -13,33 +13,12 @@
 - javascript:S7785 — utils/checkLicenses.mjs:236: Replaced the async wrapper with top-level await and structured error handling.
 - javascript:S7785 — utils/generateLicenseTable.mjs:132: Converted the script to use top-level await while preserving existing logging.
 - typescript:S6544 — src/pages/Content/script.ts:247 & 252: Wrapped the reservation request in an internal async helper so the event listener stays synchronous.
+- typescript:S6772 — src/pages/Userguide/Userguide.tsx:90 & 141: Moved punctuation inside the emphasized spans and added explicit whitespace before the following sentence.
+- typescript:S6564 — src/messages.ts:34: Removed the redundant `ReservationResponseData` alias in favor of `GenerationResponseData`.
+- typescript:S6479 — src/pages/Popup/Popup.tsx:746: Swapped the list key to use each email's `anonymousId`.
+- typescript:S4043 — src/pages/Popup/Popup.tsx:816: Cloned the fetched aliases before sorting so the original response remains untouched.
 
 ## Major Issues
-
-### typescript:S6772 — src/pages/Userguide/Userguide.tsx:90
-- Line 90: Ambiguous spacing after previous element span.
-#### Suggested Resolution
-- Insert explicit JSX whitespace (`{' '}`) or a comment break to signal intentional spacing.
-
-### typescript:S6772 — src/pages/Userguide/Userguide.tsx:141
-- Line 141: Ambiguous spacing after previous element span.
-#### Suggested Resolution
-- Declare the spacing explicitly using JSX whitespace helpers to prevent accidental text concatenation.
-
-### typescript:S6564 — src/messages.ts:34
-- Line 34: Remove this redundant type alias and replace its occurrences with `GenerationResponseData`.
-#### Suggested Resolution
-- Inline the referenced type and delete the alias to reduce indirection and improve readability.
-
-### typescript:S6479 — src/pages/Popup/Popup.tsx:746
-- Line 746: Do not use array index in keys.
-#### Suggested Resolution
-- Provide a stable identifier (e.g., alias ID) for the list key instead of the iteration index.
-
-### typescript:S4043 — src/pages/Popup/Popup.tsx:816
-- Line 816: Move this array `sort` operation to a separate statement or replace it with `toSorted`.
-#### Suggested Resolution
-- Use non-mutating `toSorted()` or clone before sorting so intent is clear and side effects are explicit.
 
 ## Minor Issues
 
