@@ -5,6 +5,47 @@ import Options from '../src/pages/Options/Options';
 import { DEFAULT_STORE } from '../src/storage';
 import React from 'react';
 
+type Store = Record<
+  string,
+  {
+    state?: unknown;
+    isLoading?: boolean;
+    spy?: ReturnType<typeof vi.fn>;
+  }
+>;
+
+function useBrowserStorageStateSpyImpl(
+  store: Store,
+  key: string,
+  initialValue: unknown
+) {
+  const entry = store[key] ?? (store[key] = {});
+  const [state, setState] = React.useState(entry.state ?? initialValue);
+  entry.state = state;
+
+  const spy = entry.spy ?? vi.fn();
+  entry.spy = spy;
+  const isLoading = entry.isLoading ?? false;
+
+  const setStateWithSpy = React.useCallback(
+    (value: unknown) => {
+      const updater = (prev: unknown) => {
+        const nextValue = typeof value === 'function' ? value(prev) : value;
+        spy(nextValue);
+        return nextValue;
+      };
+      setState(updater);
+    },
+    [setState, spy]
+  );
+
+  return [state, setStateWithSpy, isLoading] as [
+    unknown,
+    (value: unknown) => void,
+    boolean,
+  ];
+}
+
 const {
   storageStateMocks,
   useBrowserStorageStateSpy,
@@ -15,42 +56,12 @@ const {
   updateForwardToHmeMock,
   webExtensionPolyfillMock,
 } = vi.hoisted(() => {
-  const store: Record<
-    string,
-    {
-      state?: unknown;
-      isLoading?: boolean;
-      spy?: ReturnType<typeof vi.fn>;
-    }
-  > = {};
+  const store: Store = {};
   const useBrowserStorageStateSpy = vi.fn(
-    (key: string, initialValue: unknown) => {
-      const entry = store[key] ?? (store[key] = {});
-      const [state, setState] = React.useState(entry.state ?? initialValue);
-      entry.state = state;
-
-      const spy = entry.spy ?? vi.fn();
-      entry.spy = spy;
-      const isLoading = entry.isLoading ?? false;
-
-      const setStateWithSpy = React.useMemo(
-        () => (value: unknown) => {
-          setState((prev: unknown) => {
-            const nextValue = typeof value === 'function' ? value(prev) : value;
-            spy(nextValue);
-            return nextValue;
-          });
-        },
-        [setState, spy]
-      );
-
-      return [state, setStateWithSpy, isLoading] as [
-        unknown,
-        (value: unknown) => void,
-        boolean,
-      ];
-    }
+    (key: string, initialValue: unknown) =>
+      useBrowserStorageStateSpyImpl(store, key, initialValue)
   );
+
   const isAuthenticatedMock = vi.fn();
   const listHmeMock = vi.fn();
   const updateForwardToHmeMock = vi.fn();
