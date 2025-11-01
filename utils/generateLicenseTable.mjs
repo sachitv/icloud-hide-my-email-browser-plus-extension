@@ -120,11 +120,11 @@ async function main() {
     '| --- | --- |',
   ];
 
-  rows.forEach((row) => {
+  for (const row of rows) {
     const link = markdownLink(row.dependency, row.repository);
     const license = row.license || 'UNKNOWN';
     lines.push(`| ${link} | ${license} |`);
-  });
+  }
 
   console.log(lines.join('\n'));
 }

@@ -194,7 +194,7 @@ async function main() {
     console.error(
       'Found dependencies that are not covered by the approved permissive licenses:\n'
     );
-    failures.forEach((failure) => {
+    for (const failure of failures) {
       console.error(`- ${failure.dependency}`);
       console.error(`  license: ${failure.licenses || 'UNKNOWN'}`);
       if (failure.repository) {
@@ -204,7 +204,7 @@ async function main() {
         console.error(`  note: ${failure.message}`);
       }
       console.error('');
-    });
+    }
     console.error(
       'Update the whitelist in utils/checkLicenses.mjs if additional permissive licenses should be allowed.'
     );

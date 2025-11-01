@@ -104,9 +104,9 @@ vi.mock('../src/pages/Options/Options.css', () => ({}));
 
 describe('Options page UI', () => {
   beforeEach(() => {
-    Object.keys(storageStateMocks).forEach((key) => {
+    for (const key of Object.keys(storageStateMocks)) {
       delete storageStateMocks[key];
-    });
+    }
     useBrowserStorageStateSpy.mockClear();
     ICloudClientConstructorMock.mockClear();
     PremiumMailSettingsMock.mockClear();

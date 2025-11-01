@@ -20,7 +20,7 @@ describe('deepEqual', () => {
   });
 
   it('should handle NaN', () => {
-    expect(deepEqual(NaN, NaN)).toBe(true);
+    expect(deepEqual(Number.NaN, Number.NaN)).toBe(true);
   });
 
   // Test cases for objects

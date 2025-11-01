@@ -107,5 +107,3 @@ export function areObjectsEqual(
 
 export const deepEqual = (a: unknown, b: unknown): boolean =>
   deepEqualInternal(a, b, new WeakMap());
-
-export default deepEqual;
