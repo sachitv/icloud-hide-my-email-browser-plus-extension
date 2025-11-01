@@ -185,8 +185,8 @@ describe('Popup UI', () => {
     runtimeGetUrlMock.mockReset();
     tabsQueryMock.mockReset();
     setBrowserStorageValueMock.mockReset();
-  popupStateSetterMock.mockReset();
-  clientStateSetterMock.mockReset();
+    popupStateSetterMock.mockReset();
+    clientStateSetterMock.mockReset();
     sendMessageToTabMock.mockReset();
     updateHmeMetadataMock.mockReset();
     deactivateHmeMock.mockReset();
