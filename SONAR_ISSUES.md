@@ -24,6 +24,7 @@
 - typescript:S7737 — src/iCloudClient.ts:69: Destructured the sign-out options parameter with defaults and handled the request failure explicitly.
 - typescript:S7735 — src/iCloudClient.ts:27: Returned on successful responses before throwing for failures to avoid negated conditions.
 - typescript:S7728 — src/pages/Content/script.ts:126 & 142: Replaced `classList.forEach` usage with an explicit helper to strip cursor classes.
+- typescript:S1135 — src/pages/Popup/Popup.tsx:250 & src/storage.ts:16: Replaced the manual storage write with the React state setter and removed the obsolete renaming note.
 
 ## Remaining Issues
 
@@ -31,12 +32,4 @@
 
 ## Info Issues
 
-### typescript:S1135 — src/pages/Popup/Popup.tsx:250
-- Line 250: Complete the task associated to this `TODO` comment.
-#### Suggested Resolution
-- Resolve the outstanding TODO or convert it into a tracked work item so the code no longer carries the placeholder.
-
-### typescript:S1135 — src/storage.ts:16
-- Line 16: Complete the task associated to this `TODO` comment.
-#### Suggested Resolution
-- Address the noted TODO or link it to a backlog item, then remove the in-code reminder.
+- None.

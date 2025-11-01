@@ -21,6 +21,7 @@ const {
   tabsQueryMock,
   setBrowserStorageValueMock,
   popupStateSetterMock,
+  clientStateSetterMock,
   sendMessageToTabMock,
   isAuthenticatedMock,
   signOutMock,
@@ -41,6 +42,7 @@ const {
   const tabsQueryMock = vi.fn();
   const setBrowserStorageValueMock = vi.fn();
   const popupStateSetterMock = vi.fn();
+  const clientStateSetterMock = vi.fn();
   const sendMessageToTabMock = vi.fn().mockResolvedValue(undefined);
 
   const isAuthenticatedMock = vi.fn();
@@ -91,6 +93,7 @@ const {
     tabsQueryMock,
     setBrowserStorageValueMock,
     popupStateSetterMock,
+    clientStateSetterMock,
     sendMessageToTabMock,
     isAuthenticatedMock,
     signOutMock,
@@ -182,7 +185,8 @@ describe('Popup UI', () => {
     runtimeGetUrlMock.mockReset();
     tabsQueryMock.mockReset();
     setBrowserStorageValueMock.mockReset();
-    popupStateSetterMock.mockReset();
+  popupStateSetterMock.mockReset();
+  clientStateSetterMock.mockReset();
     sendMessageToTabMock.mockReset();
     updateHmeMetadataMock.mockReset();
     deactivateHmeMock.mockReset();
@@ -214,7 +218,7 @@ describe('Popup UI', () => {
       }
 
       if (key === 'clientState') {
-        return [clientStateValue, vi.fn(), clientStateLoading];
+        return [clientStateValue, clientStateSetterMock, clientStateLoading];
       }
 
       throw new Error(`Unexpected key ${key}`);
@@ -520,10 +524,15 @@ describe('Popup UI', () => {
     await user.click(screen.getByRole('button', { name: /Sign out/i }));
     await waitFor(() => expect(signOutMock).toHaveBeenCalled());
 
-    expect(setBrowserStorageValueMock).toHaveBeenCalledWith(
-      'clientState',
-      undefined
-    );
+    expect(clientStateSetterMock).toHaveBeenCalledWith(expect.any(Function));
+    const resetCall = clientStateSetterMock.mock.calls
+      .map(([arg]) => arg)
+      .find((arg) => typeof arg === 'function') as
+      | ((prev: unknown) => unknown)
+      | undefined;
+    expect(resetCall).toBeDefined();
+    expect(resetCall?.(undefined)).toBeUndefined();
+    expect(setBrowserStorageValueMock).not.toHaveBeenCalled();
     expect(contextMenuUpdateMock).toHaveBeenCalledWith(
       CONTEXT_MENU_ITEM_ID,
       expect.objectContaining({ enabled: false })
