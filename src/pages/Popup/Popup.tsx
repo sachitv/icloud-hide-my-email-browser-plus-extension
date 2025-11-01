@@ -59,87 +59,100 @@ import { isFirefox } from '../../browserUtils';
 
 type TransitionCallback<T extends PopupAction> = (action: T) => void;
 
-const SignInInstructions = () => {
+const InstructionsText = () => (
+  <div className="space-y-3 text-sm leading-relaxed text-slate-200/95">
+    <p>
+      To use this extension, sign in to your iCloud account on{' '}
+      <Link href="https://icloud.com" aria-label="Go to iCloud.com">
+        icloud.com
+      </Link>
+      . Complete the flow, including{' '}
+      <span className="font-semibold text-white">
+        two-factor authentication
+      </span>{' '}
+      and{' '}
+      <span className="font-semibold text-white">Trust This Browser</span>.
+    </p>
+  </div>
+);
+
+const ProTipAlert = () => (
+  <div
+    className="flex items-start gap-3 rounded-2xl border border-rainbow-blue/40 bg-rainbow-blue/10 px-4 py-3 text-sm text-slate-100"
+    role="alert"
+  >
+    <InfoCircleIcon className="mt-1 h-5 w-5 text-rainbow-blue" />
+    <div>
+      <p className="font-semibold text-white">Pro tip</p>
+      <p>
+        Tick the{' '}
+        <span className="font-semibold text-white">
+          Keep me signed in
+        </span>{' '}
+        box so the extension stays connected.
+      </p>
+    </div>
+  </div>
+);
+
+const FirefoxContainersAlert = () => (
+  <div
+    className="flex items-start gap-3 rounded-2xl border border-rainbow-orange/50 bg-rainbow-orange/10 px-4 py-3 text-sm text-amber-100"
+    role="alert"
+  >
+    <FirefoxIcon className="mt-1 h-5 w-5" />
+    <div>
+      If you use{' '}
+      <Link
+        href="https://support.mozilla.org/en-US/kb/containers"
+        aria-label="Firefox Multi-Account Containers docs"
+      >
+        Firefox Containers
+      </Link>
+      , sign in to iCloud from a tab outside of any container.
+    </div>
+  </div>
+);
+
+const SignInButtons = () => {
   const userguideUrl = browser.runtime.getURL('userguide.html');
 
   return (
-    <TitledComponent title="Hide My Email+" subtitle="Sign in to iCloud">
-      <div className="space-y-6 text-slate-100">
-        <div className="space-y-3 text-sm leading-relaxed text-slate-200/95">
-          <p>
-            To use this extension, sign in to your iCloud account on{' '}
-            <Link href="https://icloud.com" aria-label="Go to iCloud.com">
-              icloud.com
-            </Link>
-            . Complete the flow, including{' '}
-            <span className="font-semibold text-white">
-              two-factor authentication
-            </span>{' '}
-            and{' '}
-            <span className="font-semibold text-white">Trust This Browser</span>
-            .
-          </p>
-        </div>
-        <div
-          className="flex items-start gap-3 rounded-2xl border border-rainbow-blue/40 bg-rainbow-blue/10 px-4 py-3 text-sm text-slate-100"
-          role="alert"
-        >
-          <InfoCircleIcon className="mt-1 h-5 w-5 text-rainbow-blue" />
-          <div>
-            <p className="font-semibold text-white">Pro tip</p>
-            <p>
-              Tick the{' '}
-              <span className="font-semibold text-white">
-                Keep me signed in
-              </span>{' '}
-              box so the extension stays connected.
-            </p>
-          </div>
-        </div>
-        {isFirefox && (
-          <div
-            className="flex items-start gap-3 rounded-2xl border border-rainbow-orange/50 bg-rainbow-orange/10 px-4 py-3 text-sm text-amber-100"
-            role="alert"
-          >
-            <FirefoxIcon className="mt-1 h-5 w-5" />
-            <div>
-              If you use{' '}
-              <Link
-                href="https://support.mozilla.org/en-US/kb/containers"
-                aria-label="Firefox Multi-Account Containers docs"
-              >
-                Firefox Containers
-              </Link>
-              , sign in to iCloud from a tab outside of any container.
-            </div>
-          </div>
-        )}
-        <div className="grid gap-3 sm:grid-cols-2">
-          <a
-            href={userguideUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#34a853] via-success to-[#4285f4] px-5 py-3 text-sm font-semibold text-slate-900 shadow-[0_18px_35px_-18px_rgba(52,211,153,0.7)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_46px_-18px_rgba(37,211,174,0.75)] focus:outline-none focus:ring-2 focus:ring-emerald-200/70"
-            aria-label="Help"
-          >
-            <QuestionCircleIcon className="h-5 w-5" />
-            Help
-          </a>
-          <a
-            href="https://icloud.com"
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-200 via-rose-200 to-pink-300 px-5 py-3 text-sm font-semibold text-slate-900 shadow-[0_18px_35px_-18px_rgba(249,168,212,0.75)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_46px_-18px_rgba(249,168,212,0.85)] focus:outline-none focus:ring-2 focus:ring-amber-200/70"
-            aria-label="Go to iCloud.com"
-          >
-            <ExternalLinkIcon className="h-5 w-5" />
-            Open icloud.com
-          </a>
-        </div>
-      </div>
-    </TitledComponent>
+    <div className="grid gap-3 sm:grid-cols-2">
+      <a
+        href={userguideUrl}
+        target="_blank"
+        rel="noreferrer"
+        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#34a853] via-success to-[#4285f4] px-5 py-3 text-sm font-semibold text-slate-900 shadow-[0_18px_35px_-18px_rgba(52,211,153,0.7)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_46px_-18px_rgba(37,211,174,0.75)] focus:outline-none focus:ring-2 focus:ring-emerald-200/70"
+        aria-label="Help"
+      >
+        <QuestionCircleIcon className="h-5 w-5" />
+        Help
+      </a>
+      <a
+        href="https://icloud.com"
+        target="_blank"
+        rel="noreferrer"
+        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-200 via-rose-200 to-pink-300 px-5 py-3 text-sm font-semibold text-slate-900 shadow-[0_18px_35px_-18px_rgba(249,168,212,0.75)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_46px_-18px_rgba(249,168,212,0.85)] focus:outline-none focus:ring-2 focus:ring-amber-200/70"
+        aria-label="Go to iCloud.com"
+      >
+        <ExternalLinkIcon className="h-5 w-5" />
+        Open icloud.com
+      </a>
+    </div>
   );
 };
+
+const SignInInstructions = () => (
+  <TitledComponent title="Hide My Email+" subtitle="Sign in to iCloud">
+    <div className="space-y-6 text-slate-100">
+      <InstructionsText />
+      <ProTipAlert />
+      {isFirefox && <FirefoxContainersAlert />}
+      <SignInButtons />
+    </div>
+  </TitledComponent>
+);
 
 const ReservationResult = (props: { hme: HmeEmail }) => {
   const onCopyToClipboardClick = async () => {
