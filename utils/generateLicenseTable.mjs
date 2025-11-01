@@ -86,7 +86,7 @@ async function main() {
         if (inferredName) {
           names.add(inferredName);
         }
-      });
+      }
 
       return names;
     } catch (_error) {
