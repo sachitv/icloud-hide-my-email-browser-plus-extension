@@ -27,13 +27,13 @@ class ICloudClient {
       body: data !== undefined ? JSON.stringify(data) : undefined,
     });
 
-    if (!response.ok) {
-      throw new UnsuccessfulRequestError(
-        `Request to ${method} ${url} failed with status code ${response.status}`
-      );
+    if (response.ok) {
+      return await response.json();
     }
 
-    return await response.json();
+    throw new UnsuccessfulRequestError(
+      `Request to ${method} ${url} failed with status code ${response.status}`
+    );
   }
 
   public webserviceUrl(serviceName: ServiceName): string {
@@ -65,16 +65,21 @@ class ICloudClient {
     }
   }
 
-  public async signOut(
-    options: { trust: boolean } = { trust: false }
-  ): Promise<void> {
-    const { trust } = options;
-    await this.request('POST', `${this.setupUrl}/logout`, {
-      data: {
-        trustBrowsers: trust,
-        allBrowsers: trust,
-      },
-    }).catch(console.debug);
+  public async signOut({
+    trust = false,
+  }: {
+    trust?: boolean;
+  } = {}): Promise<void> {
+    try {
+      await this.request('POST', `${this.setupUrl}/logout`, {
+        data: {
+          trustBrowsers: trust,
+          allBrowsers: trust,
+        },
+      });
+    } catch (error) {
+      console.debug('Hide My Email+: failed to sign out', error);
+    }
   }
 }
 

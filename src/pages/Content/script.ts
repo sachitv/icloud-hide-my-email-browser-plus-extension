@@ -87,6 +87,14 @@ const SHADOW_BUTTON_STYLES = `
 const className = (shortName: string): string =>
   `${STYLE_CLASS_PREFIX}-${shortName}`;
 
+const removeCursorClasses = (btn: HTMLButtonElement): void => {
+  for (const existing of Array.from(btn.classList)) {
+    if (existing.startsWith(className('cursor-'))) {
+      btn.classList.remove(existing);
+    }
+  }
+};
+
 const waitForDocumentReady = async (): Promise<void> => {
   if (document.readyState !== 'loading') {
     return;
@@ -122,11 +130,7 @@ const disableButton = (
   btn.textContent = copy;
   btn.setAttribute('disabled', 'true');
   btn.classList.remove(className('hover-button'));
-  btn.classList.forEach((name) => {
-    if (name.startsWith(className('cursor-'))) {
-      btn.classList.remove(name);
-    }
-  });
+  removeCursorClasses(btn);
   btn.classList.add(className(cursorClass));
 };
 
@@ -138,11 +142,7 @@ const enableButton = (
   btn.textContent = copy;
   btn.removeAttribute('disabled');
   btn.classList.add(className('hover-button'));
-  btn.classList.forEach((name) => {
-    if (name.startsWith(className('cursor-'))) {
-      btn.classList.remove(name);
-    }
-  });
+  removeCursorClasses(btn);
   btn.classList.add(className(cursorClass));
 };
 
@@ -190,8 +190,12 @@ const makeButtonSupport = (
     disableButton(btnElement, 'cursor-progress', LOADING_COPY);
     appendTarget.appendChild(hostElement);
     repositionButton();
-    window.addEventListener('scroll', repositionButton, scrollListenerOptions);
-    window.addEventListener('resize', repositionButton);
+    globalThis.addEventListener(
+      'scroll',
+      repositionButton,
+      scrollListenerOptions
+    );
+    globalThis.addEventListener('resize', repositionButton);
 
     const clientState = await getBrowserStorageValue('clientState');
     if (clientState === undefined) {
@@ -218,12 +222,12 @@ const makeButtonSupport = (
   const inputOnBlurCallback = () => {
     disableButton(btnElement, 'cursor-not-allowed', LOADING_COPY);
     hostElement.remove();
-    window.removeEventListener(
+    globalThis.removeEventListener(
       'scroll',
       repositionButton,
       scrollListenerOptions
     );
-    window.removeEventListener('resize', repositionButton);
+    globalThis.removeEventListener('resize', repositionButton);
   };
 
   inputElement.addEventListener('blur', inputOnBlurCallback, eventOptions);
@@ -236,7 +240,11 @@ const makeButtonSupport = (
       try {
         await browser.runtime.sendMessage({
           type: MessageType.ReservationRequest,
-          data: { hme, label: window.location.host, elementId: btnElement.id },
+          data: {
+            hme,
+            label: globalThis.location?.host ?? '',
+            elementId: btnElement.id,
+          },
         } as Message<ReservationRequestData>);
       } catch (error) {
         console.debug('Hide My Email+: Reservation request failed', error);
@@ -282,8 +290,12 @@ const removeButtonSupport = (
     inputOnBlurCallback,
     focusListenerOptions
   );
-  window.removeEventListener('scroll', repositionButton, scrollListenerOptions);
-  window.removeEventListener('resize', repositionButton);
+  globalThis.removeEventListener(
+    'scroll',
+    repositionButton,
+    scrollListenerOptions
+  );
+  globalThis.removeEventListener('resize', repositionButton);
   btnElement.remove();
   if (hostElement.isConnected) {
     hostElement.remove();

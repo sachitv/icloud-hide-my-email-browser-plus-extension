@@ -134,10 +134,10 @@ vi.mock('webextension-polyfill', () => ({
 }));
 
 describe('Popup UI', () => {
-  const originalClipboard = navigator.clipboard;
+  const originalClipboard = globalThis.navigator?.clipboard;
 
   beforeAll(() => {
-    Object.defineProperty(window.navigator, 'clipboard', {
+    Object.defineProperty(globalThis.navigator, 'clipboard', {
       configurable: true,
       writable: true,
       value: {
@@ -149,9 +149,9 @@ describe('Popup UI', () => {
   afterAll(() => {
     if (originalClipboard === undefined) {
       // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-      delete (window.navigator as { clipboard?: Clipboard }).clipboard;
+      delete (globalThis.navigator as { clipboard?: Clipboard }).clipboard;
     } else {
-      Object.defineProperty(window.navigator, 'clipboard', {
+      Object.defineProperty(globalThis.navigator, 'clipboard', {
         configurable: true,
         value: originalClipboard,
       });
@@ -190,7 +190,7 @@ describe('Popup UI', () => {
     deleteHmeMock.mockReset();
     clipboardWriteMock.mockReset();
     clipboardWriteMock.mockResolvedValue(undefined);
-    Object.defineProperty(window.navigator, 'clipboard', {
+    Object.defineProperty(globalThis.navigator, 'clipboard', {
       configurable: true,
       writable: true,
       value: {

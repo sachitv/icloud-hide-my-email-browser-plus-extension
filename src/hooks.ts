@@ -38,7 +38,10 @@ export function useBrowserStorageState<K extends keyof Store>(
   const setBrowserStorageState = useCallback(
     (value: SetStateAction<Store[K]>) =>
       setState((prevState) => {
-        const newValue = value instanceof Function ? value(prevState) : value;
+        const newValue =
+          typeof value === 'function'
+            ? (value as (prev: Store[K]) => Store[K])(prevState)
+            : value;
         setBrowserStorageValue(key, newValue);
         return newValue;
       }),

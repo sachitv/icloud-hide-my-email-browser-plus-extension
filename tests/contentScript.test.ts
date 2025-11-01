@@ -26,10 +26,10 @@ const {
 });
 
 const windowAddEventListenerSpy = vi.hoisted(() =>
-  vi.spyOn(window, 'addEventListener')
+  vi.spyOn(globalThis, 'addEventListener')
 );
 const windowRemoveEventListenerSpy = vi.hoisted(() =>
-  vi.spyOn(window, 'removeEventListener')
+  vi.spyOn(globalThis, 'removeEventListener')
 );
 
 let runtimeMessageListener: ((message: unknown) => void) | undefined;
@@ -428,7 +428,7 @@ describe('content script email button integration', () => {
 
     const host = Array.from(document.body.children).find(
       (el): el is HTMLElement => el instanceof HTMLElement && !!el.shadowRoot
-    ) as HTMLElement | undefined;
+    );
     expect(host).toBeDefined();
 
     container.remove();
@@ -649,7 +649,7 @@ describe('content script email button integration', () => {
 
     const host = Array.from(document.body.children).find(
       (el): el is HTMLElement => el instanceof HTMLElement && !!el.shadowRoot
-    ) as HTMLElement | undefined;
+    );
     expect(host).toBeDefined();
 
     const button = host?.shadowRoot?.querySelector('button') as
@@ -674,7 +674,7 @@ describe('content script email button integration', () => {
       type: MessageType.ReservationRequest,
       data: {
         hme: 'alias@example.com',
-        label: window.location.host,
+        label: globalThis.location?.host ?? '',
         elementId: 'button-uuid',
       },
     });
@@ -728,7 +728,7 @@ describe('content script email button integration', () => {
 
     const hostBefore = Array.from(document.body.children).find(
       (el): el is HTMLElement => el instanceof HTMLElement && !!el.shadowRoot
-    ) as HTMLElement | undefined;
+    );
     expect(hostBefore).toBeDefined();
 
     runtimeMessageListener?.({
@@ -771,7 +771,7 @@ describe('content script email button integration', () => {
 
     const host = Array.from(document.body.children).find(
       (el): el is HTMLElement => el instanceof HTMLElement && !!el.shadowRoot
-    ) as HTMLElement | undefined;
+    );
     const button = host?.shadowRoot?.querySelector('button') as
       | HTMLButtonElement
       | undefined;
@@ -834,7 +834,7 @@ describe('content script email button integration', () => {
 
     const host = Array.from(document.body.children).find(
       (el): el is HTMLElement => el instanceof HTMLElement && !!el.shadowRoot
-    ) as HTMLElement | undefined;
+    );
     const button = host?.shadowRoot?.querySelector('button');
     expect(button).toBeDefined();
 
@@ -918,7 +918,7 @@ describe('content script email button integration', () => {
 
     const host = Array.from(document.body.children).find(
       (el): el is HTMLElement => el instanceof HTMLElement && !!el.shadowRoot
-    ) as HTMLElement | undefined;
+    );
     expect(host).toBeDefined();
 
     Object.defineProperty(document, 'activeElement', {

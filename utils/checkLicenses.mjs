@@ -104,7 +104,8 @@ function expressionIsPermissive(expression) {
     // Parse SPDX expressions like "MIT OR Apache-2.0" and validate via the AST.
     const ast = parseSpdx(normalized);
     return evaluateLicenseAst(ast);
-  } catch (_error) {
+  } catch (error) {
+    console.debug('Unable to parse SPDX expression:', normalized, error);
     return false;
   }
 }

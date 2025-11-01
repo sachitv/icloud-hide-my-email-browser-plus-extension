@@ -88,7 +88,11 @@ const optionalPackages = (() => {
     }
 
     return names;
-  } catch (_error) {
+  } catch (error) {
+    console.debug(
+      'Optional package detection skipped; package-lock.json could not be read.',
+      error
+    );
     return new Set();
   }
 })();

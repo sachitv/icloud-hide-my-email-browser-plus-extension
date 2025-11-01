@@ -17,120 +17,17 @@
 - typescript:S6564 — src/messages.ts:34: Removed the redundant `ReservationResponseData` alias in favor of `GenerationResponseData`.
 - typescript:S6479 — src/pages/Popup/Popup.tsx:746: Swapped the list key to use each email's `anonymousId`.
 - typescript:S4043 — src/pages/Popup/Popup.tsx:816: Cloned the fetched aliases before sorting so the original response remains untouched.
+- typescript:S4325 — tests/contentScript.test.ts:457-942: Removed redundant casts by leaning on the existing type guards.
+- typescript:S7764 — tests/contentScript.test.ts, tests/popup.test.tsx, src/pages/Content/script.ts: Replaced `window` usage with `globalThis` so code and tests run in any JS runtime.
+- javascript:S2486 — utils/checkLicenses.mjs:107 & utils/generateLicenseTable.mjs:92: Logged parsing failures instead of silently dropping the caught errors.
+- typescript:S7732 — src/hooks.ts:41: Switched `instanceof Function` checks to `typeof` while preserving type safety.
+- typescript:S7737 — src/iCloudClient.ts:69: Destructured the sign-out options parameter with defaults and handled the request failure explicitly.
+- typescript:S7735 — src/iCloudClient.ts:27: Returned on successful responses before throwing for failures to avoid negated conditions.
+- typescript:S7728 — src/pages/Content/script.ts:126 & 142: Replaced `classList.forEach` usage with an explicit helper to strip cursor classes.
 
-## Major Issues
+## Remaining Issues
 
-## Minor Issues
-
-### typescript:S4325 — tests/contentScript.test.ts:457-459
-- Lines 457-459: This assertion is unnecessary since it does not change the type of the expression.
-#### Suggested Resolution
-- Remove the redundant assertion or non-null cast and rely on the compiler’s inferred type.
-
-### typescript:S4325 — tests/contentScript.test.ts:757-759
-- Lines 757-759: This assertion is unnecessary since it does not change the type of the expression.
-#### Suggested Resolution
-- Drop the superfluous type assertion to keep the test readable and type-safe.
-
-### typescript:S4325 — tests/contentScript.test.ts:800-802
-- Lines 800-802: This assertion is unnecessary since it does not change the type of the expression.
-#### Suggested Resolution
-- Delete the redundant non-null assertion and keep the inferred type instead.
-
-### typescript:S4325 — tests/contentScript.test.ts:863-865
-- Lines 863-865: This assertion is unnecessary since it does not change the type of the expression.
-#### Suggested Resolution
-- Remove the cast to let TypeScript enforce the correct type automatically.
-
-### typescript:S4325 — tests/contentScript.test.ts:940-942
-- Lines 940-942: This assertion is unnecessary since it does not change the type of the expression.
-#### Suggested Resolution
-- Simplify the assertion away and rely on type narrowing within the test.
-
-### typescript:S4325 — tests/contentScript.test.ts:678-680
-- Lines 678-680: This assertion is unnecessary since it does not change the type of the expression.
-#### Suggested Resolution
-- Eliminate the redundant cast so the expression uses inferred types.
-
-### typescript:S7764 — tests/contentScript.test.ts:57
-- Line 57: Prefer `globalThis` over `window`.
-#### Suggested Resolution
-- Swap `window` for `globalThis` to keep the code runtime-agnostic.
-
-### typescript:S7764 — tests/contentScript.test.ts:60
-- Line 60: Prefer `globalThis` over `window`.
-#### Suggested Resolution
-- Use `globalThis` to support non-browser environments in tests.
-
-### typescript:S7764 — tests/contentScript.test.ts:705
-- Line 705: Prefer `globalThis` over `window`.
-#### Suggested Resolution
-- Replace `window` usage with `globalThis` for environment portability.
-
-### typescript:S7764 — tests/popup.test.tsx:140
-- Line 140: Prefer `globalThis` over `window`.
-#### Suggested Resolution
-- Update the global reference to `globalThis` so the test suite runs in any JS runtime.
-
-### typescript:S7764 — tests/popup.test.tsx:152
-- Line 152: Prefer `globalThis` over `window`.
-#### Suggested Resolution
-- Switch the global access to `globalThis` for cross-platform support.
-
-### typescript:S7764 — tests/popup.test.tsx:154
-- Line 154: Prefer `globalThis` over `window`.
-#### Suggested Resolution
-- Reference `globalThis` instead of `window` to avoid browser-only globals.
-
-### typescript:S7764 — tests/popup.test.tsx:193
-- Line 193: Prefer `globalThis` over `window`.
-#### Suggested Resolution
-- Replace `window` with `globalThis` so the tests are environment-agnostic.
-
-### typescript:S7764 — src/pages/Content/script.ts:238
-- Line 238: Prefer `globalThis` over `window`.
-#### Suggested Resolution
-- Use `globalThis` so the content script remains compatible across runtime contexts.
-
-### javascript:S2486 — utils/checkLicenses.mjs:107-109
-- Lines 107-109: Handle this exception or don't catch it at all.
-#### Suggested Resolution
-- Log, rethrow, or otherwise handle the caught error instead of silently swallowing it.
-
-### javascript:S2486 — utils/generateLicenseTable.mjs:92-94
-- Lines 92-94: Handle this exception or don't catch it at all.
-#### Suggested Resolution
-- Add concrete error handling (log, rethrow, or recover) to the catch block rather than leaving it empty.
-
-### typescript:S7732 — src/hooks.ts:41
-- Line 41: Avoid using `instanceof` for type checking as it can lead to unreliable results.
-#### Suggested Resolution
-- Replace `instanceof` on built-ins with safer checks such as `typeof` or `Array.isArray`.
-
-### typescript:S7737 — src/iCloudClient.ts:69
-- Line 69: Do not use an object literal as default for parameter `options`.
-#### Suggested Resolution
-- Destructure the parameter with individual defaults (`({ foo = ... } = {})`) instead of supplying an object literal default.
-
-### typescript:S7735 — src/iCloudClient.ts:27
-- Line 27: Unexpected negated condition.
-#### Suggested Resolution
-- Invert the condition and swap the branches so the `if` clause expresses the positive case.
-
-### typescript:S7728 — src/pages/Content/script.ts:126
-- Line 126: Use `for…of` instead of `.forEach(…)`.
-#### Suggested Resolution
-- Rewrite the iteration with a `for…of` loop to improve control flow and async handling.
-
-### typescript:S7728 — src/pages/Content/script.ts:142
-- Line 142: Use `for…of` instead of `.forEach(…)`.
-#### Suggested Resolution
-- Replace the `forEach` call with a `for…of` loop for clearer flow and better async support.
-
-### typescript:S6754 — src/pages/Userguide/Userguide.tsx:102
-- Line 102: `useState` call is not destructured into value + setter pair.
-#### Suggested Resolution
-- Rename the hook result to `[value, setValue]` style identifiers to keep state and setter paired.
+- None.
 
 ## Info Issues
 
