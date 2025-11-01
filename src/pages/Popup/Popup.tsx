@@ -68,16 +68,12 @@ const toggleActivationState =
 
 const createActivationUpdater =
   (target: HmeEmail) =>
-  (
-    existingEmails?: HmeEmail[]
-  ): HmeEmail[] | undefined =>
+  (existingEmails?: HmeEmail[]): HmeEmail[] | undefined =>
     existingEmails?.map(toggleActivationState(target));
 
 const createDeletionUpdater =
   (target: HmeEmail) =>
-  (
-    existingEmails?: HmeEmail[]
-  ): HmeEmail[] | undefined =>
+  (existingEmails?: HmeEmail[]): HmeEmail[] | undefined =>
     existingEmails?.filter((candidate) => !deepEqual(candidate, target));
 
 const SignInInstructions = () => {
