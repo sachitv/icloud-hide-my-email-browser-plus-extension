@@ -98,7 +98,7 @@ const AutofillableDemoInput = (props: {
   inputAttributes: InputHTMLAttributes<HTMLInputElement>;
   label: string;
 }) => {
-  const [autofillableInputValue, setAutoFillableInputValue] =
+  const [autofillableInputValue, setAutofillableInputValue] =
     useState<string>();
 
   return (
@@ -116,7 +116,7 @@ const AutofillableDemoInput = (props: {
         className="block w-full rounded-2xl border border-slate-800/70 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 transition focus:border-rainbow-blue focus:outline-none focus:ring-2 focus:ring-rainbow-blue/60"
         defaultValue={autofillableInputValue}
         onInput={(e) =>
-          setAutoFillableInputValue((e.target as HTMLInputElement).value)
+          setAutofillableInputValue((e.target as HTMLInputElement).value)
         }
         {...props.inputAttributes}
       />

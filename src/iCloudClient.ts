@@ -37,10 +37,11 @@ class ICloudClient {
   }
 
   public webserviceUrl(serviceName: ServiceName): string {
-    if (this.webservices === undefined) {
-      throw new Error('webservices have not been initialised');
+    const services = this.webservices;
+    if (services !== undefined) {
+      return services[serviceName].url;
     }
-    return this.webservices[serviceName].url;
+    throw new Error('webservices have not been initialised');
   }
 
   public async isAuthenticated(): Promise<boolean> {

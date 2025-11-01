@@ -236,21 +236,18 @@ const makeButtonSupport = (
     ev.preventDefault();
     const hme = btnElement.textContent ?? '';
     disableButton(btnElement, 'cursor-progress', LOADING_COPY);
-    const requestReservation = async () => {
-      try {
-        await browser.runtime.sendMessage({
-          type: MessageType.ReservationRequest,
-          data: {
-            hme,
-            label: globalThis.location?.host ?? '',
-            elementId: btnElement.id,
-          },
-        } as Message<ReservationRequestData>);
-      } catch (error) {
+    void browser.runtime
+      .sendMessage({
+        type: MessageType.ReservationRequest,
+        data: {
+          hme,
+          label: globalThis.location?.host ?? '',
+          elementId: btnElement.id,
+        },
+      } as Message<ReservationRequestData>)
+      .catch((error) => {
         console.debug('Hide My Email+: Reservation request failed', error);
-      }
-    };
-    void requestReservation();
+      });
   };
 
   btnElement.addEventListener('mousedown', btnOnMousedownCallback);

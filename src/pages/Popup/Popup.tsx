@@ -88,7 +88,7 @@ const SignInInstructions = () => {
             <Link href="https://icloud.com" aria-label="Go to iCloud.com">
               icloud.com
             </Link>
-            . Complete the flow, including{' '}
+            {' '}. Complete the flow, including{' '}
             <span className="font-semibold text-white">
               two-factor authentication
             </span>
