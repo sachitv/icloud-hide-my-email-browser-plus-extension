@@ -561,3 +561,8 @@ export default async function main(): Promise<void> {
     createMessageListener(messageListenerContext)
   );
 }
+
+export const __testUtils = {
+  addAutofillableInputElementIfMissing,
+  removeAutofillableInputElementIfPresent,
+};

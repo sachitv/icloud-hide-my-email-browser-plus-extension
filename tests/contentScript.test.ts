@@ -503,6 +503,63 @@ describe('content script email button integration', () => {
     await Promise.resolve();
   });
 
+  it('skips duplicate email inputs discovered via mutations', async () => {
+    getBrowserStorageValueMock.mockImplementation(async (key: string) => {
+      if (key === 'iCloudHmeOptions') {
+        return { autofill: { button: true, contextMenu: true } };
+      }
+      if (key === 'clientState') {
+        return {
+          setupUrl: 'https://example.com/setup',
+          webservices: {},
+        };
+      }
+      return undefined;
+    });
+
+    const originalInput = createInputElement();
+
+    const { default: main } = await import('../src/pages/Content/script');
+    await main();
+
+    focusInput(originalInput);
+    await Promise.resolve();
+
+    const initialHosts = Array.from(document.body.children).filter(
+      (el): el is HTMLElement => el instanceof HTMLElement && !!el.shadowRoot
+    );
+    expect(initialHosts).toHaveLength(1);
+
+    const duplicateInput = originalInput.cloneNode(true) as HTMLInputElement;
+    duplicateInput.getBoundingClientRect = vi.fn(() => ({
+      top: 40,
+      bottom: 64,
+      left: 10,
+      right: 210,
+      width: 200,
+      height: 24,
+      x: 10,
+      y: 40,
+      toJSON: () => ({}),
+    }));
+    document.body.appendChild(duplicateInput);
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    const hostsAfterDuplicate = Array.from(document.body.children).filter(
+      (el): el is HTMLElement => el instanceof HTMLElement && !!el.shadowRoot
+    );
+    expect(hostsAfterDuplicate).toHaveLength(1);
+
+    duplicateInput.remove();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    const hostsAfterRemoval = Array.from(document.body.children).filter(
+      (el): el is HTMLElement => el instanceof HTMLElement && !!el.shadowRoot
+    );
+    expect(hostsAfterRemoval).toHaveLength(1);
+  });
+
   // Guards against non-element nodes emitted from mutation observer removals.
   it('ignores removed nodes that are not elements', async () => {
     getBrowserStorageValueMock.mockImplementation(async (key: string) => {
