@@ -241,6 +241,79 @@ const SignOutButton = (props: {
   );
 };
 
+const ReservationForm = ({
+  isReservationFormDisabled,
+  onUseSubmit,
+  tabHost,
+  label,
+  setLabel,
+  reservationFormInputClassName,
+  note,
+  setNote,
+  isUseSubmitting,
+  reserveError,
+}: {
+  isReservationFormDisabled: boolean;
+  onUseSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+  tabHost: string;
+  label: string | undefined;
+  setLabel: (value: string) => void;
+  reservationFormInputClassName: string;
+  note: string | undefined;
+  setNote: (value: string) => void;
+  isUseSubmitting: boolean;
+  reserveError: string | undefined;
+}) => (
+  <form
+    className={`space-y-4 rounded-3xl border border-slate-800/70 bg-slate-950/50 p-4 shadow-inner shadow-slate-900/40 transition ${
+      isReservationFormDisabled ? 'opacity-60' : ''
+    }`}
+    onSubmit={onUseSubmit}
+  >
+    <div className="space-y-2">
+      <label
+        htmlFor="label"
+        className="block text-xs font-semibold uppercase tracking-[0.32em] text-slate-400"
+      >
+        Label
+      </label>
+      <input
+        id="label"
+        placeholder={tabHost}
+        required
+        value={label || ''}
+        onChange={(e) => setLabel(e.target.value)}
+        className={reservationFormInputClassName}
+        disabled={isReservationFormDisabled}
+      />
+    </div>
+    <div className="space-y-2">
+      <label
+        htmlFor="note"
+        className="block text-xs font-semibold uppercase tracking-[0.32em] text-slate-400"
+      >
+        Note
+      </label>
+      <textarea
+        id="note"
+        rows={2}
+        className={reservationFormInputClassName}
+        placeholder="Add a short reminder (optional)"
+        value={note || ''}
+        onChange={(e) => setNote(e.target.value)}
+        disabled={isReservationFormDisabled}
+      ></textarea>
+    </div>
+    <LoadingButton
+      loading={isUseSubmitting}
+      disabled={isReservationFormDisabled}
+    >
+      Use this email
+    </LoadingButton>
+    {reserveError && <ErrorMessage>{reserveError}</ErrorMessage>}
+  </form>
+);
+
 const HmeGenerator = (props: {
   callback: TransitionCallback<AuthenticatedAction>;
   client: ICloudClient;
@@ -379,54 +452,18 @@ const HmeGenerator = (props: {
         </div>
         {hmeEmail && (
           <div className="space-y-4">
-            <form
-              className={`space-y-4 rounded-3xl border border-slate-800/70 bg-slate-950/50 p-4 shadow-inner shadow-slate-900/40 transition ${
-                isReservationFormDisabled ? 'opacity-60' : ''
-              }`}
-              onSubmit={onUseSubmit}
-            >
-              <div className="space-y-2">
-                <label
-                  htmlFor="label"
-                  className="block text-xs font-semibold uppercase tracking-[0.32em] text-slate-400"
-                >
-                  Label
-                </label>
-                <input
-                  id="label"
-                  placeholder={tabHost}
-                  required
-                  value={label || ''}
-                  onChange={(e) => setLabel(e.target.value)}
-                  className={reservationFormInputClassName}
-                  disabled={isReservationFormDisabled}
-                />
-              </div>
-              <div className="space-y-2">
-                <label
-                  htmlFor="note"
-                  className="block text-xs font-semibold uppercase tracking-[0.32em] text-slate-400"
-                >
-                  Note
-                </label>
-                <textarea
-                  id="note"
-                  rows={2}
-                  className={reservationFormInputClassName}
-                  placeholder="Add a short reminder (optional)"
-                  value={note || ''}
-                  onChange={(e) => setNote(e.target.value)}
-                  disabled={isReservationFormDisabled}
-                ></textarea>
-              </div>
-              <LoadingButton
-                loading={isUseSubmitting}
-                disabled={isReservationFormDisabled}
-              >
-                Use this email
-              </LoadingButton>
-              {reserveError && <ErrorMessage>{reserveError}</ErrorMessage>}
-            </form>
+            <ReservationForm
+              isReservationFormDisabled={isReservationFormDisabled}
+              onUseSubmit={onUseSubmit}
+              tabHost={tabHost}
+              label={label}
+              setLabel={setLabel}
+              reservationFormInputClassName={reservationFormInputClassName}
+              note={note}
+              setNote={setNote}
+              isUseSubmitting={isUseSubmitting}
+              reserveError={reserveError}
+            />
             {reservedHme && <ReservationResult hme={reservedHme} />}
           </div>
         )}
@@ -634,6 +671,28 @@ type HmeListViewProps = {
   deletionCallbackFactory: (hmeEmail: HmeEmail) => () => void;
 };
 
+const SearchBar = ({
+  searchPrompt,
+  onSearchPromptChange,
+}: {
+  searchPrompt: string | undefined;
+  onSearchPromptChange: (value: string) => void;
+}) => (
+  <div className="relative rounded-tl-3xl border-b border-slate-800/60 bg-slate-950 p-3">
+    <div className="pointer-events-none absolute inset-y-0 flex items-center pl-3">
+      <SearchIcon className="h-4 w-4 text-slate-500" />
+    </div>
+    <input
+      type="search"
+      className="w-full rounded-2xl border border-slate-700 bg-slate-900 py-2 pl-10 pr-3 text-sm text-slate-100 placeholder-slate-500 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/60"
+      placeholder="Search"
+      aria-label="Search through your Hide My Email+ aliases"
+      defaultValue={searchPrompt ?? ''}
+      onChange={(event) => onSearchPromptChange(event.target.value)}
+    />
+  </div>
+);
+
 const HmeListView = ({
   client,
   fetchedHmeEmails,
@@ -699,19 +758,10 @@ const HmeListView = ({
       style={{ height: 450 }}
     >
       <div className="w-[30%] min-w-[220px] max-w-[30%] shrink-0 overflow-y-auto rounded-l-3xl bg-slate-950/70">
-        <div className="relative p-3 rounded-tl-3xl border-b border-slate-800/60 bg-slate-950">
-          <div className="pointer-events-none absolute inset-y-0 flex items-center pl-3">
-            <SearchIcon className="h-4 w-4 text-slate-500" />
-          </div>
-          <input
-            type="search"
-            className="w-full rounded-2xl border border-slate-700 bg-slate-900 py-2 pl-10 pr-3 text-sm text-slate-100 placeholder-slate-500 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/60"
-            placeholder="Search"
-            aria-label="Search through your Hide My Email+ aliases"
-            defaultValue={searchPrompt ?? ''}
-            onChange={(event) => onSearchPromptChange(event.target.value)}
-          />
-        </div>
+        <SearchBar
+          searchPrompt={searchPrompt}
+          onSearchPromptChange={onSearchPromptChange}
+        />
         {hmeEmails.length === 0 && searchPrompt ? noSearchResult : labelList}
       </div>
       <div className="basis-[70%] grow overflow-y-auto rounded-r-3xl border-l border-slate-800/60 bg-slate-950/80 p-4">
@@ -874,6 +924,29 @@ const transitionToNextStateElement = (
   }
 };
 
+const syncClientAuthState = async (
+  clientState: Store['clientState'],
+  setState: Dispatch<PopupState>,
+  setClientState: Dispatch<Store['clientState']>,
+  setClientAuthStateSynced: Dispatch<boolean>
+) => {
+  const isAuthenticated =
+    clientState?.setupUrl !== undefined &&
+    (await new ICloudClient(clientState.setupUrl).isAuthenticated());
+
+  if (isAuthenticated) {
+    setState((prevState) =>
+      prevState === PopupState.SignedOut ? PopupState.Authenticated : prevState
+    );
+  } else {
+    setState(PopupState.SignedOut);
+    setClientState(undefined);
+    performDeauthSideEffects();
+  }
+
+  setClientAuthStateSynced(true);
+};
+
 const Popup = () => {
   const [state, setState, isStateLoading] = useBrowserStorageState(
     'popupState',
@@ -885,32 +958,19 @@ const Popup = () => {
   const [clientAuthStateSynced, setClientAuthStateSynced] = useState(false);
 
   useEffect(() => {
-    const syncClientAuthState = async () => {
-      const isAuthenticated =
-        clientState?.setupUrl !== undefined &&
-        (await new ICloudClient(clientState.setupUrl).isAuthenticated());
-
-      if (isAuthenticated) {
-        setState((prevState) =>
-          prevState === PopupState.SignedOut
-            ? PopupState.Authenticated
-            : prevState
-        );
-      } else {
-        setState(PopupState.SignedOut);
-        setClientState(undefined);
-        performDeauthSideEffects();
-      }
-
-      setClientAuthStateSynced(true);
-    };
-
-    !isClientStateLoading && !clientAuthStateSynced && syncClientAuthState();
+    if (!isClientStateLoading && !clientAuthStateSynced) {
+      syncClientAuthState(
+        clientState,
+        setState,
+        setClientState,
+        setClientAuthStateSynced
+      );
+    }
   }, [
     setState,
     setClientState,
     clientAuthStateSynced,
-    clientState?.setupUrl,
+    clientState,
     isClientStateLoading,
   ]);
 
