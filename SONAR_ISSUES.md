@@ -8,48 +8,13 @@
 - typescript:S6643 — tests/contentScript.test.ts:879 & 909: Swapped prototype augmentation with a scoped spy on `Array.prototype.find`.
 - typescript:S6643 — tests/contentScript.test.ts:18 & 32: Dropped the ArrayBuffer and SharedArrayBuffer prototype shims.
 - typescript:S6643 — vitest.config.mts:8 & 22: Removed prototype mutations from the Vitest configuration setup.
+- css:S7924 — src/pages/Options/index.css, src/pages/Popup/index.css, src/pages/Userguide/index.css: Declared the base background color explicitly to support Sonar's contrast check against the gradient.
+- typescript:S6772 — src/pages/Popup/Popup.tsx:96: Added explicit JSX whitespace after the `Link` component to keep the sentence spacing obvious.
+- javascript:S7785 — utils/checkLicenses.mjs:236: Replaced the async wrapper with top-level await and structured error handling.
+- javascript:S7785 — utils/generateLicenseTable.mjs:132: Converted the script to use top-level await while preserving existing logging.
+- typescript:S6544 — src/pages/Content/script.ts:247 & 252: Wrapped the reservation request in an internal async helper so the event listener stays synchronous.
 
 ## Major Issues
-
-### css:S7924 — src/pages/Options/index.css:20
-- Line 20: Text does not meet the minimal contrast requirement with its background.
-#### Suggested Resolution
-- Adjust the foreground/background colors to reach at least a 4.5:1 contrast ratio (3:1 for large text) per WCAG AA.
-
-### typescript:S6772 — src/pages/Popup/Popup.tsx:96
-- Line 96: Ambiguous spacing after previous element span.
-#### Suggested Resolution
-- Add explicit whitespace via `{' '}` or an empty comment to make the intended spacing clear in JSX.
-
-### css:S7924 — src/pages/Popup/index.css:23
-- Line 23: Text does not meet the minimal contrast requirement with its background.
-#### Suggested Resolution
-- Rework the color pairing so the text/background contrast satisfies WCAG AA thresholds.
-
-### css:S7924 — src/pages/Userguide/index.css:20
-- Line 20: Text does not meet the minimal contrast requirement with its background.
-#### Suggested Resolution
-- Update the palette to achieve compliant contrast for the affected text elements.
-
-### javascript:S7785 — utils/checkLicenses.mjs:236
-- Line 236: Prefer top-level await over using a promise chain.
-#### Suggested Resolution
-- Replace the immediately-invoked async wrapper with direct top-level `await` and standard try/catch handling.
-
-### javascript:S7785 — utils/generateLicenseTable.mjs:132
-- Line 132: Prefer top-level await over using a promise chain.
-#### Suggested Resolution
-- Inline the asynchronous logic with top-level `await` instead of chaining promises inside an IIFE.
-
-### typescript:S6544 — src/pages/Content/script.ts:247
-- Line 247: Promise-returning function provided to property where a void return was expected.
-#### Suggested Resolution
-- Await the promise or refactor the handler to return `void`, ensuring listeners do not receive unresolved promises.
-
-### typescript:S6544 — src/pages/Content/script.ts:252
-- Line 252: Promise-returning function provided to property where a void return was expected.
-#### Suggested Resolution
-- Resolve the asynchronous work before returning or restructure the callback to avoid returning a promise.
 
 ### typescript:S6772 — src/pages/Userguide/Userguide.tsx:90
 - Line 90: Ambiguous spacing after previous element span.

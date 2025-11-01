@@ -233,7 +233,9 @@ async function main() {
   );
 }
 
-main().catch((error) => {
+try {
+  await main();
+} catch (error) {
   console.error('License check failed to complete:', error);
   process.exitCode = 1;
-});
+}

@@ -57,43 +57,43 @@ function markdownLink(identifier, repository) {
   return identifier;
 }
 
-async function main() {
-  const start = path.resolve(process.cwd());
+const start = path.resolve(process.cwd());
 
-  // Exclude this repository from the generated list.
-  const pkg = JSON.parse(
-    fs.readFileSync(path.join(start, 'package.json'), 'utf8')
-  );
-  const ownPackageIdentifier = `${pkg.name}@${pkg.version}`;
+// Exclude this repository from the generated list.
+const pkg = JSON.parse(
+  fs.readFileSync(path.join(start, 'package.json'), 'utf8')
+);
+const ownPackageIdentifier = `${pkg.name}@${pkg.version}`;
 
-  // Collect package names that are marked optional in package-lock.json to keep
-  // platform-specific binaries out of the final attribution list.
-  const optionalPackages = (() => {
-    try {
-      const lockPath = path.join(start, 'package-lock.json');
-      const lock = JSON.parse(fs.readFileSync(lockPath, 'utf8'));
-      const packages = lock.packages || {};
-      const names = new Set();
+// Collect package names that are marked optional in package-lock.json to keep
+// platform-specific binaries out of the final attribution list.
+const optionalPackages = (() => {
+  try {
+    const lockPath = path.join(start, 'package-lock.json');
+    const lock = JSON.parse(fs.readFileSync(lockPath, 'utf8'));
+    const packages = lock.packages || {};
+    const names = new Set();
 
-      for (const [pkgPath, pkgInfo] of Object.entries(packages)) {
-        if (!pkgInfo || !pkgInfo.optional) {
-          continue;
-        }
-
-        const segments = pkgPath.split('node_modules/');
-        const inferredName = pkgInfo.name || segments[segments.length - 1];
-
-        if (inferredName) {
-          names.add(inferredName);
-        }
+    for (const [pkgPath, pkgInfo] of Object.entries(packages)) {
+      if (!pkgInfo || !pkgInfo.optional) {
+        continue;
       }
 
-      return names;
-    } catch (_error) {
-      return new Set();
-    }
-  })();
+      const segments = pkgPath.split('node_modules/');
+      const inferredName = pkgInfo.name || segments[segments.length - 1];
 
+      if (inferredName) {
+        names.add(inferredName);
+      }
+    }
+
+    return names;
+  } catch (_error) {
+    return new Set();
+  }
+})();
+
+try {
   // Collect the dependency graph (direct + transitive) with their license metadata.
   const results = await initAsync({
     start,
@@ -127,9 +127,7 @@ async function main() {
   }
 
   console.log(lines.join('\n'));
-}
-
-main().catch((error) => {
+} catch (error) {
   console.error('Failed to generate license markdown table:', error);
   process.exitCode = 1;
-});
+}
