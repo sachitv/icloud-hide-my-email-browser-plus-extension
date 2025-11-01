@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import startCase from '../src/utils/startCase';
+import { startCase } from '../src/utils/startCase';
 
 describe('startCase', () => {
   it('converts hyphen and underscore delimiters to spaces and capitalizes words', () => {
