@@ -2,6 +2,7 @@ import React, {
   ButtonHTMLAttributes,
   DetailedHTMLProps,
   ReactNode,
+  useId,
 } from 'react';
 import { SpinnerIcon } from './icons';
 
@@ -68,6 +69,7 @@ export const TitledComponent = (props: {
 }) => {
   const { title, subtitle, hideHeader = false, children: childrenProp } = props;
   const children = React.Children.toArray(childrenProp) as ReactNode[];
+  const sectionId = useId();
 
   return (
     <section className="relative overflow-hidden rounded-3xl border border-slate-800/50 bg-slate-950/70 shadow-[0_40px_80px_-60px_rgba(30,64,175,0.8)] backdrop-blur-xl">
@@ -91,11 +93,15 @@ export const TitledComponent = (props: {
       )}
       {children.length > 0 && (
         <div className="divide-y divide-slate-800/60">
-          {children.map((child, key) => {
-            const paddingClass = key === 0 ? 'px-6 py-2' : 'px-6 py-5';
+          {children.map((child, index) => {
+            const paddingClass = index === 0 ? 'px-6 py-2' : 'px-6 py-5';
+            const childKey =
+              React.isValidElement(child) && child.key != null
+                ? child.key
+                : `${sectionId}-${index}`;
             return (
               <div
-                key={key}
+                key={childKey}
                 className={`${paddingClass} text-[15px] text-slate-100/90`}
               >
                 {child}
