@@ -234,6 +234,9 @@ jobs:
       - package-sources
       - version
     steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
       - name: Download Brave artifact
         uses: actions/download-artifact@v6
         with:
@@ -259,19 +262,23 @@ jobs:
         with:
           name: sources-package
           path: artifacts
-      - name: Changelog from Conventional Commits
-        id: changelog
-        uses: requarks/changelog-action@v1.10.3
+      - name: Generate release notes
+        id: release_notes
+        uses: TriPSs/conventional-changelog-action@v5
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          tag: v${{ needs.version.outputs.extension_version }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          tag-prefix: v
+          version: ${{ needs.version.outputs.extension_version }}
+          skip-commit: true
+          skip-tag: true
+          skip-release: true
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
           draft: ${{ github.event.inputs.release == 'draft' }}
           tag_name: v${{ needs.version.outputs.extension_version }}
           name: v${{ needs.version.outputs.extension_version }}
-          body: ${{ steps.changelog.outputs.changes }}
+          body: ${{ steps.release_notes.outputs.clean_changelog }}
           files: |
             artifacts/icloud-hide-my-email-plus-browser-extension-${{ needs.version.outputs.extension_version }}-brave.zip
             artifacts/icloud-hide-my-email-plus-browser-extension-${{ needs.version.outputs.extension_version }}-chrome.zip

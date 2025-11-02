@@ -1,0 +1,70 @@
+name: Changelog Preview
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+  workflow_dispatch:
+
+jobs:
+  changelog:
+    name: Generate changelog since last release
+    permissions:
+      contents: read
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Detect latest release tag
+        id: previous_tag
+        run: |
+          if git describe --tags --abbrev=0 >/dev/null 2>&1; then
+            git describe --tags --abbrev=0 | sed 's/^/tag=/' >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Report missing tags
+        if: steps.previous_tag.outputs.tag == ''
+        run: |
+          {
+            echo '## Changelog since last release'
+            echo
+            echo 'No annotated release tags were found. Nothing to compare against yet.'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Generate changelog from last release
+        if: steps.previous_tag.outputs.tag != ''
+        id: changelog
+        uses: TriPSs/conventional-changelog-action@v5
+        with:
+          github-token: ${{ github.token }}
+          tag-prefix: v
+          skip-commit: true
+          skip-tag: true
+          skip-release: true
+          output-file: changelog-preview.md
+
+      - name: Share changelog summary
+        if: steps.changelog.outputs.clean_changelog != ''
+        env:
+          CHANGELOG: ${{ steps.changelog.outputs.clean_changelog }}
+        run: |
+          {
+            echo '## Changelog since last release'
+            echo
+            printf '%s\n' "$CHANGELOG"
+          } >> "$GITHUB_STEP_SUMMARY"
+          printf '%s\n' "$CHANGELOG" > changelog-preview.md
+
+      - name: Upload changelog preview
+        if: steps.changelog.outputs.clean_changelog != ''
+        uses: actions/upload-artifact@v5
+        with:
+          name: changelog-preview
+          path: changelog-preview.md
