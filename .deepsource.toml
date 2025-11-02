@@ -1,0 +1,18 @@
+version = 1
+
+[[analyzers]]
+name = "test-coverage"
+
+[[analyzers]]
+name = "javascript"
+
+  [analyzers.meta]
+  plugins = ["react"]
+  environment = [
+    "nodejs",
+    "browser",
+    "vitest"
+  ]
+
+[[transformers]]
+name = "prettier"
