@@ -142,7 +142,7 @@ async function getLicenseData() {
   const start = path.resolve(process.cwd());
 
   // Build the dependency graph (direct + transitive) with license metadata.
-  return await initAsync({
+  return initAsync({
     start,
     json: true,
   });
