@@ -133,7 +133,8 @@ const runContentScript = async () => {
 
 const findShadowHost = () =>
   Array.from(document.body.children).find(
-    (el): el is HTMLElement => el instanceof HTMLElement && Boolean(el.shadowRoot)
+    (el): el is HTMLElement =>
+      el instanceof HTMLElement && Boolean(el.shadowRoot)
   );
 
 describe('content script email button integration', () => {
@@ -264,7 +265,8 @@ describe('content script email button integration', () => {
     await Promise.resolve();
 
     const hosts = Array.from(document.body.children).filter(
-      (el): el is HTMLElement => el instanceof HTMLElement && Boolean(el.shadowRoot)
+      (el): el is HTMLElement =>
+        el instanceof HTMLElement && Boolean(el.shadowRoot)
     );
 
     expect(hosts).toHaveLength(0);
@@ -502,7 +504,8 @@ describe('content script email button integration', () => {
     await Promise.resolve();
 
     const initialHosts = Array.from(document.body.children).filter(
-      (el): el is HTMLElement => el instanceof HTMLElement && Boolean(el.shadowRoot)
+      (el): el is HTMLElement =>
+        el instanceof HTMLElement && Boolean(el.shadowRoot)
     );
     expect(initialHosts).toHaveLength(1);
 
@@ -523,7 +526,8 @@ describe('content script email button integration', () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     const hostsAfterDuplicate = Array.from(document.body.children).filter(
-      (el): el is HTMLElement => el instanceof HTMLElement && Boolean(el.shadowRoot)
+      (el): el is HTMLElement =>
+        el instanceof HTMLElement && Boolean(el.shadowRoot)
     );
     expect(hostsAfterDuplicate).toHaveLength(1);
 
@@ -531,7 +535,8 @@ describe('content script email button integration', () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     const hostsAfterRemoval = Array.from(document.body.children).filter(
-      (el): el is HTMLElement => el instanceof HTMLElement && Boolean(el.shadowRoot)
+      (el): el is HTMLElement =>
+        el instanceof HTMLElement && Boolean(el.shadowRoot)
     );
     expect(hostsAfterRemoval).toHaveLength(1);
   });
