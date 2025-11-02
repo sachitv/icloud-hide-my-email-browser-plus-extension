@@ -264,7 +264,7 @@ jobs:
           path: artifacts
       - name: Generate release notes
         id: release_notes
-        uses: TriPSs/conventional-changelog-action@v5
+        uses: TriPSs/conventional-changelog-action@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           tag-prefix: v
