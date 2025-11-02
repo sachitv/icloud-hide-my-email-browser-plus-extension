@@ -20,7 +20,7 @@ vi.mock('../src/storage', () => ({
   getBrowserStorageValue: vi.fn(),
 }));
 
-let helpers: typeof import('../src/pages/Content/script')['__testUtils'];
+let helpers: (typeof import('../src/pages/Content/script'))['__testUtils'];
 
 beforeAll(async () => {
   ({ __testUtils: helpers } = await import('../src/pages/Content/script'));
