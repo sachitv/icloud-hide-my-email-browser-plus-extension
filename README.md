@@ -6,7 +6,12 @@ Hide My Email+ builds on iCloud's [Hide My Email](https://support.apple.com/en-u
 
 [![Build status](https://github.com/sachitv/icloud-hide-my-email-browser-plus-extension/actions/workflows/tests.yaml/badge.svg?branch=main)](https://github.com/sachitv/icloud-hide-my-email-browser-plus-extension/actions/workflows/tests.yaml)
 [![codecov](https://codecov.io/gh/sachitv/icloud-hide-my-email-browser-plus-extension/graph/badge.svg?token=8ZAZ0Z9LZS)](https://codecov.io/gh/sachitv/icloud-hide-my-email-browser-plus-extension)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=sachitv_icloud-hide-my-email-browser-plus-extension&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=sachitv_icloud-hide-my-email-browser-plus-extension)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=sachitv_icloud-hide-my-email-browser-plus-extension&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=sachitv_icloud-hide-my-email-browser-plus-extension)\
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=sachitv_icloud-hide-my-email-browser-plus-extension&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=sachitv_icloud-hide-my-email-browser-plus-extension)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=sachitv_icloud-hide-my-email-browser-plus-extension&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=sachitv_icloud-hide-my-email-browser-plus-extension)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=sachitv_icloud-hide-my-email-browser-plus-extension&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=sachitv_icloud-hide-my-email-browser-plus-extension)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=sachitv_icloud-hide-my-email-browser-plus-extension&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=sachitv_icloud-hide-my-email-browser-plus-extension)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=sachitv_icloud-hide-my-email-browser-plus-extension&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=sachitv_icloud-hide-my-email-browser-plus-extension)
 
 ## Supported Browsers
 
