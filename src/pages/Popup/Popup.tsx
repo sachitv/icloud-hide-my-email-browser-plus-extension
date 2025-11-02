@@ -436,7 +436,7 @@ const HmeGenerator = (props: {
   };
 
   const isReservationFormDisabled =
-    isEmailRefreshSubmitting || hmeEmail == reservedHme?.hme;
+    isEmailRefreshSubmitting || hmeEmail === reservedHme?.hme;
 
   const reservationFormInputClassName =
     'w-full rounded-2xl border border-slate-800/70 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 transition focus:border-rainbow-purple focus:outline-none focus:ring-2 focus:ring-rainbow-purple/70';
