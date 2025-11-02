@@ -142,4 +142,11 @@ describe('ICloudClient', () => {
       }
     );
   });
+
+  it('throws when webserviceUrl is called before webservices are set', () => {
+    const client = new ICloudClient(DEFAULT_SETUP_URL);
+    expect(() => client.webserviceUrl('premiummailsettings')).toThrow(
+      'webservices have not been initialised'
+    );
+  });
 });

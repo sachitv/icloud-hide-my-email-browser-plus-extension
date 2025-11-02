@@ -302,6 +302,64 @@ describe('content script email button integration', () => {
     expect(button?.hasAttribute('disabled')).toBe(true);
   });
 
+  it('bails out of button repositioning when the input is detached', async () => {
+    mockStorageState({ clientState: undefined });
+
+    const input = createInputElement();
+
+    await runContentScript();
+
+    focusInput(input);
+    await Promise.resolve();
+
+    const host = findShadowHost();
+    const scrollHandler = windowAddEventListenerSpy.mock.calls.find(
+      ([eventName]) => eventName === 'scroll'
+    )?.[1] as EventListener | undefined;
+    expect(scrollHandler).toBeDefined();
+
+    input.remove();
+    host?.remove();
+
+    expect(() => scrollHandler?.(new Event('scroll'))).not.toThrow();
+  });
+
+  it('requests reservation when the button is clicked', async () => {
+    const input = createInputElement();
+
+    await runContentScript();
+
+    focusInput(input);
+    await Promise.resolve();
+
+    const host = findShadowHost();
+    const button = host?.shadowRoot?.querySelector('button') as
+      | HTMLButtonElement
+      | undefined;
+
+    runtimeMessageListener?.({
+      type: MessageType.GenerateResponse,
+      data: {
+        elementId: 'button-uuid',
+        hme: 'alias@example.com',
+      },
+    });
+    await waitFor(() => expect(button?.textContent).toBe('alias@example.com'));
+
+    button?.dispatchEvent(new MouseEvent('mousedown'));
+
+    await waitFor(() =>
+      expect(runtimeSendMessageMock).toHaveBeenLastCalledWith({
+        type: MessageType.ReservationRequest,
+        data: {
+          hme: 'alias@example.com',
+          label: 'localhost:3000',
+          elementId: 'button-uuid',
+        },
+      })
+    );
+  });
+
   // Covers scroll event handling to keep the floating button aligned to inputs.
   it('repositions the button when a scrollable ancestor scrolls', async () => {
     mockStorageState({ clientState: undefined });
