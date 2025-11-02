@@ -632,6 +632,104 @@ describe('Popup UI', () => {
     expect(() => render(<Popup />)).toThrow(/Unhandled PopupState case/i);
   });
 
+  it('handles errors when updating the context menu on sign-out', async () => {
+    popupStateValue = PopupState.Authenticated;
+    clientStateValue = {
+      setupUrl: 'https://setup.example.com',
+      webservices: {
+        premiummailsettings: {
+          url: 'https://service.example.com',
+          status: 'active',
+        },
+      },
+    };
+    isAuthenticatedMock.mockResolvedValue(true);
+    contextMenuUpdateMock.mockRejectedValue(
+      new Error('context menu update failed')
+    );
+    const consoleDebugSpy = vi
+      .spyOn(console, 'debug')
+      .mockImplementation(() => undefined);
+
+    render(<Popup />);
+
+    await user.click(await screen.findByRole('button', { name: /Sign out/i }));
+
+    await waitFor(() => expect(signOutMock).toHaveBeenCalled());
+    expect(consoleDebugSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: 'context menu update failed',
+      })
+    );
+
+    consoleDebugSpy.mockRestore();
+  });
+
+  it('handles errors when querying for the active tab', async () => {
+    popupStateValue = PopupState.Authenticated;
+    clientStateValue = {
+      setupUrl: 'https://setup.example.com',
+      webservices: {
+        premiummailsettings: {
+          url: 'https://service.example.com',
+          status: 'active',
+        },
+      },
+    };
+    isAuthenticatedMock.mockResolvedValue(true);
+    tabsQueryMock.mockRejectedValue(new Error('tabs query failed'));
+    const consoleErrorSpy = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => undefined);
+
+    render(<Popup />);
+
+    await waitFor(() => expect(tabsQueryMock).toHaveBeenCalled());
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: 'tabs query failed',
+      })
+    );
+
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('surfaces reservation errors and handles empty payloads', async () => {
+    popupStateValue = PopupState.Authenticated;
+    clientStateValue = {
+      setupUrl: 'https://setup.example.com',
+      webservices: {
+        premiummailsettings: {
+          url: 'https://service.example.com',
+          status: 'active',
+        },
+      },
+    };
+    isAuthenticatedMock.mockResolvedValue(true);
+    reserveHmeMock.mockRejectedValueOnce(new Error('reserve failed'));
+    generateHmeMock.mockResolvedValueOnce('first@example.com');
+    generateHmeMock.mockResolvedValueOnce('second@example.com');
+
+    render(<Popup />);
+
+    const useButton = await screen.findByRole('button', {
+      name: /Use this email/i,
+    });
+    await user.click(useButton);
+
+    await waitFor(() =>
+      expect(screen.getByText(/reserve failed/i)).toBeInTheDocument()
+    );
+
+    const refreshButton = await screen.findByRole('button', {
+      name: /Refresh email/i,
+    });
+    await user.click(refreshButton);
+    await waitFor(() =>
+      expect(screen.queryByText(/reserve failed/i)).not.toBeInTheDocument()
+    );
+  });
+
   // Error handling inside HmeDetails for activate/reactivate/delete flows.
   it('surfaces activation, reactivation, and deletion errors within HME details', async () => {
     popupStateValue = PopupState.AuthenticatedAndManaging;

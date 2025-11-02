@@ -328,4 +328,42 @@ describe('Options page UI', () => {
     );
     expect(updateForwardToHmeMock).not.toHaveBeenCalled();
   });
+
+  it('surfaces an error when the forwarding address fails to update', async () => {
+    storageStateMocks.iCloudHmeOptions = {
+      state: DEFAULT_STORE.iCloudHmeOptions,
+      isLoading: false,
+    };
+    storageStateMocks.clientState = {
+      state: {
+        setupUrl: 'https://setup.example.com',
+        webservices: {
+          premiummailsettings: {
+            url: 'https://service.example.com',
+            status: 'active',
+          },
+        },
+      },
+      spy: vi.fn(),
+      isLoading: false,
+    };
+
+    isAuthenticatedMock.mockResolvedValue(true);
+    listHmeMock.mockResolvedValue({
+      forwardToEmails: ['alias-one@example.com'],
+      selectedForwardTo: 'alias-one@example.com',
+    });
+    updateForwardToHmeMock.mockRejectedValue(new Error('update failed'));
+
+    const user = userEvent.setup();
+    render(<Options />);
+
+    await user.click(
+      await screen.findByRole('button', { name: /update forwarding/i })
+    );
+
+    await waitFor(() =>
+      expect(screen.getByText(/update failed/i)).toBeInTheDocument()
+    );
+  });
 });
