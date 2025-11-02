@@ -271,6 +271,7 @@ jobs:
           version: ${{ needs.version.outputs.extension_version }}
           skip-commit: true
           skip-tag: true
+          git-push: false
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
