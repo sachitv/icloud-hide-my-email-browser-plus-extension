@@ -70,7 +70,7 @@
     "spdx-expression-parse": "^4.0.0",
     "tailwindcss": "^4.1.16",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.6",
+    "vitest": "^4.0.7",
     "web-ext": "^9.1.0",
     "wxt": "^0.20.11"
   }
