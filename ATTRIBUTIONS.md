@@ -20,7 +20,7 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [@babel/runtime@7.28.4](https://github.com/babel/babel)                                                     | MIT                                 |
 | [@babel/types@7.28.4](https://github.com/babel/babel)                                                       | MIT                                 |
 | [@bcoe/v8-coverage@1.0.2](https://github.com/bcoe/v8-coverage)                                              | MIT                                 |
-| [@biomejs/biome@2.3.2](https://github.com/biomejs/biome)                                                    | MIT OR Apache-2.0                   |
+| [@biomejs/biome@2.3.3](https://github.com/biomejs/biome)                                                    | MIT OR Apache-2.0                   |
 | [@csstools/color-helpers@5.1.0](https://github.com/csstools/postcss-plugins)                                | MIT-0                               |
 | [@csstools/css-calc@2.1.4](https://github.com/csstools/postcss-plugins)                                     | MIT                                 |
 | [@csstools/css-color-parser@3.1.0](https://github.com/csstools/postcss-plugins)                             | MIT                                 |
@@ -80,14 +80,14 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [@types/whatwg-mimetype@3.0.2](https://github.com/DefinitelyTyped/DefinitelyTyped)                          | MIT                                 |
 | [@types/yauzl@2.10.3](https://github.com/DefinitelyTyped/DefinitelyTyped)                                   | MIT                                 |
 | [@ungap/structured-clone@1.3.0](https://github.com/ungap/structured-clone)                                  | ISC                                 |
-| [@vitest/coverage-v8@4.0.6](https://github.com/vitest-dev/vitest)                                           | MIT                                 |
-| [@vitest/expect@4.0.6](https://github.com/vitest-dev/vitest)                                                | MIT                                 |
-| [@vitest/mocker@4.0.6](https://github.com/vitest-dev/vitest)                                                | MIT                                 |
-| [@vitest/pretty-format@4.0.6](https://github.com/vitest-dev/vitest)                                         | MIT                                 |
-| [@vitest/runner@4.0.6](https://github.com/vitest-dev/vitest)                                                | MIT                                 |
-| [@vitest/snapshot@4.0.6](https://github.com/vitest-dev/vitest)                                              | MIT                                 |
-| [@vitest/spy@4.0.6](https://github.com/vitest-dev/vitest)                                                   | MIT                                 |
-| [@vitest/utils@4.0.6](https://github.com/vitest-dev/vitest)                                                 | MIT                                 |
+| [@vitest/coverage-v8@4.0.7](https://github.com/vitest-dev/vitest)                                           | MIT                                 |
+| [@vitest/expect@4.0.7](https://github.com/vitest-dev/vitest)                                                | MIT                                 |
+| [@vitest/mocker@4.0.7](https://github.com/vitest-dev/vitest)                                                | MIT                                 |
+| [@vitest/pretty-format@4.0.7](https://github.com/vitest-dev/vitest)                                         | MIT                                 |
+| [@vitest/runner@4.0.7](https://github.com/vitest-dev/vitest)                                                | MIT                                 |
+| [@vitest/snapshot@4.0.7](https://github.com/vitest-dev/vitest)                                              | MIT                                 |
+| [@vitest/spy@4.0.7](https://github.com/vitest-dev/vitest)                                                   | MIT                                 |
+| [@vitest/utils@4.0.7](https://github.com/vitest-dev/vitest)                                                 | MIT                                 |
 | [@webext-core/fake-browser@1.3.2](https://github.com/aklinker1/webext-core)                                 | MIT                                 |
 | [@webext-core/isolated-element@1.1.2](https://github.com/aklinker1/webext-core)                             | MIT                                 |
 | [@webext-core/match-patterns@1.0.3](https://github.com/aklinker1/webext-core)                               | MIT                                 |
@@ -586,7 +586,7 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [validate-npm-package-license@3.0.4](https://github.com/kemitchell/validate-npm-package-license.js)         | Apache-2.0                          |
 | [vite-node@3.2.4](https://github.com/vitest-dev/vitest)                                                     | MIT                                 |
 | [vite@7.1.11](https://github.com/vitejs/vite)                                                               | MIT                                 |
-| [vitest@4.0.6](https://github.com/vitest-dev/vitest)                                                        | MIT                                 |
+| [vitest@4.0.7](https://github.com/vitest-dev/vitest)                                                        | MIT                                 |
 | [w3c-xmlserializer@5.0.0](https://github.com/jsdom/w3c-xmlserializer)                                       | MIT                                 |
 | [watchpack@2.4.4](https://github.com/webpack/watchpack)                                                     | MIT                                 |
 | [wcwidth@1.0.1](https://github.com/timoxley/wcwidth)                                                        | MIT                                 |
