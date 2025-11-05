@@ -8,6 +8,11 @@ updates:
       prefix: chore
       prefix-development: chore
       include: scope
+    groups:
+      vitest:
+        patterns:
+          - "vitest"
+          - "@vitest/coverage-v8"
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
