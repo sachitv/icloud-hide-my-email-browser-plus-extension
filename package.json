@@ -68,7 +68,7 @@
     "prettier": "^3.6.2",
     "publish-browser-extension": "^4.0.0",
     "spdx-expression-parse": "^4.0.0",
-    "tailwindcss": "^4.1.16",
+    "tailwindcss": "^4.1.17",
     "typescript": "^5.9.3",
     "vitest": "^4.0.7",
     "web-ext": "^9.1.0",
