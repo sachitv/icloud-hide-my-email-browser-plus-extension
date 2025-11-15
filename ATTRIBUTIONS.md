@@ -344,7 +344,7 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [jose@5.9.6](https://github.com/panva/jose)                                                                 | MIT                                 |
 | [js-tokens@4.0.0](https://github.com/lydell/js-tokens)                                                      | MIT                                 |
 | [js-tokens@9.0.1](https://github.com/lydell/js-tokens)                                                      | MIT                                 |
-| [js-yaml@4.1.0](https://github.com/nodeca/js-yaml)                                                          | MIT                                 |
+| [js-yaml@4.1.1](https://github.com/nodeca/js-yaml)                                                          | MIT                                 |
 | [jsdom@27.1.0](https://github.com/jsdom/jsdom)                                                              | MIT                                 |
 | [json-buffer@3.0.1](https://github.com/dominictarr/json-buffer)                                             | MIT                                 |
 | [json-merge-patch@1.0.2](https://github.com/pierreinglebert/json-merge-patch)                               | MIT                                 |
