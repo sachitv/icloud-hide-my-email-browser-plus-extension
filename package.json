@@ -58,7 +58,7 @@
     "@testing-library/user-event": "^14.6.1",
     "@types/chrome": "^0.1.31",
     "@types/react": "^19.2.7",
-    "@types/react-dom": "^19.2.2",
+    "@types/react-dom": "^19.2.3",
     "@types/webextension-polyfill": "^0.12.4",
     "@vitest/coverage-v8": "^4.0.13",
     "happy-dom": "^20.0.10",
