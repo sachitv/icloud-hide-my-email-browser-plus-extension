@@ -46,7 +46,7 @@
     "@wxt-dev/webextension-polyfill": "^1.0.0",
     "fuse.js": "^7.1.0",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0",
+    "react-dom": "^19.2.3",
     "uuid": "^13.0.0",
     "webextension-polyfill": "^0.12.0"
   },
