@@ -53,7 +53,7 @@ jobs:
       - name: Package extension for Brave
         run: npm run package:brave
       - name: Upload Brave artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: brave-package
           path: build/icloud-hide-my-email-plus-browser-extension-${{ needs.version.outputs.extension_version }}-brave.zip
@@ -77,7 +77,7 @@ jobs:
       - name: Package extension for Chrome
         run: npm run package:chrome
       - name: Upload Chrome artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: chrome-package
           path: build/icloud-hide-my-email-plus-browser-extension-${{ needs.version.outputs.extension_version }}-chrome.zip
@@ -101,7 +101,7 @@ jobs:
       - name: Package extension for Edge
         run: npm run package:edge
       - name: Upload Edge artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: edge-package
           path: build/icloud-hide-my-email-plus-browser-extension-${{ needs.version.outputs.extension_version }}-edge.zip
@@ -127,7 +127,7 @@ jobs:
       - name: Lint Firefox package
         run: npx web-ext lint --source-dir build/firefox-mv3
       - name: Upload Firefox artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: firefox-package
           path: build/icloud-hide-my-email-plus-browser-extension-${{ needs.version.outputs.extension_version }}-firefox.zip
@@ -151,7 +151,7 @@ jobs:
       - name: Package sources
         run: npm run package:sources
       - name: Upload sources artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: sources-package
           path: build/icloud-hide-my-email-plus-browser-extension-${{ needs.version.outputs.extension_version }}-sources.zip
