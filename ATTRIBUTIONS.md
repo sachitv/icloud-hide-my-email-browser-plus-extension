@@ -463,7 +463,7 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [prompts@2.4.2](https://github.com/terkelg/prompts)                                                         | MIT                                 |
 | [proto-list@1.2.4](https://github.com/isaacs/proto-list)                                                    | ISC                                 |
 | [publish-browser-extension@3.0.3](https://github.com/aklinker1/publish-browser-extension)                   | MIT                                 |
-| [publish-browser-extension@4.0.0](https://github.com/aklinker1/publish-browser-extension)                   | MIT                                 |
+| [publish-browser-extension@4.0.1](https://github.com/aklinker1/publish-browser-extension)                   | MIT                                 |
 | [punycode@2.3.1](https://github.com/mathiasbynens/punycode.js)                                              | MIT                                 |
 | [pupa@3.3.0](https://github.com/sindresorhus/pupa)                                                          | MIT                                 |
 | [quansync@0.2.11](https://github.com/quansync-dev/quansync)                                                 | MIT                                 |
