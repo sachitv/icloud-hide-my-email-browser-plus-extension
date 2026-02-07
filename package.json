@@ -61,7 +61,7 @@
     "@types/react-dom": "^19.2.3",
     "@types/webextension-polyfill": "^0.12.4",
     "@vitest/coverage-v8": "^4.0.18",
-    "happy-dom": "^20.3.7",
+    "happy-dom": "^20.5.0",
     "jsdom": "^27.4.0",
     "license-checker-rseidelsohn": "^4.4.2",
     "postcss": "^8.5.6",
