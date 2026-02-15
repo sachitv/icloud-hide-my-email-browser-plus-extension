@@ -71,7 +71,7 @@
     "tailwindcss": "^4.1.17",
     "typescript": "^5.9.3",
     "vitest": "^4.0.7",
-    "web-ext": "^9.1.0",
+    "web-ext": "^9.3.0",
     "wxt": "^0.20.17"
   }
 }
