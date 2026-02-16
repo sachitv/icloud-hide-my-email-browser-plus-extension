@@ -13,6 +13,10 @@ import {
 import Popup from '../src/pages/Popup/Popup';
 import { PopupState } from '../src/pages/Popup/stateMachine';
 import { CONTEXT_MENU_ITEM_ID } from '../src/pages/Background/constants';
+import {
+  createHmeEmailTestData,
+  createClientStateTestData,
+} from './testUtils';
 
 const {
   useBrowserStorageStateMock,
@@ -234,18 +238,14 @@ describe('Popup UI', () => {
       selectedForwardTo: 'forward@example.com',
     });
     generateHmeMock.mockResolvedValue('generated@example.com');
-    reserveHmeMock.mockResolvedValue({
-      anonymousId: 'anon',
-      note: 'note',
-      label: 'label',
-      hme: 'generated@example.com',
-      forwardToEmail: 'forward@example.com',
-      origin: 'ON_DEMAND',
-      isActive: true,
-      domain: 'domain',
-      createTimestamp: Date.now(),
-      recipientMailId: 'recipient',
-    });
+    reserveHmeMock.mockResolvedValue(
+      createHmeEmailTestData({
+        anonymousId: 'anon',
+        note: 'note',
+        label: 'label',
+        hme: 'generated@example.com',
+      })
+    );
     contextMenuUpdateMock.mockResolvedValue(undefined);
     tabsQueryMock.mockResolvedValue([{ url: 'https://example.com/path' }]);
     sendMessageToTabMock.mockResolvedValue(undefined);
@@ -269,15 +269,7 @@ describe('Popup UI', () => {
   // Happy path for authenticated flow plus transition into management state.
   it('shows the HME generator flow when authenticated state and client data are available', async () => {
     popupStateValue = PopupState.Authenticated;
-    clientStateValue = {
-      setupUrl: 'https://setup.example.com',
-      webservices: {
-        premiummailsettings: {
-          url: 'https://service.example.com',
-          status: 'active',
-        },
-      },
-    };
+    clientStateValue = createClientStateTestData();
     isAuthenticatedMock.mockResolvedValue(true);
 
     render(<Popup />);

@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import Options from '../src/pages/Options/Options';
 import { DEFAULT_STORE } from '../src/storage';
 import React from 'react';
+import { createClientStateTestData } from './testUtils';
 
 type Store = Record<
   string,
