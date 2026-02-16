@@ -45,4 +45,22 @@ describe('TitledComponent', () => {
     const children = container.querySelectorAll('[class*="text-[15px]"]');
     expect(children).toHaveLength(2);
   });
+
+  it('preserves React element keys when provided via Children API', () => {
+    const elementsWithKeys = [
+      React.createElement('div', { key: 'item-1' }, 'Item 1'),
+      React.createElement('div', { key: 'item-2' }, 'Item 2'),
+    ];
+
+    const { container } = render(
+      <TitledComponent sectionId="test-section" hideHeader>
+        {elementsWithKeys}
+      </TitledComponent>
+    );
+
+    const children = container.querySelectorAll('[class*="text-[15px]"]');
+    expect(children).toHaveLength(2);
+    expect(children[0]).toHaveTextContent('Item 1');
+    expect(children[1]).toHaveTextContent('Item 2');
+  });
 });
