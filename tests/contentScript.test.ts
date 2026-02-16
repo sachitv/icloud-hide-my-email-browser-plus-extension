@@ -362,6 +362,47 @@ describe('content script email button integration', () => {
     );
   });
 
+  it('handles reservation request failures gracefully', async () => {
+    const consoleSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
+    const input = createInputElement();
+
+    await runContentScript();
+
+    focusInput(input);
+    await Promise.resolve();
+
+    const host = findShadowHost();
+    const button = host?.shadowRoot?.querySelector('button');
+
+    // First send the generate response to enable the button
+    runtimeMessageListener?.({
+      type: MessageType.GenerateResponse,
+      data: {
+        elementId: 'button-uuid',
+        hme: 'alias@example.com',
+      },
+    });
+    await waitFor(() => expect(button?.textContent).toBe('alias@example.com'));
+
+    // Now mock the sendMessage to fail when reservation is requested
+    runtimeSendMessageMock.mockRejectedValueOnce(
+      new Error('reservation request failed')
+    );
+
+    // Click the button to trigger reservation request
+    button?.dispatchEvent(new MouseEvent('mousedown'));
+
+    // Wait for the error to be logged
+    await waitFor(() =>
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Hide My Email+: Reservation request failed',
+        expect.any(Error)
+      )
+    );
+
+    consoleSpy.mockRestore();
+  });
+
   // Covers scroll event handling to keep the floating button aligned to inputs.
   it('repositions the button when a scrollable ancestor scrolls', async () => {
     mockStorageState({ clientState: undefined });

@@ -816,4 +816,183 @@ describe('Popup UI', () => {
       expect(screen.getByText(/delete failed/i)).toBeInTheDocument()
     );
   });
+
+  it('handles errors when fetching forward-to email list', async () => {
+    popupStateValue = PopupState.Authenticated;
+    clientStateValue = {
+      setupUrl: 'https://setup.example.com',
+      webservices: {
+        premiummailsettings: {
+          url: 'https://service.example.com',
+          status: 'active',
+        },
+      },
+    };
+    isAuthenticatedMock.mockResolvedValue(true);
+    listHmeMock.mockRejectedValue(new Error('list failed'));
+
+    render(<Popup />);
+
+    await waitFor(() =>
+      expect(screen.getByText(/list failed/i)).toBeInTheDocument()
+    );
+  });
+
+  it('handles errors when generating new email on mount', async () => {
+    popupStateValue = PopupState.Authenticated;
+    clientStateValue = {
+      setupUrl: 'https://setup.example.com',
+      webservices: {
+        premiummailsettings: {
+          url: 'https://service.example.com',
+          status: 'active',
+        },
+      },
+    };
+    isAuthenticatedMock.mockResolvedValue(true);
+    generateHmeMock.mockRejectedValue(new Error('generate failed'));
+
+    render(<Popup />);
+
+    await waitFor(() =>
+      expect(screen.getByText(/generate failed/i)).toBeInTheDocument()
+    );
+  });
+
+  it('handles errors when manually refreshing email', async () => {
+    popupStateValue = PopupState.Authenticated;
+    clientStateValue = {
+      setupUrl: 'https://setup.example.com',
+      webservices: {
+        premiummailsettings: {
+          url: 'https://service.example.com',
+          status: 'active',
+        },
+      },
+    };
+    isAuthenticatedMock.mockResolvedValue(true);
+    generateHmeMock.mockResolvedValueOnce('initial@example.com');
+    generateHmeMock.mockRejectedValueOnce(new Error('refresh failed'));
+
+    render(<Popup />);
+
+    const refreshButton = await screen.findByRole('button', {
+      name: /Refresh email/i,
+    });
+    
+    await user.click(refreshButton);
+
+    await waitFor(() =>
+      expect(screen.getByText(/refresh failed/i)).toBeInTheDocument()
+    );
+  });
+
+  it('adjusts selected index when it exceeds filtered results', async () => {
+    popupStateValue = PopupState.AuthenticatedAndManaging;
+    clientStateValue = {
+      setupUrl: 'https://setup.example.com',
+      webservices: {
+        premiummailsettings: {
+          url: 'https://service.example.com',
+          status: 'active',
+        },
+      },
+    };
+
+    const now = Date.now();
+    listHmeMock.mockResolvedValue({
+      hmeEmails: [
+        {
+          anonymousId: 'first',
+          note: '',
+          label: 'Apple service',
+          hme: 'first@example.com',
+          forwardToEmail: 'forward@example.com',
+          origin: 'ON_DEMAND',
+          isActive: true,
+          domain: 'domain',
+          createTimestamp: now,
+          recipientMailId: 'recipient',
+        },
+        {
+          anonymousId: 'second',
+          note: '',
+          label: 'Banana service',
+          hme: 'second@example.com',
+          forwardToEmail: 'forward@example.com',
+          origin: 'ON_DEMAND',
+          isActive: true,
+          domain: 'domain',
+          createTimestamp: now - 1000,
+          recipientMailId: 'recipient',
+        },
+        {
+          anonymousId: 'third',
+          note: '',
+          label: 'Cherry service',
+          hme: 'third@example.com',
+          forwardToEmail: 'forward@example.com',
+          origin: 'ON_DEMAND',
+          isActive: true,
+          domain: 'domain',
+          createTimestamp: now - 2000,
+          recipientMailId: 'recipient',
+        },
+      ],
+      forwardToEmails: [],
+      selectedForwardTo: 'forward@example.com',
+    });
+
+    render(<Popup />);
+
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /Apple service/i })).toBeInTheDocument()
+    );
+
+    // Select the third item (index 2)
+    const thirdButton = screen.getByRole('button', { name: /Cherry service/i });
+    await user.click(thirdButton);
+
+    const searchInput = screen.getByRole('searchbox', {
+      name: /Search through your Hide My Email\+ aliases/i,
+    });
+
+    // Now filter to show only first item (Apple), which should adjust selectedIndex from 2 to 0
+    await user.type(searchInput, 'Apple');
+
+    // The selected index should be adjusted to 0 (the last item in filtered results which has only 1 item)
+    await waitFor(() => {
+      const firstButton = screen.getByRole('button', { name: /Apple service/i });
+      expect(firstButton).toBeInTheDocument();
+      // Since only one item is visible, selectedIndex should be 0
+    });
+  });
+
+  it('can click the generate footer button', async () => {
+    popupStateValue = PopupState.AuthenticatedAndManaging;
+    clientStateValue = {
+      setupUrl: 'https://setup.example.com',
+      webservices: {
+        premiummailsettings: {
+          url: 'https://service.example.com',
+          status: 'active',
+        },
+      },
+    };
+
+    listHmeMock.mockResolvedValue({
+      hmeEmails: [],
+      forwardToEmails: [],
+      selectedForwardTo: 'forward@example.com',
+    });
+
+    render(<Popup />);
+
+    const generateButton = await screen.findByRole('button', {
+      name: /Generate new email/i,
+    });
+    await user.click(generateButton);
+
+    expect(popupStateSetterMock).toHaveBeenCalledWith(PopupState.Authenticated);
+  });
 });
