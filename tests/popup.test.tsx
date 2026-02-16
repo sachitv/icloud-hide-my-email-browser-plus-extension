@@ -652,30 +652,20 @@ describe('Popup UI', () => {
     const now = Date.now();
     listHmeMock.mockResolvedValue({
       hmeEmails: [
-        {
+        createHmeEmailTestData({
           anonymousId: 'active',
-          note: '',
           label: 'Active alias',
           hme: 'active@example.com',
-          forwardToEmail: 'forward@example.com',
-          origin: 'ON_DEMAND',
           isActive: true,
-          domain: 'domain',
           createTimestamp: now,
-          recipientMailId: 'recipient',
-        },
-        {
+        }),
+        createHmeEmailTestData({
           anonymousId: 'inactive',
-          note: '',
           label: 'Inactive alias',
           hme: 'inactive@example.com',
-          forwardToEmail: 'forward@example.com',
-          origin: 'ON_DEMAND',
           isActive: false,
-          domain: 'domain',
           createTimestamp: now - 1000,
-          recipientMailId: 'recipient',
-        },
+        }),
       ],
       forwardToEmails: [],
       selectedForwardTo: 'forward@example.com',
@@ -776,42 +766,27 @@ describe('Popup UI', () => {
     const now = Date.now();
     listHmeMock.mockResolvedValue({
       hmeEmails: [
-        {
+        createHmeEmailTestData({
           anonymousId: 'first',
-          note: '',
           label: 'Apple service',
           hme: 'first@example.com',
-          forwardToEmail: 'forward@example.com',
-          origin: 'ON_DEMAND',
           isActive: true,
-          domain: 'domain',
           createTimestamp: now,
-          recipientMailId: 'recipient',
-        },
-        {
+        }),
+        createHmeEmailTestData({
           anonymousId: 'second',
-          note: '',
           label: 'Banana service',
           hme: 'second@example.com',
-          forwardToEmail: 'forward@example.com',
-          origin: 'ON_DEMAND',
           isActive: true,
-          domain: 'domain',
           createTimestamp: now - 1000,
-          recipientMailId: 'recipient',
-        },
-        {
+        }),
+        createHmeEmailTestData({
           anonymousId: 'third',
-          note: '',
           label: 'Cherry service',
           hme: 'third@example.com',
-          forwardToEmail: 'forward@example.com',
-          origin: 'ON_DEMAND',
           isActive: true,
-          domain: 'domain',
           createTimestamp: now - 2000,
-          recipientMailId: 'recipient',
-        },
+        }),
       ],
       forwardToEmails: [],
       selectedForwardTo: 'forward@example.com',
