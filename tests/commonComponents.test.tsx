@@ -20,7 +20,7 @@ describe('TitledComponent', () => {
 
   it('uses explicit keys when React elements have them', () => {
     const ChildWithKey = ({ text }: { text: string }) => <div>{text}</div>;
-    
+
     const { container } = render(
       <TitledComponent sectionId="test-section" hideHeader>
         <ChildWithKey key="explicit-key-1" text="Child with explicit key" />

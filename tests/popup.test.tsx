@@ -879,7 +879,7 @@ describe('Popup UI', () => {
     const refreshButton = await screen.findByRole('button', {
       name: /Refresh email/i,
     });
-    
+
     await user.click(refreshButton);
 
     await waitFor(() =>
@@ -946,7 +946,9 @@ describe('Popup UI', () => {
     render(<Popup />);
 
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: /Apple service/i })).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: /Apple service/i })
+      ).toBeInTheDocument()
     );
 
     // Select the third item (index 2)
@@ -962,7 +964,9 @@ describe('Popup UI', () => {
 
     // The selected index should be adjusted to 0 (the last item in filtered results which has only 1 item)
     await waitFor(() => {
-      const firstButton = screen.getByRole('button', { name: /Apple service/i });
+      const firstButton = screen.getByRole('button', {
+        name: /Apple service/i,
+      });
       expect(firstButton).toBeInTheDocument();
       // Since only one item is visible, selectedIndex should be 0
     });
