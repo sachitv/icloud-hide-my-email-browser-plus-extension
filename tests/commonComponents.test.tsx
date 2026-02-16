@@ -6,7 +6,7 @@ import { TitledComponent } from '../src/commonComponents';
 describe('TitledComponent', () => {
   it('renders children without keys using fallback key generation', () => {
     const { container } = render(
-      <TitledComponent sectionId="test-section" hideHeader>
+      <TitledComponent hideHeader>
         <div>First child without key</div>
         <div>Second child without key</div>
       </TitledComponent>
@@ -22,7 +22,7 @@ describe('TitledComponent', () => {
     const ChildWithKey = ({ text }: { text: string }) => <div>{text}</div>;
 
     const { container } = render(
-      <TitledComponent sectionId="test-section" hideHeader>
+      <TitledComponent hideHeader>
         <ChildWithKey key="explicit-key-1" text="Child with explicit key" />
         <ChildWithKey key="explicit-key-2" text="Another child with key" />
       </TitledComponent>
@@ -36,7 +36,7 @@ describe('TitledComponent', () => {
 
   it('handles mixed children with and without keys', () => {
     const { container } = render(
-      <TitledComponent sectionId="test-section" hideHeader>
+      <TitledComponent hideHeader>
         <div key="with-key">With key</div>
         <div>Without key</div>
       </TitledComponent>
@@ -53,9 +53,7 @@ describe('TitledComponent', () => {
     ];
 
     const { container } = render(
-      <TitledComponent sectionId="test-section" hideHeader>
-        {elementsWithKeys}
-      </TitledComponent>
+      <TitledComponent hideHeader>{elementsWithKeys}</TitledComponent>
     );
 
     const children = container.querySelectorAll('[class*="text-[15px]"]');

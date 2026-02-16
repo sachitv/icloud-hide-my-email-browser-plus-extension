@@ -5,14 +5,16 @@
 /**
  * Creates common HME email test data
  */
-export function createHmeEmailTestData(overrides: {
-  anonymousId?: string;
-  label?: string;
-  hme?: string;
-  note?: string;
-  isActive?: boolean;
-  createTimestamp?: number;
-} = {}) {
+export function createHmeEmailTestData(
+  overrides: {
+    anonymousId?: string;
+    label?: string;
+    hme?: string;
+    note?: string;
+    isActive?: boolean;
+    createTimestamp?: number;
+  } = {}
+) {
   return {
     anonymousId: overrides.anonymousId ?? 'test-id',
     note: overrides.note ?? '',
@@ -30,11 +32,13 @@ export function createHmeEmailTestData(overrides: {
 /**
  * Creates common client state test data
  */
-export function createClientStateTestData(overrides: {
-  setupUrl?: string;
-  serviceUrl?: string;
-  webservices?: Record<string, { url: string; status: string }>;
-} = {}) {
+export function createClientStateTestData(
+  overrides: {
+    setupUrl?: string;
+    serviceUrl?: string;
+    webservices?: Record<string, { url: string; status: string }>;
+  } = {}
+) {
   return {
     setupUrl: overrides.setupUrl ?? 'https://setup.example.com',
     webservices: overrides.webservices ?? {
@@ -49,16 +53,19 @@ export function createClientStateTestData(overrides: {
 /**
  * Creates multiple HME email test data entries for list scenarios
  */
-export function createHmeEmailList(count: number, baseTimestamp?: number): ReturnType<typeof createHmeEmailTestData>[] {
+export function createHmeEmailList(
+  count: number,
+  baseTimestamp?: number
+): ReturnType<typeof createHmeEmailTestData>[] {
   const now = baseTimestamp ?? Date.now();
   const labels = ['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon'];
-  
-  return Array.from({ length: count }, (_, i) => 
+
+  return Array.from({ length: count }, (_, i) =>
     createHmeEmailTestData({
       anonymousId: labels[i]?.toLowerCase() ?? `id-${i}`,
       label: `${labels[i] ?? `Item ${i}`} alias`,
       hme: `${labels[i]?.toLowerCase() ?? `item${i}`}@example.com`,
-      createTimestamp: now - (i * 1000),
+      createTimestamp: now - i * 1000,
       isActive: i % 2 === 0, // Alternate active/inactive
     })
   );

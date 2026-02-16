@@ -13,10 +13,7 @@ import {
 import Popup from '../src/pages/Popup/Popup';
 import { PopupState } from '../src/pages/Popup/stateMachine';
 import { CONTEXT_MENU_ITEM_ID } from '../src/pages/Background/constants';
-import {
-  createHmeEmailTestData,
-  createClientStateTestData,
-} from './testUtils';
+import { createHmeEmailTestData, createClientStateTestData } from './testUtils';
 
 const {
   useBrowserStorageStateMock,
