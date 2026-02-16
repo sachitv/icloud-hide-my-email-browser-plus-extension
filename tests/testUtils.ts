@@ -60,13 +60,18 @@ export function createHmeEmailList(
   const now = baseTimestamp ?? Date.now();
   const labels = ['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon'];
 
-  return Array.from({ length: count }, (_, i) =>
-    createHmeEmailTestData({
-      anonymousId: labels[i]?.toLowerCase() ?? `id-${i}`,
-      label: `${labels[i] ?? `Item ${i}`} alias`,
-      hme: `${labels[i]?.toLowerCase() ?? `item${i}`}@example.com`,
+  return Array.from({ length: count }, (_, i) => {
+    const label = labels[i];
+    const labelLower = label?.toLowerCase();
+    const labelFallback = `Item ${i}`;
+    const hmeFallback = `item${i}`;
+
+    return createHmeEmailTestData({
+      anonymousId: labelLower ?? `id-${i}`,
+      label: `${label ?? labelFallback} alias`,
+      hme: `${labelLower ?? hmeFallback}@example.com`,
       createTimestamp: now - i * 1000,
       isActive: i % 2 === 0, // Alternate active/inactive
-    })
-  );
+    });
+  });
 }
