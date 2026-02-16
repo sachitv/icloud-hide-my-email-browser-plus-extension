@@ -845,7 +845,8 @@ describe('Popup UI', () => {
         name: /Apple service/i,
       });
       expect(firstButton).toBeInTheDocument();
-      // Since only one item is visible, selectedIndex should be 0
+      // Since only one item is visible, selectedIndex should be 0 and Apple should be selected
+      expect(firstButton).toHaveAttribute('aria-current', 'true');
     });
   });
 
