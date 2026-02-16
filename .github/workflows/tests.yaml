@@ -10,6 +10,7 @@ jobs:
   detect-license-changes:
     permissions:
       contents: read
+      pull-requests: read
     if: github.actor != 'attributions-bot'
     runs-on: ubuntu-24.04-arm
     outputs:
