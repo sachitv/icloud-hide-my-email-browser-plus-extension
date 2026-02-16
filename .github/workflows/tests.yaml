@@ -1,8 +1,4 @@
 name: tests
-permissions:
-  contents: read
-  checks: write
-  pull-requests: write
 
 on:
   pull_request:
@@ -12,6 +8,8 @@ on:
 
 jobs:
   detect-license-changes:
+    permissions:
+      contents: read
     if: github.actor != 'attributions-bot'
     runs-on: ubuntu-24.04-arm
     outputs:
@@ -32,6 +30,8 @@ jobs:
               - 'utils/checkLicenses.mjs'
 
   format:
+    permissions:
+      contents: read
     if: github.actor != 'attributions-bot'
     runs-on: ubuntu-24.04-arm
     steps:
@@ -57,6 +57,8 @@ jobs:
           }
 
   lint:
+    permissions:
+      contents: read
     runs-on: ubuntu-24.04-arm
     needs: format
     steps:
@@ -76,6 +78,8 @@ jobs:
           }
 
   validate-pr-title:
+    permissions:
+      pull-requests: read
     if: github.event_name == 'pull_request' && github.actor != 'attributions-bot'
     runs-on: ubuntu-24.04-arm
     steps:
@@ -85,6 +89,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   unit-tests:
+    permissions:
+      contents: read
+      actions: write
+      checks: write
     runs-on: ubuntu-24.04-arm
     needs:
       - lint
@@ -121,6 +129,9 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
 
   build-brave:
+    permissions:
+      contents: read
+      actions: write
     runs-on: ubuntu-24.04-arm
     needs: unit-tests
     steps:
@@ -148,6 +159,9 @@ jobs:
           path: build/icloud-hide-my-email-plus-browser-extension-brave.zip
 
   build-chrome:
+    permissions:
+      contents: read
+      actions: write
     runs-on: ubuntu-24.04-arm
     needs: unit-tests
     steps:
@@ -175,6 +189,9 @@ jobs:
           path: build/icloud-hide-my-email-plus-browser-extension-chrome.zip
 
   build-edge:
+    permissions:
+      contents: read
+      actions: write
     runs-on: ubuntu-24.04-arm
     needs: unit-tests
     steps:
@@ -202,6 +219,9 @@ jobs:
           path: build/icloud-hide-my-email-plus-browser-extension-edge.zip
 
   build-firefox:
+    permissions:
+      contents: read
+      actions: write
     runs-on: ubuntu-24.04-arm
     needs: unit-tests
     steps:
@@ -231,6 +251,8 @@ jobs:
           path: build/icloud-hide-my-email-plus-browser-extension-firefox.zip
 
   license-audit:
+    permissions:
+      contents: read
     needs: detect-license-changes
     if: needs.detect-license-changes.outputs.licenses == 'true'
     runs-on: ubuntu-24.04-arm
