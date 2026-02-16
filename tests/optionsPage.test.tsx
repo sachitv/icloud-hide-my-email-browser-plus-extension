@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import Options from '../src/pages/Options/Options';
 import { DEFAULT_STORE } from '../src/storage';
 import React from 'react';
+import { createClientStateTestData } from './testUtils';
 
 type Store = Record<
   string,
@@ -185,15 +186,7 @@ describe('Options page UI', () => {
       isLoading: false,
     };
     storageStateMocks.clientState = {
-      state: {
-        setupUrl: 'https://setup.example.com',
-        webservices: {
-          premiummailsettings: {
-            url: 'https://service.example.com',
-            status: 'active',
-          },
-        },
-      },
+      state: createClientStateTestData(),
       spy: vi.fn(),
       isLoading: false,
     };
@@ -247,10 +240,7 @@ describe('Options page UI', () => {
       isLoading: false,
     };
     storageStateMocks.clientState = {
-      state: {
-        setupUrl: 'https://setup.example.com',
-        webservices: {},
-      },
+      state: createClientStateTestData({ webservices: {} }),
       spy: vi.fn(),
       isLoading: false,
     };
@@ -275,10 +265,7 @@ describe('Options page UI', () => {
       isLoading: false,
     };
     storageStateMocks.clientState = {
-      state: {
-        setupUrl: 'https://setup.example.com',
-        webservices: {},
-      },
+      state: createClientStateTestData({ webservices: {} }),
       spy: vi.fn(),
       isLoading: false,
     };
@@ -300,10 +287,7 @@ describe('Options page UI', () => {
       isLoading: false,
     };
     storageStateMocks.clientState = {
-      state: {
-        setupUrl: 'https://setup.example.com',
-        webservices: {},
-      },
+      state: createClientStateTestData({ webservices: {} }),
       spy: vi.fn(),
       isLoading: false,
     };
@@ -335,15 +319,7 @@ describe('Options page UI', () => {
       isLoading: false,
     };
     storageStateMocks.clientState = {
-      state: {
-        setupUrl: 'https://setup.example.com',
-        webservices: {
-          premiummailsettings: {
-            url: 'https://service.example.com',
-            status: 'active',
-          },
-        },
-      },
+      state: createClientStateTestData(),
       spy: vi.fn(),
       isLoading: false,
     };

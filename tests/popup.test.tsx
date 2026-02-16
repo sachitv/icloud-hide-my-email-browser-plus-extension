@@ -13,6 +13,7 @@ import {
 import Popup from '../src/pages/Popup/Popup';
 import { PopupState } from '../src/pages/Popup/stateMachine';
 import { CONTEXT_MENU_ITEM_ID } from '../src/pages/Background/constants';
+import { createHmeEmailTestData, createClientStateTestData } from './testUtils';
 
 const {
   useBrowserStorageStateMock,
@@ -234,18 +235,14 @@ describe('Popup UI', () => {
       selectedForwardTo: 'forward@example.com',
     });
     generateHmeMock.mockResolvedValue('generated@example.com');
-    reserveHmeMock.mockResolvedValue({
-      anonymousId: 'anon',
-      note: 'note',
-      label: 'label',
-      hme: 'generated@example.com',
-      forwardToEmail: 'forward@example.com',
-      origin: 'ON_DEMAND',
-      isActive: true,
-      domain: 'domain',
-      createTimestamp: Date.now(),
-      recipientMailId: 'recipient',
-    });
+    reserveHmeMock.mockResolvedValue(
+      createHmeEmailTestData({
+        anonymousId: 'anon',
+        note: 'note',
+        label: 'label',
+        hme: 'generated@example.com',
+      })
+    );
     contextMenuUpdateMock.mockResolvedValue(undefined);
     tabsQueryMock.mockResolvedValue([{ url: 'https://example.com/path' }]);
     sendMessageToTabMock.mockResolvedValue(undefined);
@@ -269,15 +266,7 @@ describe('Popup UI', () => {
   // Happy path for authenticated flow plus transition into management state.
   it('shows the HME generator flow when authenticated state and client data are available', async () => {
     popupStateValue = PopupState.Authenticated;
-    clientStateValue = {
-      setupUrl: 'https://setup.example.com',
-      webservices: {
-        premiummailsettings: {
-          url: 'https://service.example.com',
-          status: 'active',
-        },
-      },
-    };
+    clientStateValue = createClientStateTestData();
     isAuthenticatedMock.mockResolvedValue(true);
 
     render(<Popup />);
@@ -306,32 +295,20 @@ describe('Popup UI', () => {
   // Covers generator refresh, reservation success, clipboard copy, and autofill messaging.
   it('refreshes and reserves generated email addresses with copy and autofill helpers', async () => {
     popupStateValue = PopupState.Authenticated;
-    clientStateValue = {
-      setupUrl: 'https://setup.example.com',
-      webservices: {
-        premiummailsettings: {
-          url: 'https://service.example.com',
-          status: 'active',
-        },
-      },
-    };
+    clientStateValue = createClientStateTestData();
 
     generateHmeMock.mockReset();
     generateHmeMock.mockResolvedValueOnce('initial@example.com');
     generateHmeMock.mockResolvedValueOnce('refreshed@example.com');
     reserveHmeMock.mockReset();
-    reserveHmeMock.mockResolvedValueOnce({
-      anonymousId: 'anon',
-      note: 'Remember me',
-      label: 'My Label',
-      hme: 'reserved@example.com',
-      forwardToEmail: 'forward@example.com',
-      origin: 'ON_DEMAND',
-      isActive: true,
-      domain: 'domain',
-      createTimestamp: Date.now(),
-      recipientMailId: 'recipient',
-    });
+    reserveHmeMock.mockResolvedValueOnce(
+      createHmeEmailTestData({
+        anonymousId: 'anon',
+        note: 'Remember me',
+        label: 'My Label',
+        hme: 'reserved@example.com',
+      })
+    );
     listHmeMock.mockResolvedValue({
       hmeEmails: [],
       forwardToEmails: [],
@@ -384,53 +361,33 @@ describe('Popup UI', () => {
   // Exercises manager view: search, activate/deactivate, delete, reactivate, and sign-out side effects.
   it('manages existing aliases with search, activation toggles, deletion, and sign-out', async () => {
     popupStateValue = PopupState.AuthenticatedAndManaging;
-    clientStateValue = {
-      setupUrl: 'https://setup.example.com',
-      webservices: {
-        premiummailsettings: {
-          url: 'https://service.example.com',
-          status: 'active',
-        },
-      },
-    };
+    clientStateValue = createClientStateTestData();
 
     const now = Date.now();
-    const activeAlias = {
-      anonymousId: 'active',
-      note: '',
-      label: 'Alpha alias',
-      hme: 'alpha@example.com',
-      forwardToEmail: 'forward@example.com',
-      origin: 'ON_DEMAND' as const,
-      isActive: true,
-      domain: 'domain',
-      createTimestamp: now,
-      recipientMailId: 'recipient',
-    };
-    const betaAlias = {
-      anonymousId: 'beta',
-      note: 'Beta note',
-      label: 'Beta alias',
-      hme: 'beta@example.com',
-      forwardToEmail: 'forward@example.com',
-      origin: 'ON_DEMAND' as const,
-      isActive: false,
-      domain: 'domain',
-      createTimestamp: now - 1000,
-      recipientMailId: 'recipient',
-    };
-    const gammaAlias = {
-      anonymousId: 'gamma',
-      note: '',
-      label: 'Gamma alias',
-      hme: 'gamma@example.com',
-      forwardToEmail: 'forward@example.com',
-      origin: 'ON_DEMAND' as const,
-      isActive: false,
-      domain: 'domain',
-      createTimestamp: now - 2000,
-      recipientMailId: 'recipient',
-    };
+    const [activeAlias, betaAlias, gammaAlias] = [
+      createHmeEmailTestData({
+        anonymousId: 'active',
+        label: 'Alpha alias',
+        hme: 'alpha@example.com',
+        isActive: true,
+        createTimestamp: now,
+      }),
+      createHmeEmailTestData({
+        anonymousId: 'beta',
+        note: 'Beta note',
+        label: 'Beta alias',
+        hme: 'beta@example.com',
+        isActive: false,
+        createTimestamp: now - 1000,
+      }),
+      createHmeEmailTestData({
+        anonymousId: 'gamma',
+        label: 'Gamma alias',
+        hme: 'gamma@example.com',
+        isActive: false,
+        createTimestamp: now - 2000,
+      }),
+    ];
 
     listHmeMock.mockResolvedValue({
       hmeEmails: [betaAlias, gammaAlias, activeAlias],
@@ -543,10 +500,7 @@ describe('Popup UI', () => {
   // syncClientAuthState success path should promote SignedOut to Authenticated.
   it('promotes signed-out state when stored session is still authenticated', async () => {
     popupStateValue = PopupState.SignedOut;
-    clientStateValue = {
-      setupUrl: 'https://setup.example.com',
-      webservices: {},
-    };
+    clientStateValue = createClientStateTestData({ webservices: {} });
     isAuthenticatedMock.mockResolvedValue(true);
     listHmeMock.mockResolvedValue({
       hmeEmails: [],
@@ -567,15 +521,7 @@ describe('Popup UI', () => {
   // Error path: listHme rejection should surface the error UI.
   it('renders an error state when alias fetching fails in manager view', async () => {
     popupStateValue = PopupState.AuthenticatedAndManaging;
-    clientStateValue = {
-      setupUrl: 'https://setup.example.com',
-      webservices: {
-        premiummailsettings: {
-          url: 'https://service.example.com',
-          status: 'active',
-        },
-      },
-    };
+    clientStateValue = createClientStateTestData();
 
     listHmeMock.mockRejectedValue(new Error('loading failed'));
 
@@ -589,15 +535,7 @@ describe('Popup UI', () => {
   // Empty state branch when no aliases are returned.
   it('renders an empty state when no aliases are returned', async () => {
     popupStateValue = PopupState.AuthenticatedAndManaging;
-    clientStateValue = {
-      setupUrl: 'https://setup.example.com',
-      webservices: {
-        premiummailsettings: {
-          url: 'https://service.example.com',
-          status: 'active',
-        },
-      },
-    };
+    clientStateValue = createClientStateTestData();
 
     listHmeMock.mockResolvedValue({
       hmeEmails: [],
@@ -634,15 +572,7 @@ describe('Popup UI', () => {
 
   it('handles errors when updating the context menu on sign-out', async () => {
     popupStateValue = PopupState.Authenticated;
-    clientStateValue = {
-      setupUrl: 'https://setup.example.com',
-      webservices: {
-        premiummailsettings: {
-          url: 'https://service.example.com',
-          status: 'active',
-        },
-      },
-    };
+    clientStateValue = createClientStateTestData();
     isAuthenticatedMock.mockResolvedValue(true);
     contextMenuUpdateMock.mockRejectedValue(
       new Error('context menu update failed')
@@ -667,15 +597,7 @@ describe('Popup UI', () => {
 
   it('handles errors when querying for the active tab', async () => {
     popupStateValue = PopupState.Authenticated;
-    clientStateValue = {
-      setupUrl: 'https://setup.example.com',
-      webservices: {
-        premiummailsettings: {
-          url: 'https://service.example.com',
-          status: 'active',
-        },
-      },
-    };
+    clientStateValue = createClientStateTestData();
     isAuthenticatedMock.mockResolvedValue(true);
     tabsQueryMock.mockRejectedValue(new Error('tabs query failed'));
     const consoleErrorSpy = vi
@@ -696,15 +618,7 @@ describe('Popup UI', () => {
 
   it('surfaces reservation errors and handles empty payloads', async () => {
     popupStateValue = PopupState.Authenticated;
-    clientStateValue = {
-      setupUrl: 'https://setup.example.com',
-      webservices: {
-        premiummailsettings: {
-          url: 'https://service.example.com',
-          status: 'active',
-        },
-      },
-    };
+    clientStateValue = createClientStateTestData();
     isAuthenticatedMock.mockResolvedValue(true);
     reserveHmeMock.mockRejectedValueOnce(new Error('reserve failed'));
     generateHmeMock.mockResolvedValueOnce('first@example.com');
@@ -733,43 +647,25 @@ describe('Popup UI', () => {
   // Error handling inside HmeDetails for activate/reactivate/delete flows.
   it('surfaces activation, reactivation, and deletion errors within HME details', async () => {
     popupStateValue = PopupState.AuthenticatedAndManaging;
-    clientStateValue = {
-      setupUrl: 'https://setup.example.com',
-      webservices: {
-        premiummailsettings: {
-          url: 'https://service.example.com',
-          status: 'active',
-        },
-      },
-    };
+    clientStateValue = createClientStateTestData();
 
     const now = Date.now();
     listHmeMock.mockResolvedValue({
       hmeEmails: [
-        {
+        createHmeEmailTestData({
           anonymousId: 'active',
-          note: '',
           label: 'Active alias',
           hme: 'active@example.com',
-          forwardToEmail: 'forward@example.com',
-          origin: 'ON_DEMAND',
           isActive: true,
-          domain: 'domain',
           createTimestamp: now,
-          recipientMailId: 'recipient',
-        },
-        {
+        }),
+        createHmeEmailTestData({
           anonymousId: 'inactive',
-          note: '',
           label: 'Inactive alias',
           hme: 'inactive@example.com',
-          forwardToEmail: 'forward@example.com',
-          origin: 'ON_DEMAND',
           isActive: false,
-          domain: 'domain',
           createTimestamp: now - 1000,
-          recipientMailId: 'recipient',
-        },
+        }),
       ],
       forwardToEmails: [],
       selectedForwardTo: 'forward@example.com',
@@ -815,5 +711,134 @@ describe('Popup UI', () => {
     await waitFor(() =>
       expect(screen.getByText(/delete failed/i)).toBeInTheDocument()
     );
+  });
+
+  it('handles errors when fetching forward-to email list', async () => {
+    popupStateValue = PopupState.Authenticated;
+    clientStateValue = createClientStateTestData();
+    isAuthenticatedMock.mockResolvedValue(true);
+    listHmeMock.mockRejectedValue(new Error('list failed'));
+
+    render(<Popup />);
+
+    await waitFor(() =>
+      expect(screen.getByText(/list failed/i)).toBeInTheDocument()
+    );
+  });
+
+  it('handles errors when generating new email on mount', async () => {
+    popupStateValue = PopupState.Authenticated;
+    clientStateValue = createClientStateTestData();
+    isAuthenticatedMock.mockResolvedValue(true);
+    generateHmeMock.mockRejectedValue(new Error('generate failed'));
+
+    render(<Popup />);
+
+    await waitFor(() =>
+      expect(screen.getByText(/generate failed/i)).toBeInTheDocument()
+    );
+  });
+
+  it('handles errors when manually refreshing email', async () => {
+    popupStateValue = PopupState.Authenticated;
+    clientStateValue = createClientStateTestData();
+    isAuthenticatedMock.mockResolvedValue(true);
+    generateHmeMock.mockResolvedValueOnce('initial@example.com');
+    generateHmeMock.mockRejectedValueOnce(new Error('refresh failed'));
+
+    render(<Popup />);
+
+    const refreshButton = await screen.findByRole('button', {
+      name: /Refresh email/i,
+    });
+
+    await user.click(refreshButton);
+
+    await waitFor(() =>
+      expect(screen.getByText(/refresh failed/i)).toBeInTheDocument()
+    );
+  });
+
+  it('adjusts selected index when it exceeds filtered results', async () => {
+    popupStateValue = PopupState.AuthenticatedAndManaging;
+    clientStateValue = createClientStateTestData();
+
+    const now = Date.now();
+    listHmeMock.mockResolvedValue({
+      hmeEmails: [
+        createHmeEmailTestData({
+          anonymousId: 'first',
+          label: 'Apple service',
+          hme: 'first@example.com',
+          isActive: true,
+          createTimestamp: now,
+        }),
+        createHmeEmailTestData({
+          anonymousId: 'second',
+          label: 'Banana service',
+          hme: 'second@example.com',
+          isActive: true,
+          createTimestamp: now - 1000,
+        }),
+        createHmeEmailTestData({
+          anonymousId: 'third',
+          label: 'Cherry service',
+          hme: 'third@example.com',
+          isActive: true,
+          createTimestamp: now - 2000,
+        }),
+      ],
+      forwardToEmails: [],
+      selectedForwardTo: 'forward@example.com',
+    });
+
+    render(<Popup />);
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: /Apple service/i })
+      ).toBeInTheDocument()
+    );
+
+    // Select the third item (index 2)
+    const thirdButton = screen.getByRole('button', { name: /Cherry service/i });
+    await user.click(thirdButton);
+
+    const searchInput = screen.getByRole('searchbox', {
+      name: /Search through your Hide My Email\+ aliases/i,
+    });
+
+    // Now filter to show only first item (Apple), which should adjust selectedIndex from 2 to 0
+    await user.type(searchInput, 'Apple');
+
+    // The selected index should be adjusted to 0 (the last item in filtered results which has only 1 item)
+    await waitFor(() => {
+      const firstButton = screen.getByRole('button', {
+        name: /Apple service/i,
+      });
+      expect(firstButton).toBeInTheDocument();
+      // Since only one item is visible, selectedIndex should be 0 and Apple should be selected
+      expect(firstButton).toHaveAttribute('aria-current', 'true');
+    });
+  });
+
+  it('can click the generate footer button', async () => {
+    popupStateValue = PopupState.AuthenticatedAndManaging;
+    clientStateValue = createClientStateTestData();
+
+    listHmeMock.mockResolvedValue({
+      hmeEmails: [],
+      forwardToEmails: [],
+      selectedForwardTo: 'forward@example.com',
+    });
+
+    render(<Popup />);
+
+    const generateButton = await screen.findByRole('button', {
+      name: /Generate new email/i,
+    });
+    await user.click(generateButton);
+
+    expect(popupStateSetterMock).toHaveBeenCalledWith(PopupState.Authenticated);
   });
 });

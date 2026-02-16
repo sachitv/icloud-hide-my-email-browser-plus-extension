@@ -95,6 +95,23 @@ describe('ICloudClient', () => {
     );
   });
 
+  it('handles validateToken response with falsy webservices', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: vi.fn().mockResolvedValue({
+        webservices: null,
+      }),
+    } as unknown as Response);
+
+    const client = new ICloudClient(DEFAULT_SETUP_URL);
+    await client.validateToken();
+
+    expect(() => client.webserviceUrl('premiummailsettings')).toThrow(
+      /webservices have not been initialised/
+    );
+  });
+
   it('returns true from isAuthenticated when validateToken resolves', async () => {
     const client = new ICloudClient(DEFAULT_SETUP_URL);
     client.validateToken = vi.fn().mockResolvedValue(undefined);
