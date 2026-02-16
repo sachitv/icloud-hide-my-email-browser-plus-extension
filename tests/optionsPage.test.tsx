@@ -186,15 +186,7 @@ describe('Options page UI', () => {
       isLoading: false,
     };
     storageStateMocks.clientState = {
-      state: {
-        setupUrl: 'https://setup.example.com',
-        webservices: {
-          premiummailsettings: {
-            url: 'https://service.example.com',
-            status: 'active',
-          },
-        },
-      },
+      state: createClientStateTestData(),
       spy: vi.fn(),
       isLoading: false,
     };
@@ -248,10 +240,7 @@ describe('Options page UI', () => {
       isLoading: false,
     };
     storageStateMocks.clientState = {
-      state: {
-        setupUrl: 'https://setup.example.com',
-        webservices: {},
-      },
+      state: createClientStateTestData({ webservices: {} }),
       spy: vi.fn(),
       isLoading: false,
     };
@@ -276,10 +265,7 @@ describe('Options page UI', () => {
       isLoading: false,
     };
     storageStateMocks.clientState = {
-      state: {
-        setupUrl: 'https://setup.example.com',
-        webservices: {},
-      },
+      state: createClientStateTestData({ webservices: {} }),
       spy: vi.fn(),
       isLoading: false,
     };
@@ -301,10 +287,7 @@ describe('Options page UI', () => {
       isLoading: false,
     };
     storageStateMocks.clientState = {
-      state: {
-        setupUrl: 'https://setup.example.com',
-        webservices: {},
-      },
+      state: createClientStateTestData({ webservices: {} }),
       spy: vi.fn(),
       isLoading: false,
     };
@@ -336,15 +319,7 @@ describe('Options page UI', () => {
       isLoading: false,
     };
     storageStateMocks.clientState = {
-      state: {
-        setupUrl: 'https://setup.example.com',
-        webservices: {
-          premiummailsettings: {
-            url: 'https://service.example.com',
-            status: 'active',
-          },
-        },
-      },
+      state: createClientStateTestData(),
       spy: vi.fn(),
       isLoading: false,
     };
