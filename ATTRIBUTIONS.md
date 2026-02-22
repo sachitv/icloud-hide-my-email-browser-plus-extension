@@ -20,7 +20,7 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [@babel/runtime@7.28.6](https://github.com/babel/babel)                                                     | MIT                                 |
 | [@babel/types@7.29.0](https://github.com/babel/babel)                                                       | MIT                                 |
 | [@bcoe/v8-coverage@1.0.2](https://github.com/bcoe/v8-coverage)                                              | MIT                                 |
-| [@biomejs/biome@2.4.0](https://github.com/biomejs/biome)                                                    | MIT OR Apache-2.0                   |
+| [@biomejs/biome@2.4.4](https://github.com/biomejs/biome)                                                    | MIT OR Apache-2.0                   |
 | [@bramus/specificity@2.4.2](https://github.com/bramus/specificity)                                          | MIT                                 |
 | [@csstools/color-helpers@6.0.1](https://github.com/csstools/postcss-plugins)                                | MIT-0                               |
 | [@csstools/css-calc@3.1.1](https://github.com/csstools/postcss-plugins)                                     | MIT                                 |
@@ -65,9 +65,9 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [@pnpm/network.ca-file@1.0.2](https://github.com/pnpm/components)                                           | MIT                                 |
 | [@pnpm/npm-conf@2.3.1](https://github.com/pnpm/npm-conf)                                                    | MIT                                 |
 | [@standard-schema/spec@1.1.0](https://github.com/standard-schema/standard-schema)                           | MIT                                 |
-| [@tailwindcss/node@4.1.18](https://github.com/tailwindlabs/tailwindcss)                                     | MIT                                 |
-| [@tailwindcss/oxide@4.1.18](https://github.com/tailwindlabs/tailwindcss)                                    | MIT                                 |
-| [@tailwindcss/postcss@4.1.18](https://github.com/tailwindlabs/tailwindcss)                                  | MIT                                 |
+| [@tailwindcss/node@4.2.0](https://github.com/tailwindlabs/tailwindcss)                                      | MIT                                 |
+| [@tailwindcss/oxide@4.2.0](https://github.com/tailwindlabs/tailwindcss)                                     | MIT                                 |
+| [@tailwindcss/postcss@4.2.0](https://github.com/tailwindlabs/tailwindcss)                                   | MIT                                 |
 | [@testing-library/dom@10.4.1](https://github.com/testing-library/dom-testing-library)                       | MIT                                 |
 | [@testing-library/jest-dom@6.9.1](https://github.com/testing-library/jest-dom)                              | MIT                                 |
 | [@testing-library/react@16.3.2](https://github.com/testing-library/react-testing-library)                   | MIT                                 |
@@ -85,7 +85,7 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [@types/node@20.19.25](https://github.com/DefinitelyTyped/DefinitelyTyped)                                  | MIT                                 |
 | [@types/react-dom@19.2.3](https://github.com/DefinitelyTyped/DefinitelyTyped)                               | MIT                                 |
 | [@types/react@19.2.14](https://github.com/DefinitelyTyped/DefinitelyTyped)                                  | MIT                                 |
-| [@types/webextension-polyfill@0.12.4](https://github.com/DefinitelyTyped/DefinitelyTyped)                   | MIT                                 |
+| [@types/webextension-polyfill@0.12.5](https://github.com/DefinitelyTyped/DefinitelyTyped)                   | MIT                                 |
 | [@types/whatwg-mimetype@3.0.2](https://github.com/DefinitelyTyped/DefinitelyTyped)                          | MIT                                 |
 | [@types/ws@8.18.1](https://github.com/DefinitelyTyped/DefinitelyTyped)                                      | MIT                                 |
 | [@types/yauzl@2.10.3](https://github.com/DefinitelyTyped/DefinitelyTyped)                                   | MIT                                 |
@@ -220,7 +220,7 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [emoji-regex@8.0.0](https://github.com/mathiasbynens/emoji-regex)                                           | MIT                                 |
 | [emoji-regex@9.2.2](https://github.com/mathiasbynens/emoji-regex)                                           | MIT                                 |
 | [encoding-sniffer@0.2.1](https://github.com/fb55/encoding-sniffer)                                          | MIT                                 |
-| [enhanced-resolve@5.18.4](https://github.com/webpack/enhanced-resolve)                                      | MIT                                 |
+| [enhanced-resolve@5.19.0](https://github.com/webpack/enhanced-resolve)                                      | MIT                                 |
 | [entities@4.5.0](https://github.com/fb55/entities)                                                          | BSD-2-Clause                        |
 | [entities@6.0.1](https://github.com/fb55/entities)                                                          | BSD-2-Clause                        |
 | [entities@7.0.1](https://github.com/fb55/entities)                                                          | BSD-2-Clause                        |
@@ -374,7 +374,7 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [license-checker-rseidelsohn@4.4.2](https://github.com/RSeidelsohn/license-checker-rseidelsohn)             | BSD-3-Clause                        |
 | [lie@3.3.0](https://github.com/calvinmetcalf/lie)                                                           | MIT                                 |
 | [lighthouse-logger@2.0.2](https://github.com/GoogleChrome/lighthouse)                                       | Apache-2.0                          |
-| [lightningcss@1.30.2](https://github.com/parcel-bundler/lightningcss)                                       | MPL-2.0                             |
+| [lightningcss@1.31.1](https://github.com/parcel-bundler/lightningcss)                                       | MPL-2.0                             |
 | [lines-and-columns@2.0.4](https://github.com/eventualbuddha/lines-and-columns)                              | MIT                                 |
 | [linkedom@0.18.12](https://github.com/WebReflection/linkedom)                                               | ISC                                 |
 | [listr2@10.1.0](https://github.com/listr2/listr2)                                                           | MIT                                 |
@@ -562,7 +562,7 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [stubborn-utils@1.0.2](https://github.com/fabiospampinato/stubborn-utils)                                   | MIT                                 |
 | [supports-color@7.2.0](https://github.com/chalk/supports-color)                                             | MIT                                 |
 | [symbol-tree@3.2.4](https://github.com/jsdom/js-symbol-tree)                                                | MIT                                 |
-| [tailwindcss@4.1.18](https://github.com/tailwindlabs/tailwindcss)                                           | MIT                                 |
+| [tailwindcss@4.2.0](https://github.com/tailwindlabs/tailwindcss)                                            | MIT                                 |
 | [tapable@2.3.0](https://github.com/webpack/tapable)                                                         | MIT                                 |
 | [thread-stream@3.1.0](https://github.com/mcollina/thread-stream)                                            | MIT                                 |
 | [thread-stream@4.0.0](https://github.com/mcollina/thread-stream)                                            | MIT                                 |
