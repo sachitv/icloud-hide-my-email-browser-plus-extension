@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
   afterAll,
@@ -516,6 +516,9 @@ describe('Popup UI', () => {
     )?.[0] as (state: PopupState) => PopupState;
     expect(updater).toBeTypeOf('function');
     expect(updater(PopupState.SignedOut)).toBe(PopupState.Authenticated);
+    // Also exercise the false branch: when prevState is already Authenticated
+    // (not SignedOut), the state is left unchanged.
+    expect(updater(PopupState.Authenticated)).toBe(PopupState.Authenticated);
   });
 
   // Error path: listHme rejection should surface the error UI.
@@ -840,5 +843,109 @@ describe('Popup UI', () => {
     await user.click(generateButton);
 
     expect(popupStateSetterMock).toHaveBeenCalledWith(PopupState.Authenticated);
+  });
+
+  // Covers the selectedIndex >= hmeEmails.length guard in HmeListView (line 740).
+  // When the user has item at index N selected and a deletion reduces the list length
+  // to N (or below), the effect clamps selectedIndex to hmeEmails.length - 1.
+  it('clamps the selected index when deletion shrinks the list below the current selection', async () => {
+    popupStateValue = PopupState.AuthenticatedAndManaging;
+    clientStateValue = createClientStateTestData();
+
+    const now = Date.now();
+    const [firstAlias, secondAlias] = [
+      createHmeEmailTestData({
+        anonymousId: 'first',
+        label: 'First alias',
+        hme: 'first@example.com',
+        isActive: false,
+        createTimestamp: now,
+      }),
+      createHmeEmailTestData({
+        anonymousId: 'second',
+        label: 'Second alias',
+        hme: 'second@example.com',
+        isActive: false,
+        createTimestamp: now - 1000,
+      }),
+    ];
+
+    listHmeMock.mockResolvedValue({
+      hmeEmails: [firstAlias, secondAlias],
+      forwardToEmails: [],
+      selectedForwardTo: 'forward@example.com',
+    });
+    deleteHmeMock.mockResolvedValue(undefined);
+
+    render(<Popup />);
+
+    // Select the second item (index 1)
+    const secondButton = await screen.findByRole('button', {
+      name: /Second alias/i,
+    });
+    await user.click(secondButton);
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: /Second alias/i })
+      ).toHaveAttribute('aria-current', 'true')
+    );
+
+    // Delete the second alias — the list shrinks to length 1, but selectedIndex
+    // is still 1. The useEffect in HmeListView detects selectedIndex (1) >=
+    // hmeEmails.length (1) and clamps it to 0, exercising line 740.
+    const deleteButton = await screen.findByRole('button', {
+      name: /^Delete$/i,
+    });
+    await user.click(deleteButton);
+
+    await waitFor(() =>
+      expect(deleteHmeMock).toHaveBeenCalledWith(secondAlias.anonymousId)
+    );
+
+    // After deletion, the first alias should become selected (index 0)
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: /First alias/i })
+      ).toHaveAttribute('aria-current', 'true')
+    );
+  });
+
+  // Covers the false branch of `label || tabHost` in onUseSubmit (Popup.tsx line 427).
+  // When the label field is cleared the form falls back to tabHost for the reservation label.
+  it('falls back to tabHost as reservation label when the label field is cleared', async () => {
+    popupStateValue = PopupState.Authenticated;
+    clientStateValue = createClientStateTestData();
+    isAuthenticatedMock.mockResolvedValue(true);
+    generateHmeMock.mockResolvedValue('generated@example.com');
+    reserveHmeMock.mockResolvedValue(
+      createHmeEmailTestData({
+        anonymousId: 'anon',
+        label: 'example.com',
+        hme: 'generated@example.com',
+      })
+    );
+
+    render(<Popup />);
+
+    // Wait for the label field to be pre-populated with the hostname (tabHost)
+    const labelInput = await screen.findByLabelText(/Label/i);
+    await waitFor(() => expect(labelInput).toHaveValue('example.com'));
+
+    // Clear the label, making it empty (falsy), so `label || tabHost` uses tabHost
+    await user.clear(labelInput);
+    expect(labelInput).toHaveValue('');
+
+    // Use fireEvent.submit to bypass the `required` HTML attribute and exercise the fallback
+    const form = labelInput.closest('form')!;
+    fireEvent.submit(form);
+
+    await waitFor(() =>
+      expect(reserveHmeMock).toHaveBeenCalledWith(
+        'generated@example.com',
+        'example.com',
+        undefined
+      )
+    );
   });
 });

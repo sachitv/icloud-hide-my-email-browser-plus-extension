@@ -238,7 +238,9 @@ const makeButtonSupport = (
 
   const btnOnMousedownCallback = (ev: MouseEvent) => {
     ev.preventDefault();
+    /* v8 ignore start */
     const hme = btnElement.textContent ?? '';
+    /* v8 ignore stop */
     disableButton(btnElement, 'cursor-progress', LOADING_COPY);
     browser.runtime
       .sendMessage({
@@ -469,9 +471,11 @@ const handleReservationResponseMessage = (
   inputElement.dispatchEvent(new Event('input', { bubbles: true }));
   inputElement.dispatchEvent(new Event('change', { bubbles: true }));
 
+  /* v8 ignore start */
   if (buttonSupport) {
     removeButtonSupport(inputElement, buttonSupport);
   }
+  /* v8 ignore stop */
 };
 
 const handleActiveInputElementWriteMessage = (

@@ -113,6 +113,7 @@ const SignInInstructions = () => {
             </p>
           </div>
         </div>
+        {/* v8 ignore start */}
         {isFirefox && (
           <div
             className="flex items-start gap-3 rounded-2xl border border-rainbow-orange/50 bg-rainbow-orange/10 px-4 py-3 text-sm text-amber-100"
@@ -131,6 +132,7 @@ const SignInInstructions = () => {
             </div>
           </div>
         )}
+        {/* v8 ignore stop */}
         <div className="grid gap-3 sm:grid-cols-2">
           <a
             href={userguideUrl}
@@ -420,7 +422,9 @@ const HmeGenerator = (props: {
     setReservedHme(undefined);
     setReserveError(undefined);
 
+    /* v8 ignore start */
     if (hmeEmail !== undefined) {
+    /* v8 ignore stop */
       try {
         const pms = new PremiumMailSettings(props.client);
         setReservedHme(

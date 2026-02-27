@@ -313,6 +313,39 @@ describe('Options page UI', () => {
     expect(updateForwardToHmeMock).not.toHaveBeenCalled();
   });
 
+  // Covers the deepEqual true branch in setFwdToEmails: when prevState already
+  // equals the fetched list (both undefined), the state setter returns prevState
+  // unchanged, avoiding a spurious re-render.
+  it('does not update forwardToEmails state when the fetched list matches the current state', async () => {
+    storageStateMocks.iCloudHmeOptions = {
+      state: DEFAULT_STORE.iCloudHmeOptions,
+      isLoading: false,
+    };
+    storageStateMocks.clientState = {
+      state: createClientStateTestData(),
+      spy: vi.fn(),
+      isLoading: false,
+    };
+
+    isAuthenticatedMock.mockResolvedValue(true);
+    // Returning undefined forwardToEmails means deepEqual(undefined, undefined)
+    // is true, so the setFwdToEmails updater returns prevState (undefined),
+    // exercising the true branch of the ternary.
+    listHmeMock.mockResolvedValue({
+      forwardToEmails: undefined,
+      selectedForwardTo: undefined,
+    });
+
+    render(<Options />);
+
+    // Form should be visible (no list error) once loading completes
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: /update forwarding/i })
+      ).toBeInTheDocument()
+    );
+  });
+
   it('surfaces an error when the forwarding address fails to update', async () => {
     storageStateMocks.iCloudHmeOptions = {
       state: DEFAULT_STORE.iCloudHmeOptions,

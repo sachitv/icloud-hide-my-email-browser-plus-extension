@@ -61,4 +61,16 @@ describe('TitledComponent', () => {
     expect(children[0]).toHaveTextContent('Item 1');
     expect(children[1]).toHaveTextContent('Item 2');
   });
+
+  it('uses fallback key for non-React-element children such as plain strings', () => {
+    // Strings are valid ReactNode children but React.isValidElement returns false for them,
+    // so the sectionId-based fallback key path is exercised.
+    const { container } = render(
+      <TitledComponent hideHeader>{'string child'}</TitledComponent>
+    );
+
+    const children = container.querySelectorAll('[class*="text-[15px]"]');
+    expect(children).toHaveLength(1);
+    expect(children[0]).toHaveTextContent('string child');
+  });
 });

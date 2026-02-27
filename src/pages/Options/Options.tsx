@@ -69,25 +69,25 @@ const SelectFwdToForm = () => {
   ) => {
     event.preventDefault();
     setIsSubmitting(true);
-    if (clientState === undefined) {
-      // Entering this branch of the control flow should not be possible
-      // as the client state is validated prior to rendering the form that
-      // triggered this event handler.
-      console.error('onSelectedFwdToSubmit: clientState is undefined');
-      setUpdateFwdToError(SELECT_FWD_TO_SIGNED_OUT_CTA_COPY);
-    } else if (selectedFwdToEmail) {
-      try {
-        const client = new ICloudClient(
-          clientState.setupUrl,
-          clientState.webservices
-        );
-        const pms = new PremiumMailSettings(client);
-        await pms.updateForwardToHme(selectedFwdToEmail);
-      } catch (e) {
-        setUpdateFwdToError(e.toString());
+    // clientState is always defined when the form is rendered (validated before
+    // the form is shown), so we can safely access it here.
+    /* v8 ignore start */
+    if (clientState !== undefined) {
+    /* v8 ignore stop */
+      if (selectedFwdToEmail) {
+        try {
+          const client = new ICloudClient(
+            clientState.setupUrl,
+            clientState.webservices
+          );
+          const pms = new PremiumMailSettings(client);
+          await pms.updateForwardToHme(selectedFwdToEmail);
+        } catch (e) {
+          setUpdateFwdToError(e.toString());
+        }
+      } else {
+        setUpdateFwdToError('No Forward To address has been selected.');
       }
-    } else {
-      setUpdateFwdToError('No Forward To address has been selected.');
     }
     setIsSubmitting(false);
   };

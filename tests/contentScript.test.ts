@@ -930,4 +930,153 @@ describe('content script email button integration', () => {
       })
     ).not.toThrow();
   });
+
+  // Covers the false branch of copyToClipboard in handleActiveInputElementWriteMessage.
+  it('writes to the active input element without copying to clipboard when copyToClipboard is false', async () => {
+    const input = createInputElement();
+
+    await runContentScript();
+
+    focusInput(input);
+    await Promise.resolve();
+
+    Object.defineProperty(document, 'activeElement', {
+      configurable: true,
+      get: () => input,
+    });
+
+    runtimeMessageListener?.({
+      type: MessageType.ActiveInputElementWrite,
+      data: {
+        text: 'no-copy@example.com',
+        copyToClipboard: false,
+      },
+    });
+
+    expect(input.value).toBe('no-copy@example.com');
+    expect(clipboardWriteTextMock).not.toHaveBeenCalled();
+
+    Object.defineProperty(document, 'activeElement', {
+      configurable: true,
+      get: () => document.body,
+    });
+  });
+
+  // Covers the false branch of found?.buttonSupport in handleActiveInputElementWriteMessage
+  // when the active input is tracked but has no button support (autofill.button disabled).
+  it('writes to active input without removing button support when button autofill is disabled', async () => {
+    mockStorageState({
+      iCloudHmeOptions: { autofill: { button: false, contextMenu: true } },
+    });
+
+    const input = createInputElement();
+
+    await runContentScript();
+
+    Object.defineProperty(document, 'activeElement', {
+      configurable: true,
+      get: () => input,
+    });
+
+    runtimeMessageListener?.({
+      type: MessageType.ActiveInputElementWrite,
+      data: {
+        text: 'no-button-support@example.com',
+        copyToClipboard: true,
+      },
+    });
+
+    expect(input.value).toBe('no-button-support@example.com');
+    expect(clipboardWriteTextMock).toHaveBeenCalledWith(
+      'no-button-support@example.com'
+    );
+
+    Object.defineProperty(document, 'activeElement', {
+      configurable: true,
+      get: () => document.body,
+    });
+  });
+
+  // Covers the false branch of if (buttonSupport) in removeAutofillableInputElementIfPresent
+  // when the removed input was tracked without button support (autofill.button disabled).
+  it('removes a tracked input without button support when it is detached from the DOM', async () => {
+    mockStorageState({
+      iCloudHmeOptions: { autofill: { button: false, contextMenu: true } },
+    });
+
+    const container = document.createElement('div');
+    const input = document.createElement('input');
+    input.type = 'email';
+    input.name = 'email';
+    container.appendChild(input);
+    document.body.appendChild(container);
+
+    await runContentScript();
+
+    // The input is tracked with no buttonSupport since button autofill is disabled.
+    // Removing the container triggers the MutationObserver which calls
+    // removeAutofillableInputElementIfPresent. Since there is no buttonSupport,
+    // the false branch of `if (buttonSupport)` is exercised.
+    container.remove();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    // No shadow hosts should be present since button support was never created.
+    const hosts = Array.from(document.body.children).filter(
+      (el): el is HTMLElement =>
+        el instanceof HTMLElement && Boolean(el.shadowRoot)
+    );
+    expect(hosts).toHaveLength(0);
+  });
+
+  // Covers the nullish-coalescing fallback in btnOnMousedownCallback when
+  // globalThis.location is not available.
+  it('falls back to an empty label when globalThis.location is null', async () => {
+    const input = createInputElement();
+
+    await runContentScript();
+
+    focusInput(input);
+    await Promise.resolve();
+
+    const host = findShadowHost();
+    const button = host?.shadowRoot?.querySelector('button') as
+      | HTMLButtonElement
+      | undefined;
+
+    runtimeMessageListener?.({
+      type: MessageType.GenerateResponse,
+      data: {
+        elementId: 'button-uuid',
+        hme: 'alias@example.com',
+      },
+    });
+    await waitFor(() => expect(button?.textContent).toBe('alias@example.com'));
+
+    // Temporarily remove location so globalThis.location?.host falls back to ''
+    const originalLocation = globalThis.location;
+    Object.defineProperty(globalThis, 'location', {
+      configurable: true,
+      value: null,
+    });
+
+    try {
+      button?.dispatchEvent(new MouseEvent('mousedown'));
+
+      await waitFor(() =>
+        expect(runtimeSendMessageMock).toHaveBeenLastCalledWith({
+          type: MessageType.ReservationRequest,
+          data: {
+            hme: 'alias@example.com',
+            label: '',
+            elementId: 'button-uuid',
+          },
+        })
+      );
+    } finally {
+      Object.defineProperty(globalThis, 'location', {
+        configurable: true,
+        value: originalLocation,
+      });
+    }
+  });
 });
