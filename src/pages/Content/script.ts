@@ -238,7 +238,11 @@ const makeButtonSupport = (
 
   const btnOnMousedownCallback = (ev: MouseEvent) => {
     ev.preventDefault();
+    // HTMLButtonElement.textContent is always a string for element nodes; the
+    // ?? fallback for null is required by the DOM types but is never reached.
+    /* v8 ignore start */
     const hme = btnElement.textContent ?? '';
+    /* v8 ignore stop */
     disableButton(btnElement, 'cursor-progress', LOADING_COPY);
     browser.runtime
       .sendMessage({
@@ -469,9 +473,13 @@ const handleReservationResponseMessage = (
   inputElement.dispatchEvent(new Event('input', { bubbles: true }));
   inputElement.dispatchEvent(new Event('change', { bubbles: true }));
 
+  // findAutofillableElementByButtonId only returns elements that have
+  // buttonSupport set, so this guard's false branch is structurally unreachable.
+  /* v8 ignore start */
   if (buttonSupport) {
     removeButtonSupport(inputElement, buttonSupport);
   }
+  /* v8 ignore stop */
 };
 
 const handleActiveInputElementWriteMessage = (

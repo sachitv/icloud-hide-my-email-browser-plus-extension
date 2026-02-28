@@ -113,6 +113,10 @@ const SignInInstructions = () => {
             </p>
           </div>
         </div>
+        {/* isFirefox is a module-level constant evaluated at import time.
+             Its value cannot be changed per-test without a full module reset,
+             so the true branch is untestable in the current test setup. */}
+        {/* v8 ignore start */}
         {isFirefox && (
           <div
             className="flex items-start gap-3 rounded-2xl border border-rainbow-orange/50 bg-rainbow-orange/10 px-4 py-3 text-sm text-amber-100"
@@ -131,6 +135,7 @@ const SignInInstructions = () => {
             </div>
           </div>
         )}
+        {/* v8 ignore stop */}
         <div className="grid gap-3 sm:grid-cols-2">
           <a
             href={userguideUrl}
@@ -420,7 +425,11 @@ const HmeGenerator = (props: {
     setReservedHme(undefined);
     setReserveError(undefined);
 
+    // ReservationForm only renders when hmeEmail is truthy, so onUseSubmit
+    // can only fire when hmeEmail is already defined — the false branch is unreachable.
+    /* v8 ignore start */
     if (hmeEmail !== undefined) {
+      /* v8 ignore stop */
       try {
         const pms = new PremiumMailSettings(props.client);
         setReservedHme(

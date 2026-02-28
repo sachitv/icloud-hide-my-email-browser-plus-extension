@@ -65,12 +65,9 @@ vi.mock('uuid', () => ({
   v4: () => 'button-uuid',
 }));
 
-const createInputElement = () => {
-  const input = document.createElement('input');
-  input.type = 'email';
-  input.id = 'email';
-  input.name = 'email';
-  input.getBoundingClientRect = vi.fn(() => ({
+/** Builds a DOMRect-shaped object with sensible defaults, allowing per-test overrides. */
+const makeRect = (overrides: Partial<Omit<DOMRect, 'toJSON'>> = {}): DOMRect =>
+  ({
     top: 40,
     bottom: 64,
     left: 120,
@@ -80,14 +77,27 @@ const createInputElement = () => {
     x: 120,
     y: 40,
     toJSON: () => ({}),
-  }));
+    ...overrides,
+  }) as DOMRect;
+
+const createInputElement = () => {
+  const input = document.createElement('input');
+  input.type = 'email';
+  input.id = 'email';
+  input.name = 'email';
+  input.getBoundingClientRect = vi.fn(() => makeRect());
   document.body.appendChild(input);
   return input;
 };
 
 const focusInput = (input: HTMLInputElement) => {
-  const event = new Event('focus');
-  input.dispatchEvent(event);
+  input.dispatchEvent(new Event('focus'));
+};
+
+/** Fires a focus event on the input and waits one microtask for async handlers to settle. */
+const focusAndWait = async (input: HTMLInputElement) => {
+  focusInput(input);
+  await Promise.resolve();
 };
 
 const DEFAULT_STORAGE_VALUES: Pick<Store, 'iCloudHmeOptions' | 'clientState'> =
@@ -136,6 +146,35 @@ const findShadowHost = () =>
     (el): el is HTMLElement =>
       el instanceof HTMLElement && Boolean(el.shadowRoot)
   );
+
+/** Returns all shadow-host elements present in document.body. */
+const findAllShadowHosts = () =>
+  Array.from(document.body.children).filter(
+    (el): el is HTMLElement =>
+      el instanceof HTMLElement && Boolean(el.shadowRoot)
+  );
+
+/** Locates the single shadow host and its first button in one call. */
+const findHostAndButton = () => {
+  const host = findShadowHost();
+  return {
+    host,
+    button: host?.shadowRoot?.querySelector('button') as
+      | HTMLButtonElement
+      | undefined,
+  };
+};
+
+/** Dispatches a raw message through the registered runtime listener. */
+const sendRuntimeMessage = (message: unknown) =>
+  runtimeMessageListener?.(message);
+
+/** Sends a GenerateResponse runtime message for the default button UUID. */
+const sendGenerateResponse = (hme: string) =>
+  sendRuntimeMessage({
+    type: MessageType.GenerateResponse,
+    data: { elementId: 'button-uuid', hme },
+  });
 
 describe('content script email button integration', () => {
   beforeEach(() => {
@@ -188,13 +227,10 @@ describe('content script email button integration', () => {
 
     expect(runtimeMessageListener).toBeDefined();
 
-    focusInput(input);
-    await Promise.resolve();
+    await focusAndWait(input);
 
-    const host = findShadowHost();
+    const { host, button } = findHostAndButton();
     expect(host).toBeDefined();
-
-    const button = host?.shadowRoot?.querySelector('button');
     expect(button).toBeDefined();
     expect(runtimeSendMessageMock).not.toHaveBeenCalled();
     const scrollCall = windowAddEventListenerSpy.mock.calls.find(
@@ -207,17 +243,9 @@ describe('content script email button integration', () => {
       [],
       ReturnType<HTMLInputElement['getBoundingClientRect']>
     >;
-    rectMock.mockReturnValueOnce({
-      top: 140,
-      bottom: 164,
-      left: 220,
-      right: 420,
-      width: 200,
-      height: 24,
-      x: 220,
-      y: 140,
-      toJSON: () => ({}),
-    });
+    rectMock.mockReturnValueOnce(
+      makeRect({ top: 140, bottom: 164, left: 220, right: 420, x: 220, y: 140 })
+    );
 
     scrollHandler?.(new Event('scroll'));
     expect(button?.style.top).toBe('164px');
@@ -261,17 +289,11 @@ describe('content script email button integration', () => {
 
     await runContentScript();
 
-    focusInput(input);
-    await Promise.resolve();
+    await focusAndWait(input);
 
-    const hosts = Array.from(document.body.children).filter(
-      (el): el is HTMLElement =>
-        el instanceof HTMLElement && Boolean(el.shadowRoot)
-    );
+    expect(findAllShadowHosts()).toHaveLength(0);
 
-    expect(hosts).toHaveLength(0);
-
-    runtimeMessageListener?.({
+    sendRuntimeMessage({
       type: MessageType.GenerateResponse,
       data: {
         elementId: 'unknown',
@@ -279,7 +301,7 @@ describe('content script email button integration', () => {
       },
     });
 
-    runtimeMessageListener?.({
+    sendRuntimeMessage({
       type: MessageType.Autofill,
       data: 'autofill@example.com',
     });
@@ -293,11 +315,9 @@ describe('content script email button integration', () => {
 
     await runContentScript();
 
-    focusInput(input);
-    await Promise.resolve();
+    await focusAndWait(input);
 
-    const host = findShadowHost();
-    const button = host?.shadowRoot?.querySelector('button');
+    const { button } = findHostAndButton();
     await waitFor(() =>
       expect(button?.textContent).toBe('Please sign in to iCloud')
     );
@@ -311,10 +331,9 @@ describe('content script email button integration', () => {
 
     await runContentScript();
 
-    focusInput(input);
-    await Promise.resolve();
+    await focusAndWait(input);
 
-    const host = findShadowHost();
+    const { host } = findHostAndButton();
     const scrollHandler = windowAddEventListenerSpy.mock.calls.find(
       ([eventName]) => eventName === 'scroll'
     )?.[1] as EventListener | undefined;
@@ -331,21 +350,11 @@ describe('content script email button integration', () => {
 
     await runContentScript();
 
-    focusInput(input);
-    await Promise.resolve();
+    await focusAndWait(input);
 
-    const host = findShadowHost();
-    const button = host?.shadowRoot?.querySelector('button') as
-      | HTMLButtonElement
-      | undefined;
+    const { button } = findHostAndButton();
 
-    runtimeMessageListener?.({
-      type: MessageType.GenerateResponse,
-      data: {
-        elementId: 'button-uuid',
-        hme: 'alias@example.com',
-      },
-    });
+    sendGenerateResponse('alias@example.com');
     await waitFor(() => expect(button?.textContent).toBe('alias@example.com'));
 
     button?.dispatchEvent(new MouseEvent('mousedown'));
@@ -368,20 +377,12 @@ describe('content script email button integration', () => {
 
     await runContentScript();
 
-    focusInput(input);
-    await Promise.resolve();
+    await focusAndWait(input);
 
-    const host = findShadowHost();
-    const button = host?.shadowRoot?.querySelector('button');
+    const { button } = findHostAndButton();
 
     // First send the generate response to enable the button
-    runtimeMessageListener?.({
-      type: MessageType.GenerateResponse,
-      data: {
-        elementId: 'button-uuid',
-        hme: 'alias@example.com',
-      },
-    });
+    sendGenerateResponse('alias@example.com');
     await waitFor(() => expect(button?.textContent).toBe('alias@example.com'));
 
     // Now mock the sendMessage to fail when reservation is requested
@@ -414,49 +415,26 @@ describe('content script email button integration', () => {
     input.type = 'email';
     input.id = 'email';
     input.name = 'email';
-    input.getBoundingClientRect = vi.fn(() => ({
-      top: 40,
-      bottom: 64,
-      left: 120,
-      right: 320,
-      width: 200,
-      height: 24,
-      x: 120,
-      y: 40,
-      toJSON: () => ({}),
-    }));
+    input.getBoundingClientRect = vi.fn(() => makeRect());
 
     container.appendChild(input);
     document.body.appendChild(container);
 
     await runContentScript();
 
-    focusInput(input);
-    await Promise.resolve();
+    await focusAndWait(input);
 
-    const host = findShadowHost();
+    const { host, button } = findHostAndButton();
     expect(host).toBeDefined();
-
-    const button = host?.shadowRoot?.querySelector('button') as
-      | HTMLButtonElement
-      | undefined;
     expect(button).toBeDefined();
 
     const rectMock = input.getBoundingClientRect as unknown as Mock<
       [],
       ReturnType<HTMLInputElement['getBoundingClientRect']>
     >;
-    rectMock.mockReturnValueOnce({
-      top: 240,
-      bottom: 264,
-      left: 320,
-      right: 520,
-      width: 200,
-      height: 24,
-      x: 320,
-      y: 240,
-      toJSON: () => ({}),
-    });
+    rectMock.mockReturnValueOnce(
+      makeRect({ top: 240, bottom: 264, left: 320, right: 520, x: 320, y: 240 })
+    );
 
     container.dispatchEvent(new Event('scroll'));
     expect(button?.style.top).toBe('264px');
@@ -500,10 +478,9 @@ describe('content script email button integration', () => {
 
     await runContentScript();
 
-    focusInput(rawInput);
-    await Promise.resolve();
+    await focusAndWait(rawInput);
 
-    const host = findShadowHost();
+    const { host } = findHostAndButton();
     expect(host).toBeDefined();
 
     container.remove();
@@ -518,17 +495,9 @@ describe('content script email button integration', () => {
     const newEmail = document.createElement('input');
     newEmail.type = 'email';
     newEmail.name = 'email';
-    newEmail.getBoundingClientRect = vi.fn(() => ({
-      top: 40,
-      bottom: 64,
-      left: 10,
-      right: 210,
-      width: 200,
-      height: 24,
-      x: 10,
-      y: 40,
-      toJSON: () => ({}),
-    }));
+    newEmail.getBoundingClientRect = vi.fn(() =>
+      makeRect({ left: 10, right: 210, x: 10 })
+    );
     document.body.appendChild(newEmail);
 
     await new Promise((resolve) => setTimeout(resolve, 0));
@@ -541,45 +510,24 @@ describe('content script email button integration', () => {
 
     await runContentScript();
 
-    focusInput(originalInput);
-    await Promise.resolve();
+    await focusAndWait(originalInput);
 
-    const initialHosts = Array.from(document.body.children).filter(
-      (el): el is HTMLElement =>
-        el instanceof HTMLElement && Boolean(el.shadowRoot)
-    );
-    expect(initialHosts).toHaveLength(1);
+    expect(findAllShadowHosts()).toHaveLength(1);
 
     const duplicateInput = originalInput.cloneNode(true) as HTMLInputElement;
-    duplicateInput.getBoundingClientRect = vi.fn(() => ({
-      top: 40,
-      bottom: 64,
-      left: 10,
-      right: 210,
-      width: 200,
-      height: 24,
-      x: 10,
-      y: 40,
-      toJSON: () => ({}),
-    }));
+    duplicateInput.getBoundingClientRect = vi.fn(() =>
+      makeRect({ left: 10, right: 210, x: 10 })
+    );
     document.body.appendChild(duplicateInput);
 
     await new Promise((resolve) => setTimeout(resolve, 0));
 
-    const hostsAfterDuplicate = Array.from(document.body.children).filter(
-      (el): el is HTMLElement =>
-        el instanceof HTMLElement && Boolean(el.shadowRoot)
-    );
-    expect(hostsAfterDuplicate).toHaveLength(1);
+    expect(findAllShadowHosts()).toHaveLength(1);
 
     duplicateInput.remove();
     await new Promise((resolve) => setTimeout(resolve, 0));
 
-    const hostsAfterRemoval = Array.from(document.body.children).filter(
-      (el): el is HTMLElement =>
-        el instanceof HTMLElement && Boolean(el.shadowRoot)
-    );
-    expect(hostsAfterRemoval).toHaveLength(1);
+    expect(findAllShadowHosts()).toHaveLength(1);
   });
 
   // Guards against non-element nodes emitted from mutation observer removals.
@@ -596,9 +544,8 @@ describe('content script email button integration', () => {
     textNode.remove();
     await new Promise((resolve) => setTimeout(resolve, 0));
 
-    focusInput(rawInput);
-    await Promise.resolve();
-    const host = findShadowHost();
+    await focusAndWait(rawInput);
+    const { host } = findHostAndButton();
     expect(host).toBeDefined();
   });
 
@@ -608,14 +555,12 @@ describe('content script email button integration', () => {
 
     await runContentScript();
 
-    focusInput(input);
-    await Promise.resolve();
+    await focusAndWait(input);
 
-    const host = findShadowHost();
-    const button = host?.shadowRoot?.querySelector('button');
+    const { button } = findHostAndButton();
     expect(button).toBeDefined();
 
-    runtimeMessageListener?.({
+    sendRuntimeMessage({
       type: MessageType.GenerateResponse,
       data: {
         elementId: 'button-uuid',
@@ -626,7 +571,7 @@ describe('content script email button integration', () => {
     expect(button?.textContent).toBe('Generation failed');
     expect(button?.hasAttribute('disabled')).toBe(true);
 
-    runtimeMessageListener?.({
+    sendRuntimeMessage({
       type: MessageType.GenerateResponse,
       data: {
         elementId: 'button-uuid',
@@ -644,25 +589,13 @@ describe('content script email button integration', () => {
 
     expect(runtimeMessageListener).toBeDefined();
 
-    focusInput(input);
-    await Promise.resolve();
+    await focusAndWait(input);
 
-    const host = findShadowHost();
+    const { host, button } = findHostAndButton();
     expect(host).toBeDefined();
-
-    const button = host?.shadowRoot?.querySelector('button') as
-      | HTMLButtonElement
-      | undefined;
     expect(button).toBeDefined();
 
-    runtimeMessageListener?.({
-      type: MessageType.GenerateResponse,
-      data: {
-        elementId: 'button-uuid',
-        hme: 'alias@example.com',
-      },
-    });
-
+    sendGenerateResponse('alias@example.com');
     expect(button?.textContent).toBe('alias@example.com');
     expect(button?.hasAttribute('disabled')).toBe(false);
 
@@ -677,7 +610,7 @@ describe('content script email button integration', () => {
       },
     });
 
-    runtimeMessageListener?.({
+    sendRuntimeMessage({
       type: MessageType.ReservationResponse,
       data: {
         elementId: 'button-uuid',
@@ -705,21 +638,18 @@ describe('content script email button integration', () => {
 
     await runContentScript();
 
-    focusInput(input);
-    await Promise.resolve();
+    await focusAndWait(input);
 
-    const hostBefore = findShadowHost();
-    expect(hostBefore).toBeDefined();
+    expect(findShadowHost()).toBeDefined();
 
-    runtimeMessageListener?.({
+    sendRuntimeMessage({
       type: MessageType.Autofill,
       data: 'autofill@example.com',
     });
 
     expect(input.value).toBe('autofill@example.com');
 
-    const hostAfter = findShadowHost();
-    expect(hostAfter).toBeUndefined();
+    expect(findShadowHost()).toBeUndefined();
   });
 
   // Covers reservation error responses and missing payload fallbacks.
@@ -728,25 +658,14 @@ describe('content script email button integration', () => {
 
     await runContentScript();
 
-    focusInput(input);
-    await Promise.resolve();
+    await focusAndWait(input);
 
-    const host = findShadowHost();
-    const button = host?.shadowRoot?.querySelector('button') as
-      | HTMLButtonElement
-      | undefined;
+    const { button } = findHostAndButton();
 
-    runtimeMessageListener?.({
-      type: MessageType.GenerateResponse,
-      data: {
-        elementId: 'button-uuid',
-        hme: 'alias@example.com',
-      },
-    });
-
+    sendGenerateResponse('alias@example.com');
     expect(button?.textContent).toBe('alias@example.com');
 
-    runtimeMessageListener?.({
+    sendRuntimeMessage({
       type: MessageType.ReservationResponse,
       data: {
         elementId: 'button-uuid',
@@ -757,7 +676,7 @@ describe('content script email button integration', () => {
     expect(button?.textContent).toBe('Reservation failed');
     expect(button?.hasAttribute('disabled')).toBe(true);
 
-    runtimeMessageListener?.({
+    sendRuntimeMessage({
       type: MessageType.ReservationResponse,
       data: {
         elementId: 'button-uuid',
@@ -773,20 +692,12 @@ describe('content script email button integration', () => {
 
     await runContentScript();
 
-    focusInput(input);
-    await Promise.resolve();
+    await focusAndWait(input);
 
-    const host = findShadowHost();
-    const button = host?.shadowRoot?.querySelector('button');
+    const { button } = findHostAndButton();
     expect(button).toBeDefined();
 
-    runtimeMessageListener?.({
-      type: MessageType.GenerateResponse,
-      data: {
-        elementId: 'button-uuid',
-        hme: 'alias@example.com',
-      },
-    });
+    sendGenerateResponse('alias@example.com');
 
     const nativeFind: typeof Array.prototype.find = Array.prototype.find;
     const findSpy = vi.spyOn(Array.prototype, 'find');
@@ -816,7 +727,7 @@ describe('content script email button integration', () => {
     });
 
     try {
-      runtimeMessageListener?.({
+      sendRuntimeMessage({
         type: MessageType.ReservationResponse,
         data: {
           elementId: 'button-uuid',
@@ -840,10 +751,9 @@ describe('content script email button integration', () => {
 
     await runContentScript();
 
-    focusInput(input);
-    await Promise.resolve();
+    await focusAndWait(input);
 
-    const host = findShadowHost();
+    const { host } = findHostAndButton();
     expect(host).toBeDefined();
 
     Object.defineProperty(document, 'activeElement', {
@@ -851,7 +761,7 @@ describe('content script email button integration', () => {
       get: () => input,
     });
 
-    runtimeMessageListener?.({
+    sendRuntimeMessage({
       type: MessageType.ActiveInputElementWrite,
       data: {
         text: 'copied-alias@example.com',
@@ -863,7 +773,7 @@ describe('content script email button integration', () => {
     expect(clipboardWriteTextMock).toHaveBeenCalledWith(
       'copied-alias@example.com'
     );
-    expect(host.isConnected).toBe(false);
+    expect(host!.isConnected).toBe(false);
     expect(hostRemovalSpy).toHaveBeenCalled();
 
     Object.defineProperty(document, 'activeElement', {
@@ -883,7 +793,7 @@ describe('content script email button integration', () => {
       get: () => document.body,
     });
 
-    runtimeMessageListener?.({
+    sendRuntimeMessage({
       type: MessageType.ActiveInputElementWrite,
       data: {
         text: 'ignored@example.com',
@@ -900,7 +810,7 @@ describe('content script email button integration', () => {
 
     await runContentScript();
 
-    runtimeMessageListener?.({
+    sendRuntimeMessage({
       type: MessageType.ReservationResponse,
       data: {
         elementId: 'missing',
@@ -908,7 +818,7 @@ describe('content script email button integration', () => {
       },
     });
 
-    runtimeMessageListener?.({
+    sendRuntimeMessage({
       type: MessageType.ReservationResponse,
       data: {
         elementId: 'missing',
@@ -924,10 +834,144 @@ describe('content script email button integration', () => {
     await runContentScript();
 
     expect(() =>
-      runtimeMessageListener?.({
+      sendRuntimeMessage({
         // @ts-expect-error - testing default case
         type: 'unknown',
       })
     ).not.toThrow();
+  });
+
+  // Covers the false branch of copyToClipboard in handleActiveInputElementWriteMessage.
+  it('writes to the active input element without copying to clipboard when copyToClipboard is false', async () => {
+    const input = createInputElement();
+
+    await runContentScript();
+
+    await focusAndWait(input);
+
+    Object.defineProperty(document, 'activeElement', {
+      configurable: true,
+      get: () => input,
+    });
+
+    sendRuntimeMessage({
+      type: MessageType.ActiveInputElementWrite,
+      data: {
+        text: 'no-copy@example.com',
+        copyToClipboard: false,
+      },
+    });
+
+    expect(input.value).toBe('no-copy@example.com');
+    expect(clipboardWriteTextMock).not.toHaveBeenCalled();
+
+    Object.defineProperty(document, 'activeElement', {
+      configurable: true,
+      get: () => document.body,
+    });
+  });
+
+  // Covers the false branch of found?.buttonSupport in handleActiveInputElementWriteMessage
+  // when the active input is tracked but has no button support (autofill.button disabled).
+  it('writes to active input without removing button support when button autofill is disabled', async () => {
+    mockStorageState({
+      iCloudHmeOptions: { autofill: { button: false, contextMenu: true } },
+    });
+
+    const input = createInputElement();
+
+    await runContentScript();
+
+    Object.defineProperty(document, 'activeElement', {
+      configurable: true,
+      get: () => input,
+    });
+
+    sendRuntimeMessage({
+      type: MessageType.ActiveInputElementWrite,
+      data: {
+        text: 'no-button-support@example.com',
+        copyToClipboard: true,
+      },
+    });
+
+    expect(input.value).toBe('no-button-support@example.com');
+    expect(clipboardWriteTextMock).toHaveBeenCalledWith(
+      'no-button-support@example.com'
+    );
+
+    Object.defineProperty(document, 'activeElement', {
+      configurable: true,
+      get: () => document.body,
+    });
+  });
+
+  // Covers the false branch of if (buttonSupport) in removeAutofillableInputElementIfPresent
+  // when the removed input was tracked without button support (autofill.button disabled).
+  it('removes a tracked input without button support when it is detached from the DOM', async () => {
+    mockStorageState({
+      iCloudHmeOptions: { autofill: { button: false, contextMenu: true } },
+    });
+
+    const container = document.createElement('div');
+    const input = document.createElement('input');
+    input.type = 'email';
+    input.name = 'email';
+    container.appendChild(input);
+    document.body.appendChild(container);
+
+    await runContentScript();
+
+    // The input is tracked with no buttonSupport since button autofill is disabled.
+    // Removing the container triggers the MutationObserver which calls
+    // removeAutofillableInputElementIfPresent. Since there is no buttonSupport,
+    // the false branch of `if (buttonSupport)` is exercised.
+    container.remove();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    // No shadow hosts should be present since button support was never created.
+    expect(findAllShadowHosts()).toHaveLength(0);
+  });
+
+  // Covers the nullish-coalescing fallback in btnOnMousedownCallback when
+  // globalThis.location is not available.
+  it('falls back to an empty label when globalThis.location is null', async () => {
+    const input = createInputElement();
+
+    await runContentScript();
+
+    await focusAndWait(input);
+
+    const { button } = findHostAndButton();
+
+    sendGenerateResponse('alias@example.com');
+    await waitFor(() => expect(button?.textContent).toBe('alias@example.com'));
+
+    // Temporarily remove location so globalThis.location?.host falls back to ''
+    const originalLocation = globalThis.location;
+    Object.defineProperty(globalThis, 'location', {
+      configurable: true,
+      value: null,
+    });
+
+    try {
+      button?.dispatchEvent(new MouseEvent('mousedown'));
+
+      await waitFor(() =>
+        expect(runtimeSendMessageMock).toHaveBeenLastCalledWith({
+          type: MessageType.ReservationRequest,
+          data: {
+            hme: 'alias@example.com',
+            label: '',
+            elementId: 'button-uuid',
+          },
+        })
+      );
+    } finally {
+      Object.defineProperty(globalThis, 'location', {
+        configurable: true,
+        value: originalLocation,
+      });
+    }
   });
 });
