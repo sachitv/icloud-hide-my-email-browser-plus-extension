@@ -113,6 +113,9 @@ const SignInInstructions = () => {
             </p>
           </div>
         </div>
+        {/* isFirefox is a module-level constant evaluated at import time.
+             Its value cannot be changed per-test without a full module reset,
+             so the true branch is untestable in the current test setup. */}
         {/* v8 ignore start */}
         {isFirefox && (
           <div
@@ -422,6 +425,8 @@ const HmeGenerator = (props: {
     setReservedHme(undefined);
     setReserveError(undefined);
 
+    // ReservationForm only renders when hmeEmail is truthy, so onUseSubmit
+    // can only fire when hmeEmail is already defined — the false branch is unreachable.
     /* v8 ignore start */
     if (hmeEmail !== undefined) {
     /* v8 ignore stop */

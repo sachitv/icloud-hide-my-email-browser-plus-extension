@@ -69,8 +69,8 @@ const SelectFwdToForm = () => {
   ) => {
     event.preventDefault();
     setIsSubmitting(true);
-    // clientState is always defined when the form is rendered (validated before
-    // the form is shown), so we can safely access it here.
+    // clientState is always defined when the form is rendered — the submit
+    // button is only shown to authenticated users — so the false branch is unreachable.
     /* v8 ignore start */
     if (clientState !== undefined) {
     /* v8 ignore stop */
