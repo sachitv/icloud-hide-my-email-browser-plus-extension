@@ -429,7 +429,7 @@ const HmeGenerator = (props: {
     // can only fire when hmeEmail is already defined — the false branch is unreachable.
     /* v8 ignore start */
     if (hmeEmail !== undefined) {
-    /* v8 ignore stop */
+      /* v8 ignore stop */
       try {
         const pms = new PremiumMailSettings(props.client);
         setReservedHme(

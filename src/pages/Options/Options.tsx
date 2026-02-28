@@ -73,7 +73,7 @@ const SelectFwdToForm = () => {
     // button is only shown to authenticated users — so the false branch is unreachable.
     /* v8 ignore start */
     if (clientState !== undefined) {
-    /* v8 ignore stop */
+      /* v8 ignore stop */
       if (selectedFwdToEmail) {
         try {
           const client = new ICloudClient(
