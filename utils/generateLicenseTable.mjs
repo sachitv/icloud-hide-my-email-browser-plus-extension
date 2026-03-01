@@ -74,12 +74,12 @@ const optionalPackages = (() => {
     const names = new Set();
 
     for (const [pkgPath, pkgInfo] of Object.entries(packages)) {
-      if (!pkgInfo || !pkgInfo.optional) {
+      if (!pkgInfo?.optional) {
         continue;
       }
 
       const segments = pkgPath.split('node_modules/');
-      const inferredName = pkgInfo.name || segments[segments.length - 1];
+      const inferredName = pkgInfo.name || segments.at(-1);
 
       if (inferredName) {
         names.add(inferredName);
