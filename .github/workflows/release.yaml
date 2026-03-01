@@ -167,6 +167,25 @@ jobs:
       - package-edge
       - package-sources
       - version
+    env:
+      CHROME_ZIP: artifacts/icloud-hide-my-email-plus-browser-extension-${{ needs.version.outputs.extension_version }}-chrome.zip
+      CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+      CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+      CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+      CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
+      CHROME_PUBLISH_TARGET: default
+      CHROME_SKIP_SUBMIT_REVIEW: 'false'
+      FIREFOX_ZIP: artifacts/icloud-hide-my-email-plus-browser-extension-${{ needs.version.outputs.extension_version }}-firefox.zip
+      FIREFOX_SOURCES_ZIP: artifacts/icloud-hide-my-email-plus-browser-extension-${{ needs.version.outputs.extension_version }}-sources.zip
+      FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_ADDON_GUID }}
+      FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
+      FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
+      FIREFOX_CHANNEL: listed
+      EDGE_ZIP: artifacts/icloud-hide-my-email-plus-browser-extension-${{ needs.version.outputs.extension_version }}-edge.zip
+      EDGE_PRODUCT_ID: ${{ secrets.MICROSOFT_PRODUCT_ID }}
+      EDGE_CLIENT_ID: ${{ secrets.MICROSOFT_CLIENT_ID }}
+      EDGE_API_KEY: ${{ secrets.MICROSOFT_API_KEY }}
+      EDGE_SKIP_SUBMIT_REVIEW: 'false'
     steps:
       - uses: actions/checkout@v6
       - name: Use Node.js 22.x
@@ -200,47 +219,11 @@ jobs:
         if: ${{ github.event.inputs.publish != 'skip' }}
         env:
           DRY_RUN: 'true'
-          CHROME_ZIP: artifacts/icloud-hide-my-email-plus-browser-extension-${{ needs.version.outputs.extension_version }}-chrome.zip
-          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
-          CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
-          CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
-          CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
-          CHROME_PUBLISH_TARGET: default
-          CHROME_SKIP_SUBMIT_REVIEW: 'false'
-          FIREFOX_ZIP: artifacts/icloud-hide-my-email-plus-browser-extension-${{ needs.version.outputs.extension_version }}-firefox.zip
-          FIREFOX_SOURCES_ZIP: artifacts/icloud-hide-my-email-plus-browser-extension-${{ needs.version.outputs.extension_version }}-sources.zip
-          FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_ADDON_GUID }}
-          FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
-          FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
-          FIREFOX_CHANNEL: listed
-          EDGE_ZIP: artifacts/icloud-hide-my-email-plus-browser-extension-${{ needs.version.outputs.extension_version }}-edge.zip
-          EDGE_PRODUCT_ID: ${{ secrets.MICROSOFT_PRODUCT_ID }}
-          EDGE_CLIENT_ID: ${{ secrets.MICROSOFT_CLIENT_ID }}
-          EDGE_API_KEY: ${{ secrets.MICROSOFT_API_KEY }}
-          EDGE_SKIP_SUBMIT_REVIEW: 'false'
         run: npm run publish
       - name: Publish browser extensions
         if: ${{ github.event.inputs.publish == 'full' }}
         env:
           DRY_RUN: 'false'
-          CHROME_ZIP: artifacts/icloud-hide-my-email-plus-browser-extension-${{ needs.version.outputs.extension_version }}-chrome.zip
-          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
-          CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
-          CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
-          CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
-          CHROME_PUBLISH_TARGET: default
-          CHROME_SKIP_SUBMIT_REVIEW: 'false'
-          FIREFOX_ZIP: artifacts/icloud-hide-my-email-plus-browser-extension-${{ needs.version.outputs.extension_version }}-firefox.zip
-          FIREFOX_SOURCES_ZIP: artifacts/icloud-hide-my-email-plus-browser-extension-${{ needs.version.outputs.extension_version }}-sources.zip
-          FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_ADDON_GUID }}
-          FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
-          FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
-          FIREFOX_CHANNEL: listed
-          EDGE_ZIP: artifacts/icloud-hide-my-email-plus-browser-extension-${{ needs.version.outputs.extension_version }}-edge.zip
-          EDGE_PRODUCT_ID: ${{ secrets.MICROSOFT_PRODUCT_ID }}
-          EDGE_CLIENT_ID: ${{ secrets.MICROSOFT_CLIENT_ID }}
-          EDGE_API_KEY: ${{ secrets.MICROSOFT_API_KEY }}
-          EDGE_SKIP_SUBMIT_REVIEW: 'false'
         run: npm run publish
 
   create-release:
