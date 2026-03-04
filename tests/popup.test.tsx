@@ -12,7 +12,7 @@ import {
 } from 'vitest';
 import Popup from '../src/pages/Popup/Popup';
 import { PopupState } from '../src/pages/Popup/stateMachine';
-import { CONTEXT_MENU_ITEM_ID } from '../src/pages/Background/constants';
+import { CONTEXT_MENU_ITEM_ID } from '../src/constants';
 import { createHmeEmailTestData, createClientStateTestData } from './testUtils';
 
 const {
