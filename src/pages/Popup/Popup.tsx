@@ -53,8 +53,8 @@ import {
 } from './stateMachine';
 import {
   CONTEXT_MENU_ITEM_ID,
-  SIGNED_OUT_CTA_COPY,
-} from '../Background/constants';
+  SIGNED_OUT_COPY,
+} from '../../constants';
 import { isFirefox } from '../../browserUtils';
 
 type TransitionCallback<T extends PopupAction> = (action: T) => void;
@@ -235,7 +235,7 @@ const FooterButton = (
 async function performDeauthSideEffects(): Promise<void> {
   await browser.contextMenus
     .update(CONTEXT_MENU_ITEM_ID, {
-      title: SIGNED_OUT_CTA_COPY,
+      title: SIGNED_OUT_COPY,
       enabled: false,
     })
     .catch((error) => {
