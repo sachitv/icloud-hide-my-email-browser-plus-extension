@@ -279,7 +279,7 @@ jobs:
           skip-tag: true
           git-push: false
       - name: Create GitHub release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           draft: ${{ github.event.inputs.release == 'draft' }}
           tag_name: v${{ needs.version.outputs.extension_version }}
