@@ -24,8 +24,8 @@ import {
   NOTIFICATION_MESSAGE_COPY,
   NOTIFICATION_TITLE_COPY,
   SIGNED_IN_CTA_COPY,
-  SIGNED_OUT_CTA_COPY,
-} from './constants';
+  SIGNED_OUT_COPY,
+} from '../../constants';
 import { isFirefox } from '../../browserUtils';
 
 const constructClient = async (): Promise<ICloudClient> => {
@@ -47,7 +47,7 @@ const performDeauthSideEffects = async () => {
 
   browser.contextMenus
     .update(CONTEXT_MENU_ITEM_ID, {
-      title: SIGNED_OUT_CTA_COPY,
+      title: SIGNED_OUT_COPY,
       enabled: false,
     })
     .catch(console.debug);
@@ -93,7 +93,7 @@ browser.runtime.onMessage.addListener(async (uncastedMessage: unknown) => {
       {
         const deauthCallback = async () => {
           await sendMessageToTab(MessageType.GenerateResponse, {
-            error: SIGNED_OUT_CTA_COPY,
+            error: SIGNED_OUT_COPY,
             elementId,
           });
           await performDeauthSideEffects();
@@ -251,7 +251,7 @@ browser.contextMenus.onClicked.addListener(async (info, tab) => {
     sendMessageToTab(
       MessageType.ActiveInputElementWrite,
       {
-        text: SIGNED_OUT_CTA_COPY,
+        text: SIGNED_OUT_COPY,
         copyToClipboard: false,
       } as ActiveInputElementWriteData,
       tab
