@@ -13,9 +13,6 @@ import { LOADING_COPY, SIGNED_OUT_CTA_COPY } from '../../constants';
 const EMAIL_INPUT_QUERY_STRING =
   'input[type="email"], input[name="email"], input[id="email"]';
 
-
-
-
 // A unique CSS class prefix is used to guarantee that the style injected
 // by the extension does not interfere with the existing style of
 // a web page.
