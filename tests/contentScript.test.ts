@@ -38,6 +38,7 @@ let runtimeMessageListener: ((message: unknown) => void) | undefined;
 vi.mock('webextension-polyfill', () => ({
   default: {
     runtime: {
+      id: 'test-extension-id',
       sendMessage: runtimeSendMessageMock,
       onMessage: {
         addListener: runtimeOnMessageAddListenerMock,

@@ -54,7 +54,7 @@ import {
 import {
   CONTEXT_MENU_ITEM_ID,
   SIGNED_OUT_CTA_COPY,
-} from '../Background/constants';
+} from '../../constants';
 import { isFirefox } from '../../browserUtils';
 
 type TransitionCallback<T extends PopupAction> = (action: T) => void;
