@@ -3,6 +3,7 @@ import { beforeAll, describe, expect, it, vi } from 'vitest';
 vi.mock('webextension-polyfill', () => ({
   default: {
     runtime: {
+      id: 'test-extension-id',
       sendMessage: vi.fn(),
       onMessage: {
         addListener: vi.fn(),

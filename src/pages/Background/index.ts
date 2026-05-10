@@ -25,7 +25,7 @@ import {
   NOTIFICATION_TITLE_COPY,
   SIGNED_IN_CTA_COPY,
   SIGNED_OUT_CTA_COPY,
-} from './constants';
+} from '../../constants';
 import { isFirefox } from '../../browserUtils';
 
 const constructClient = async (): Promise<ICloudClient> => {

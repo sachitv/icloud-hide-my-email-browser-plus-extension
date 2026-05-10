@@ -8,12 +8,10 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import browser from 'webextension-polyfill';
 import { getBrowserStorageValue } from '../../storage';
+import { LOADING_COPY, SIGNED_OUT_CTA_COPY } from '../../constants';
 
 const EMAIL_INPUT_QUERY_STRING =
   'input[type="email"], input[name="email"], input[id="email"]';
-
-const LOADING_COPY = 'Hide My Email+ — Loading...';
-const SIGNED_OUT_COPY = 'Please sign in to iCloud';
 
 // A unique CSS class prefix is used to guarantee that the style injected
 // by the extension does not interfere with the existing style of
@@ -200,7 +198,7 @@ const makeButtonSupport = (
     const handleAsyncFocus = async () => {
       const clientState = await getBrowserStorageValue('clientState');
       if (clientState === undefined) {
-        disableButton(btnElement, 'cursor-not-allowed', SIGNED_OUT_COPY);
+        disableButton(btnElement, 'cursor-not-allowed', SIGNED_OUT_CTA_COPY);
         return;
       }
 
@@ -214,7 +212,7 @@ const makeButtonSupport = (
           'Hide My Email+: Failed to request alias generation',
           error
         );
-        disableButton(btnElement, 'cursor-not-allowed', SIGNED_OUT_COPY);
+        disableButton(btnElement, 'cursor-not-allowed', SIGNED_OUT_CTA_COPY);
       }
     };
 
