@@ -16,7 +16,7 @@ jobs:
     outputs:
       licenses: ${{ steps.filter.outputs.licenses }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - uses: dorny/paths-filter@v4
@@ -36,7 +36,7 @@ jobs:
     if: github.actor != 'attributions-bot'
     runs-on: ubuntu-24.04-arm
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Use Node.js 22.x
         uses: actions/setup-node@v6
         with:
@@ -63,7 +63,7 @@ jobs:
     runs-on: ubuntu-24.04-arm
     needs: format
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Use Node.js 22.x
         uses: actions/setup-node@v6
         with:
@@ -98,7 +98,7 @@ jobs:
     needs:
       - lint
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Use Node.js 22.x
         uses: actions/setup-node@v6
         with:
@@ -136,7 +136,7 @@ jobs:
     runs-on: ubuntu-24.04-arm
     needs: unit-tests
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Use Node.js 22.x
         uses: actions/setup-node@v6
         with:
@@ -166,7 +166,7 @@ jobs:
     runs-on: ubuntu-24.04-arm
     needs: unit-tests
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Use Node.js 22.x
         uses: actions/setup-node@v6
         with:
@@ -196,7 +196,7 @@ jobs:
     runs-on: ubuntu-24.04-arm
     needs: unit-tests
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Use Node.js 22.x
         uses: actions/setup-node@v6
         with:
@@ -226,7 +226,7 @@ jobs:
     runs-on: ubuntu-24.04-arm
     needs: unit-tests
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Use Node.js 22.x
         uses: actions/setup-node@v6
         with:
@@ -258,7 +258,7 @@ jobs:
     if: needs.detect-license-changes.outputs.licenses == 'true'
     runs-on: ubuntu-24.04-arm
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Use Node.js 22.x
         uses: actions/setup-node@v6
         with:

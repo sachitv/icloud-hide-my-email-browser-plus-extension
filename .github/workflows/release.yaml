@@ -28,7 +28,7 @@ jobs:
     outputs:
       extension_version: ${{ steps.package-version.outputs.extension_version }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Extract extension version
         id: package-version
         run: |
@@ -42,7 +42,7 @@ jobs:
     runs-on: ubuntu-24.04-arm
     needs: version
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Use Node.js 22.x
         uses: actions/setup-node@v6
         with:
@@ -66,7 +66,7 @@ jobs:
     runs-on: ubuntu-24.04-arm
     needs: version
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Use Node.js 22.x
         uses: actions/setup-node@v6
         with:
@@ -90,7 +90,7 @@ jobs:
     runs-on: ubuntu-24.04-arm
     needs: version
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Use Node.js 22.x
         uses: actions/setup-node@v6
         with:
@@ -114,7 +114,7 @@ jobs:
     runs-on: ubuntu-24.04-arm
     needs: version
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Use Node.js 22.x
         uses: actions/setup-node@v6
         with:
@@ -140,7 +140,7 @@ jobs:
     runs-on: ubuntu-24.04-arm
     needs: version
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Use Node.js 22.x
         uses: actions/setup-node@v6
         with:
@@ -187,7 +187,7 @@ jobs:
       EDGE_API_KEY: ${{ secrets.MICROSOFT_API_KEY }}
       EDGE_SKIP_SUBMIT_REVIEW: 'false'
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Use Node.js 22.x
         uses: actions/setup-node@v6
         with:
@@ -240,7 +240,7 @@ jobs:
       - package-sources
       - version
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Download Brave artifact
