@@ -819,21 +819,25 @@ describe('content script email button integration', () => {
 
     await runContentScript();
 
-    sendRuntimeMessage({
-      type: MessageType.ReservationResponse,
-      data: {
-        elementId: 'missing',
-        hme: 'ignored',
-      },
-    });
+    expect(() => {
+      sendRuntimeMessage({
+        type: MessageType.ReservationResponse,
+        data: {
+          elementId: 'missing',
+          hme: 'ignored',
+        },
+      });
+    }).not.toThrow();
 
-    sendRuntimeMessage({
-      type: MessageType.ReservationResponse,
-      data: {
-        elementId: 'missing',
-        error: 'still ignored',
-      },
-    });
+    expect(() => {
+      sendRuntimeMessage({
+        type: MessageType.ReservationResponse,
+        data: {
+          elementId: 'missing',
+          error: 'still ignored',
+        },
+      });
+    }).not.toThrow();
 
     expect(document.getElementById('missing')).toBeNull();
   });
