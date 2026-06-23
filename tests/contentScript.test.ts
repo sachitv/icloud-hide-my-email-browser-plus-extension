@@ -311,6 +311,9 @@ describe('content script email button integration', () => {
   });
 
   it('re-displays the signed-out copy when alias generation fails', async () => {
+    const debugSpy = vi
+      .spyOn(console, 'debug')
+      .mockImplementation(() => undefined);
     runtimeSendMessageMock.mockRejectedValueOnce(new Error('generate failed'));
     const input = createInputElement();
 
@@ -323,6 +326,11 @@ describe('content script email button integration', () => {
       expect(button?.textContent).toBe('Please sign in to iCloud')
     );
     expect(button?.hasAttribute('disabled')).toBe(true);
+    expect(debugSpy).toHaveBeenCalledWith(
+      'Hide My Email+: Failed to request alias generation',
+      expect.any(Error)
+    );
+    debugSpy.mockRestore();
   });
 
   it('bails out of button repositioning when the input is detached', async () => {
@@ -932,6 +940,21 @@ describe('content script email button integration', () => {
 
     // No shadow hosts should be present since button support was never created.
     expect(findAllShadowHosts()).toHaveLength(0);
+  });
+
+  // Covers the expanded EMAIL_INPUT_QUERY_STRING that now includes autocomplete="email".
+  it('attaches the autofill button to inputs detected via autocomplete=email attribute', async () => {
+    const input = document.createElement('input');
+    input.setAttribute('autocomplete', 'email');
+    input.getBoundingClientRect = vi.fn(() => makeRect());
+    document.body.appendChild(input);
+
+    await runContentScript();
+    await focusAndWait(input);
+
+    const { host, button } = findHostAndButton();
+    expect(host).toBeDefined();
+    expect(button).toBeDefined();
   });
 
   // Covers the nullish-coalescing fallback in btnOnMousedownCallback when

@@ -1,8 +1,15 @@
 import React from 'react';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
   afterAll,
+  afterEach,
   beforeAll,
   beforeEach,
   describe,
@@ -160,6 +167,10 @@ describe('Popup UI', () => {
         value: originalClipboard,
       });
     }
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   let popupStateValue: PopupState;
@@ -458,6 +469,10 @@ describe('Popup UI', () => {
 
     const deleteButton = screen.getByRole('button', { name: /^Delete$/i });
     await user.click(deleteButton);
+    const confirmDeleteButton = await screen.findByRole('button', {
+      name: /Confirm delete/i,
+    });
+    await user.click(confirmDeleteButton);
     await waitFor(() =>
       expect(deleteHmeMock).toHaveBeenCalledWith(betaAlias.anonymousId)
     );
@@ -711,6 +726,10 @@ describe('Popup UI', () => {
       name: /^Delete$/i,
     });
     await user.click(deleteButton);
+    const confirmDeleteButton = await screen.findByRole('button', {
+      name: /Confirm delete/i,
+    });
+    await user.click(confirmDeleteButton);
     await waitFor(() =>
       expect(screen.getByText(/delete failed/i)).toBeInTheDocument()
     );
@@ -898,6 +917,10 @@ describe('Popup UI', () => {
       name: /^Delete$/i,
     });
     await user.click(deleteButton);
+    const confirmDeleteButton = await screen.findByRole('button', {
+      name: /Confirm delete/i,
+    });
+    await user.click(confirmDeleteButton);
 
     await waitFor(() =>
       expect(deleteHmeMock).toHaveBeenCalledWith(secondAlias.anonymousId)
@@ -946,6 +969,692 @@ describe('Popup UI', () => {
         'example.com',
         undefined
       )
+    );
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // Inline alias editing
+  // ──────────────────────────────────────────────────────────────────────────
+
+  it('can enter edit mode, save new values, and see the sidebar label update', async () => {
+    popupStateValue = PopupState.AuthenticatedAndManaging;
+    clientStateValue = createClientStateTestData();
+
+    const alias = createHmeEmailTestData({
+      anonymousId: 'alias-1',
+      label: 'Original label',
+      note: 'Original note',
+      hme: 'alias@hide.example.com',
+      isActive: true,
+    });
+
+    listHmeMock.mockResolvedValue({
+      hmeEmails: [alias],
+      forwardToEmails: [],
+      selectedForwardTo: 'forward@example.com',
+    });
+    updateHmeMetadataMock.mockResolvedValue(undefined);
+
+    render(<Popup />);
+
+    await user.click(
+      await screen.findByRole('button', { name: /Edit label & note/i })
+    );
+
+    const labelInput = screen.getByDisplayValue('Original label');
+    await user.clear(labelInput);
+    await user.type(labelInput, 'New label');
+
+    const noteInput = screen.getByDisplayValue('Original note');
+    await user.clear(noteInput);
+    await user.type(noteInput, 'New note');
+
+    await user.click(screen.getByRole('button', { name: /^Save$/i }));
+
+    await waitFor(() =>
+      expect(updateHmeMetadataMock).toHaveBeenCalledWith(
+        alias.anonymousId,
+        'New label',
+        'New note'
+      )
+    );
+
+    // Sidebar label reflects the updated value after save
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: 'New label' })
+      ).toBeInTheDocument()
+    );
+  });
+
+  it('can cancel editing without calling the API or changing displayed values', async () => {
+    popupStateValue = PopupState.AuthenticatedAndManaging;
+    clientStateValue = createClientStateTestData();
+
+    listHmeMock.mockResolvedValue({
+      hmeEmails: [
+        createHmeEmailTestData({
+          anonymousId: 'alias-1',
+          label: 'Stable label',
+          note: 'Stable note',
+          hme: 'alias@hide.example.com',
+          isActive: true,
+        }),
+      ],
+      forwardToEmails: [],
+      selectedForwardTo: 'forward@example.com',
+    });
+
+    render(<Popup />);
+
+    await user.click(
+      await screen.findByRole('button', { name: /Edit label & note/i })
+    );
+
+    const labelInput = screen.getByDisplayValue('Stable label');
+    await user.clear(labelInput);
+    await user.type(labelInput, 'Changed label');
+
+    await user.click(screen.getByRole('button', { name: /^Cancel$/i }));
+
+    expect(updateHmeMetadataMock).not.toHaveBeenCalled();
+
+    // Original label still in sidebar
+    expect(
+      screen.getByRole('button', { name: 'Stable label' })
+    ).toBeInTheDocument();
+
+    // Edit mode exited — Edit button visible again
+    expect(
+      screen.getByRole('button', { name: /Edit label & note/i })
+    ).toBeInTheDocument();
+  });
+
+  it('surfaces an error when updateHmeMetadata fails during save', async () => {
+    popupStateValue = PopupState.AuthenticatedAndManaging;
+    clientStateValue = createClientStateTestData();
+
+    listHmeMock.mockResolvedValue({
+      hmeEmails: [
+        createHmeEmailTestData({
+          anonymousId: 'alias-1',
+          label: 'My alias',
+          note: '',
+          hme: 'alias@hide.example.com',
+          isActive: true,
+        }),
+      ],
+      forwardToEmails: [],
+      selectedForwardTo: 'forward@example.com',
+    });
+    updateHmeMetadataMock.mockRejectedValue(new Error('save failed'));
+
+    render(<Popup />);
+
+    await user.click(
+      await screen.findByRole('button', { name: /Edit label & note/i })
+    );
+    await user.click(screen.getByRole('button', { name: /^Save$/i }));
+
+    await waitFor(() =>
+      expect(screen.getByText(/save failed/i)).toBeInTheDocument()
+    );
+  });
+
+  it('clears the edit error when cancelling after a failed save', async () => {
+    popupStateValue = PopupState.AuthenticatedAndManaging;
+    clientStateValue = createClientStateTestData();
+
+    listHmeMock.mockResolvedValue({
+      hmeEmails: [
+        createHmeEmailTestData({
+          anonymousId: 'alias-1',
+          label: 'My alias',
+          note: '',
+          hme: 'alias@hide.example.com',
+          isActive: true,
+        }),
+      ],
+      forwardToEmails: [],
+      selectedForwardTo: 'forward@example.com',
+    });
+    updateHmeMetadataMock.mockRejectedValue(new Error('save failed'));
+
+    render(<Popup />);
+
+    await user.click(
+      await screen.findByRole('button', { name: /Edit label & note/i })
+    );
+    await user.click(screen.getByRole('button', { name: /^Save$/i }));
+    await waitFor(() =>
+      expect(screen.getByText(/save failed/i)).toBeInTheDocument()
+    );
+
+    await user.click(screen.getByRole('button', { name: /^Cancel$/i }));
+
+    await waitFor(() =>
+      expect(screen.queryByText(/save failed/i)).not.toBeInTheDocument()
+    );
+  });
+
+  it('updates only the edited alias in the list when multiple aliases are present', async () => {
+    popupStateValue = PopupState.AuthenticatedAndManaging;
+    clientStateValue = createClientStateTestData();
+
+    const now = Date.now();
+    const first = createHmeEmailTestData({
+      anonymousId: 'alias-1',
+      label: 'First alias',
+      note: '',
+      hme: 'first@hide.example.com',
+      isActive: true,
+      createTimestamp: now,
+    });
+    const second = createHmeEmailTestData({
+      anonymousId: 'alias-2',
+      label: 'Second alias',
+      note: '',
+      hme: 'second@hide.example.com',
+      isActive: true,
+      createTimestamp: now - 1000,
+    });
+
+    listHmeMock.mockResolvedValue({
+      hmeEmails: [first, second],
+      forwardToEmails: [],
+      selectedForwardTo: 'forward@example.com',
+    });
+    updateHmeMetadataMock.mockResolvedValue(undefined);
+
+    render(<Popup />);
+
+    await user.click(
+      await screen.findByRole('button', { name: /Edit label & note/i })
+    );
+
+    const labelInput = screen.getByDisplayValue('First alias');
+    await user.clear(labelInput);
+    await user.type(labelInput, 'Renamed alias');
+
+    await user.click(screen.getByRole('button', { name: /^Save$/i }));
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: 'Renamed alias' })
+      ).toBeInTheDocument()
+    );
+    expect(
+      screen.getByRole('button', { name: 'Second alias' })
+    ).toBeInTheDocument();
+  });
+
+  it('resets edit mode when switching to a different alias in the sidebar', async () => {
+    popupStateValue = PopupState.AuthenticatedAndManaging;
+    clientStateValue = createClientStateTestData();
+
+    const now = Date.now();
+    listHmeMock.mockResolvedValue({
+      hmeEmails: [
+        createHmeEmailTestData({
+          anonymousId: 'first',
+          label: 'First alias',
+          hme: 'first@example.com',
+          isActive: true,
+          createTimestamp: now,
+        }),
+        createHmeEmailTestData({
+          anonymousId: 'second',
+          label: 'Second alias',
+          hme: 'second@example.com',
+          isActive: true,
+          createTimestamp: now - 1000,
+        }),
+      ],
+      forwardToEmails: [],
+      selectedForwardTo: 'forward@example.com',
+    });
+
+    render(<Popup />);
+
+    await user.click(
+      await screen.findByRole('button', { name: /Edit label & note/i })
+    );
+    expect(screen.getByRole('button', { name: /^Save$/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Second alias' }));
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: /Edit label & note/i })
+      ).toBeInTheDocument()
+    );
+    expect(
+      screen.queryByRole('button', { name: /^Save$/i })
+    ).not.toBeInTheDocument();
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // Two-step delete confirmation
+  // ──────────────────────────────────────────────────────────────────────────
+
+  it('shows confirm and cancel buttons on first delete click without deleting', async () => {
+    popupStateValue = PopupState.AuthenticatedAndManaging;
+    clientStateValue = createClientStateTestData();
+
+    listHmeMock.mockResolvedValue({
+      hmeEmails: [
+        createHmeEmailTestData({
+          anonymousId: 'alias-1',
+          label: 'My alias',
+          hme: 'alias@example.com',
+          isActive: false,
+        }),
+      ],
+      forwardToEmails: [],
+      selectedForwardTo: 'forward@example.com',
+    });
+
+    render(<Popup />);
+
+    await user.click(await screen.findByRole('button', { name: /^Delete$/i }));
+
+    expect(
+      screen.getByRole('button', { name: /Confirm delete/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /^Cancel$/i })
+    ).toBeInTheDocument();
+    expect(deleteHmeMock).not.toHaveBeenCalled();
+  });
+
+  it('can cancel the delete confirmation and restore the original Delete button', async () => {
+    popupStateValue = PopupState.AuthenticatedAndManaging;
+    clientStateValue = createClientStateTestData();
+
+    listHmeMock.mockResolvedValue({
+      hmeEmails: [
+        createHmeEmailTestData({
+          anonymousId: 'alias-1',
+          label: 'My alias',
+          hme: 'alias@example.com',
+          isActive: false,
+        }),
+      ],
+      forwardToEmails: [],
+      selectedForwardTo: 'forward@example.com',
+    });
+
+    render(<Popup />);
+
+    await user.click(await screen.findByRole('button', { name: /^Delete$/i }));
+    await user.click(screen.getByRole('button', { name: /^Cancel$/i }));
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: /^Delete$/i })
+      ).toBeInTheDocument()
+    );
+    expect(
+      screen.queryByRole('button', { name: /Confirm delete/i })
+    ).not.toBeInTheDocument();
+    expect(deleteHmeMock).not.toHaveBeenCalled();
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // Active/inactive alias count in manage view
+  // ──────────────────────────────────────────────────────────────────────────
+
+  it('shows the active and inactive alias counts in the manage view header', async () => {
+    popupStateValue = PopupState.AuthenticatedAndManaging;
+    clientStateValue = createClientStateTestData();
+
+    const now = Date.now();
+    listHmeMock.mockResolvedValue({
+      hmeEmails: [
+        createHmeEmailTestData({
+          anonymousId: 'a',
+          label: 'Alpha',
+          isActive: true,
+          createTimestamp: now,
+        }),
+        createHmeEmailTestData({
+          anonymousId: 'b',
+          label: 'Beta',
+          isActive: true,
+          createTimestamp: now - 1000,
+        }),
+        createHmeEmailTestData({
+          anonymousId: 'c',
+          label: 'Gamma',
+          isActive: false,
+          createTimestamp: now - 2000,
+        }),
+      ],
+      forwardToEmails: [],
+      selectedForwardTo: 'forward@example.com',
+    });
+
+    render(<Popup />);
+
+    await waitFor(() => expect(document.body).toHaveTextContent('2 active'));
+    expect(document.body).toHaveTextContent('1 inactive');
+  });
+
+  it('omits the inactive count when all aliases are active', async () => {
+    popupStateValue = PopupState.AuthenticatedAndManaging;
+    clientStateValue = createClientStateTestData();
+
+    const now = Date.now();
+    listHmeMock.mockResolvedValue({
+      hmeEmails: [
+        createHmeEmailTestData({
+          anonymousId: 'a',
+          label: 'Alpha',
+          isActive: true,
+          createTimestamp: now,
+        }),
+        createHmeEmailTestData({
+          anonymousId: 'b',
+          label: 'Beta',
+          isActive: true,
+          createTimestamp: now - 1000,
+        }),
+      ],
+      forwardToEmails: [],
+      selectedForwardTo: 'forward@example.com',
+    });
+
+    render(<Popup />);
+
+    await waitFor(() => expect(document.body).toHaveTextContent('2 active'));
+    expect(document.body).not.toHaveTextContent('inactive');
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // Quick-copy alias from sidebar
+  // ──────────────────────────────────────────────────────────────────────────
+
+  it('copies the alias address via the sidebar quick-copy button', async () => {
+    popupStateValue = PopupState.AuthenticatedAndManaging;
+    clientStateValue = createClientStateTestData();
+
+    const alias = createHmeEmailTestData({
+      anonymousId: 'alias-1',
+      label: 'My alias',
+      hme: 'quickcopy@hide.example.com',
+      isActive: true,
+    });
+
+    listHmeMock.mockResolvedValue({
+      hmeEmails: [alias],
+      forwardToEmails: [],
+      selectedForwardTo: 'forward@example.com',
+    });
+
+    render(<Popup />);
+
+    const copyAliasButton = await screen.findByTitle('Copy alias');
+    await user.click(copyAliasButton);
+
+    await waitFor(() =>
+      expect(screen.getByTitle('Copied!')).toBeInTheDocument()
+    );
+  });
+
+  it('resets the sidebar copy button title after 1.5 seconds', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+
+    popupStateValue = PopupState.AuthenticatedAndManaging;
+    clientStateValue = createClientStateTestData();
+
+    const alias = createHmeEmailTestData({
+      anonymousId: 'alias-1',
+      label: 'My alias',
+      hme: 'quickcopy@hide.example.com',
+      isActive: true,
+    });
+
+    listHmeMock.mockResolvedValue({
+      hmeEmails: [alias],
+      forwardToEmails: [],
+      selectedForwardTo: 'forward@example.com',
+    });
+
+    render(<Popup />);
+
+    const copyAliasButton = await screen.findByTitle('Copy alias');
+    await user.click(copyAliasButton);
+
+    await waitFor(() =>
+      expect(screen.getByTitle('Copied!')).toBeInTheDocument()
+    );
+
+    await act(async () => {
+      vi.runAllTimers();
+    });
+
+    await waitFor(() =>
+      expect(screen.getByTitle('Copy alias')).toBeInTheDocument()
+    );
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // Domain-match warning in generator view
+  // ──────────────────────────────────────────────────────────────────────────
+
+  it('shows a warning when an active alias already exists for the current site', async () => {
+    popupStateValue = PopupState.Authenticated;
+    clientStateValue = createClientStateTestData();
+    isAuthenticatedMock.mockResolvedValue(true);
+    generateHmeMock.mockResolvedValue('new@hide.example.com');
+
+    // tabHost will be 'example.com' from the default tabsQueryMock value
+    listHmeMock.mockResolvedValue({
+      hmeEmails: [
+        createHmeEmailTestData({
+          anonymousId: 'existing',
+          label: 'example.com',
+          hme: 'existing@hide.example.com',
+          isActive: true,
+        }),
+      ],
+      forwardToEmails: [],
+      selectedForwardTo: 'forward@example.com',
+    });
+
+    render(<Popup />);
+
+    await waitFor(() =>
+      expect(
+        screen.getByText(/Existing alias for this site/i)
+      ).toBeInTheDocument()
+    );
+    expect(screen.getByText('existing@hide.example.com')).toBeInTheDocument();
+  });
+
+  it('does not show a warning when no alias label matches the current site', async () => {
+    popupStateValue = PopupState.Authenticated;
+    clientStateValue = createClientStateTestData();
+    isAuthenticatedMock.mockResolvedValue(true);
+    generateHmeMock.mockResolvedValue('new@hide.example.com');
+
+    listHmeMock.mockResolvedValue({
+      hmeEmails: [
+        createHmeEmailTestData({
+          anonymousId: 'other',
+          label: 'other.com',
+          hme: 'other@hide.example.com',
+          isActive: true,
+        }),
+      ],
+      forwardToEmails: [],
+      selectedForwardTo: 'forward@example.com',
+    });
+
+    render(<Popup />);
+
+    await screen.findByRole('button', { name: /Use this email/i });
+    expect(screen.queryByText(/Existing alias/i)).not.toBeInTheDocument();
+  });
+
+  it('does not show a warning for inactive aliases even when the label matches', async () => {
+    popupStateValue = PopupState.Authenticated;
+    clientStateValue = createClientStateTestData();
+    isAuthenticatedMock.mockResolvedValue(true);
+    generateHmeMock.mockResolvedValue('new@hide.example.com');
+
+    listHmeMock.mockResolvedValue({
+      hmeEmails: [
+        createHmeEmailTestData({
+          anonymousId: 'inactive',
+          label: 'example.com',
+          hme: 'inactive@hide.example.com',
+          isActive: false,
+        }),
+      ],
+      forwardToEmails: [],
+      selectedForwardTo: 'forward@example.com',
+    });
+
+    render(<Popup />);
+
+    await screen.findByRole('button', { name: /Use this email/i });
+    expect(screen.queryByText(/Existing alias/i)).not.toBeInTheDocument();
+  });
+
+  it('can copy an alias address from the domain-match warning notice', async () => {
+    popupStateValue = PopupState.Authenticated;
+    clientStateValue = createClientStateTestData();
+    isAuthenticatedMock.mockResolvedValue(true);
+    generateHmeMock.mockResolvedValue('new@hide.example.com');
+
+    listHmeMock.mockResolvedValue({
+      hmeEmails: [
+        createHmeEmailTestData({
+          anonymousId: 'existing',
+          label: 'example.com',
+          hme: 'existing@hide.example.com',
+          isActive: true,
+        }),
+      ],
+      forwardToEmails: [],
+      selectedForwardTo: 'forward@example.com',
+    });
+
+    render(<Popup />);
+
+    await waitFor(() =>
+      expect(screen.getByText('existing@hide.example.com')).toBeInTheDocument()
+    );
+
+    await user.click(screen.getByTitle('Copy'));
+
+    await waitFor(() =>
+      expect(screen.getByTitle('Copied!')).toBeInTheDocument()
+    );
+  });
+
+  it('resets the domain-match copy button title after 1.5 seconds', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+
+    popupStateValue = PopupState.Authenticated;
+    clientStateValue = createClientStateTestData();
+    isAuthenticatedMock.mockResolvedValue(true);
+    generateHmeMock.mockResolvedValue('new@hide.example.com');
+
+    listHmeMock.mockResolvedValue({
+      hmeEmails: [
+        createHmeEmailTestData({
+          anonymousId: 'existing',
+          label: 'example.com',
+          hme: 'existing@hide.example.com',
+          isActive: true,
+        }),
+      ],
+      forwardToEmails: [],
+      selectedForwardTo: 'forward@example.com',
+    });
+
+    render(<Popup />);
+
+    await waitFor(() =>
+      expect(screen.getByText('existing@hide.example.com')).toBeInTheDocument()
+    );
+
+    await user.click(screen.getByTitle('Copy'));
+    await waitFor(() =>
+      expect(screen.getByTitle('Copied!')).toBeInTheDocument()
+    );
+
+    await act(async () => {
+      vi.runAllTimers();
+    });
+    await waitFor(() => expect(screen.getByTitle('Copy')).toBeInTheDocument());
+  });
+
+  it('uses plural heading when multiple aliases exist for the current site', async () => {
+    popupStateValue = PopupState.Authenticated;
+    clientStateValue = createClientStateTestData();
+    isAuthenticatedMock.mockResolvedValue(true);
+    generateHmeMock.mockResolvedValue('new@hide.example.com');
+
+    listHmeMock.mockResolvedValue({
+      hmeEmails: [
+        createHmeEmailTestData({
+          anonymousId: 'existing-1',
+          label: 'example.com',
+          hme: 'first@hide.example.com',
+          isActive: true,
+        }),
+        createHmeEmailTestData({
+          anonymousId: 'existing-2',
+          label: 'example.com',
+          hme: 'second@hide.example.com',
+          isActive: true,
+        }),
+      ],
+      forwardToEmails: [],
+      selectedForwardTo: 'forward@example.com',
+    });
+
+    render(<Popup />);
+
+    await waitFor(() =>
+      expect(
+        screen.getByText('Existing aliases for this site')
+      ).toBeInTheDocument()
+    );
+  });
+
+  it('can dismiss the domain-match warning notice', async () => {
+    popupStateValue = PopupState.Authenticated;
+    clientStateValue = createClientStateTestData();
+    isAuthenticatedMock.mockResolvedValue(true);
+    generateHmeMock.mockResolvedValue('new@hide.example.com');
+
+    listHmeMock.mockResolvedValue({
+      hmeEmails: [
+        createHmeEmailTestData({
+          anonymousId: 'existing',
+          label: 'example.com',
+          hme: 'existing@hide.example.com',
+          isActive: true,
+        }),
+      ],
+      forwardToEmails: [],
+      selectedForwardTo: 'forward@example.com',
+    });
+
+    render(<Popup />);
+
+    await waitFor(() =>
+      expect(screen.getByText(/Existing alias/i)).toBeInTheDocument()
+    );
+
+    await user.click(screen.getByRole('button', { name: /Dismiss/i }));
+
+    await waitFor(() =>
+      expect(screen.queryByText(/Existing alias/i)).not.toBeInTheDocument()
     );
   });
 });
