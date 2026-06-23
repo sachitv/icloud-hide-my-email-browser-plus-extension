@@ -455,7 +455,11 @@ const HmeGenerator = (props: {
       /* v8 ignore stop */
       try {
         const pms = new PremiumMailSettings(props.client);
-        const reserved = await pms.reserveHme(hmeEmail, label || tabHost, note || undefined);
+        const reserved = await pms.reserveHme(
+          hmeEmail,
+          label || tabHost,
+          note || undefined
+        );
         setReservedHme(reserved);
         setAllHmeEmails((prev) => [...prev, reserved]);
         setLabel(undefined);
@@ -676,11 +680,7 @@ const HmeDetails = (props: {
     setEditError(undefined);
     try {
       const pms = new PremiumMailSettings(props.client);
-      await pms.updateHmeMetadata(
-        props.hme.anonymousId,
-        editLabel,
-        editNote
-      );
+      await pms.updateHmeMetadata(props.hme.anonymousId, editLabel, editNote);
       props.editCallback(editLabel, editNote);
       setIsEditing(false);
     } catch (e) {
