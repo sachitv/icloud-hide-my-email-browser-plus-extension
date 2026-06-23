@@ -1089,9 +1089,7 @@ const HmeManager = (props: {
 
   const editCallbackFactory =
     (hmeEmail: HmeEmail) => (label: string, note: string) => {
-      setFetchedHmeEmails(
-        createEditUpdater(hmeEmail.anonymousId, label, note)
-      );
+      setFetchedHmeEmails(createEditUpdater(hmeEmail.anonymousId, label, note));
     };
 
   const handleSelectIndex = useCallback((index: number) => {
