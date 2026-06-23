@@ -76,6 +76,15 @@ const createDeletionUpdater =
   (existingEmails?: HmeEmail[]): HmeEmail[] | undefined =>
     existingEmails?.filter((candidate) => !deepEqual(candidate, target));
 
+const createEditUpdater =
+  (targetId: string, label: string, note: string) =>
+  (existingEmails?: HmeEmail[]): HmeEmail[] | undefined =>
+    existingEmails?.map((candidate) =>
+      candidate.anonymousId === targetId
+        ? { ...candidate, label, note }
+        : candidate
+    );
+
 const SignInInstructions = () => {
   const userguideUrl = browser.runtime.getURL('userguide.html');
 
@@ -747,7 +756,7 @@ const HmeDetails = (props: {
       </div>
       <div>
         <p className={labelClassName}>Note</p>
-        {isEditing ? (
+        {isEditing && (
           <textarea
             rows={2}
             value={editNote}
@@ -755,11 +764,13 @@ const HmeDetails = (props: {
             placeholder="Add a short reminder (optional)"
             className={editInputClassName}
           />
-        ) : props.hme.note ? (
+        )}
+        {!isEditing && props.hme.note && (
           <p title={props.hme.note} className={valueClassName}>
             {props.hme.note}
           </p>
-        ) : (
+        )}
+        {!isEditing && !props.hme.note && (
           <p className="mt-1 text-xs italic text-slate-500">None</p>
         )}
       </div>
@@ -1078,10 +1089,8 @@ const HmeManager = (props: {
 
   const editCallbackFactory =
     (hmeEmail: HmeEmail) => (label: string, note: string) => {
-      setFetchedHmeEmails((prev) =>
-        prev?.map((e) =>
-          e.anonymousId === hmeEmail.anonymousId ? { ...e, label, note } : e
-        )
+      setFetchedHmeEmails(
+        createEditUpdater(hmeEmail.anonymousId, label, note)
       );
     };
 

@@ -834,6 +834,8 @@ describe('content script email button integration', () => {
         error: 'still ignored',
       },
     });
+
+    expect(document.getElementById('missing')).toBeNull();
   });
 
   // Exercises the default case to ensure unknown messages are ignored.
