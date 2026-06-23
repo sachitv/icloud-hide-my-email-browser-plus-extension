@@ -11,7 +11,7 @@ import { getBrowserStorageValue } from '../../storage';
 import { LOADING_COPY, SIGNED_OUT_CTA_COPY } from '../../constants';
 
 const EMAIL_INPUT_QUERY_STRING =
-  'input[type="email"], input[name="email"], input[id="email"]';
+  'input[type="email"], input[name="email"], input[id="email"], input[autocomplete~="email" i]';
 
 // A unique CSS class prefix is used to guarantee that the style injected
 // by the extension does not interfere with the existing style of

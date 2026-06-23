@@ -30,6 +30,9 @@ import {
   ExternalLinkIcon,
   QuestionCircleIcon,
   FirefoxIcon,
+  EditIcon,
+  XIcon,
+  WarningIcon,
 } from '../../icons';
 import { MessageType, sendMessageToTab } from '../../messages';
 import {
@@ -72,6 +75,15 @@ const createDeletionUpdater =
   (target: HmeEmail) =>
   (existingEmails?: HmeEmail[]): HmeEmail[] | undefined =>
     existingEmails?.filter((candidate) => !deepEqual(candidate, target));
+
+const createEditUpdater =
+  (targetId: string, label: string, note: string) =>
+  (existingEmails?: HmeEmail[]): HmeEmail[] | undefined =>
+    existingEmails?.map((candidate) =>
+      candidate.anonymousId === targetId
+        ? { ...candidate, label, note }
+        : candidate
+    );
 
 const SignInInstructions = () => {
   const userguideUrl = browser.runtime.getURL('userguide.html');
@@ -349,9 +361,22 @@ const HmeGenerator = (props: {
   const [isUseSubmitting, setIsUseSubmitting] = useState(false);
   const [tabHost, setTabHost] = useState('');
   const [fwdToEmail, setFwdToEmail] = useState<string>();
+  const [allHmeEmails, setAllHmeEmails] = useState<HmeEmail[]>([]);
+  const [dismissedDomainWarning, setDismissedDomainWarning] = useState(false);
+  const [copiedExistingAlias, setCopiedExistingAlias] = useState<string>();
 
   const [note, setNote] = useState<string>();
   const [label, setLabel] = useState<string>();
+
+  const existingAliasesForDomain = useMemo(
+    () =>
+      tabHost
+        ? allHmeEmails.filter(
+            (e) => e.isActive && e.label.toLowerCase() === tabHost.toLowerCase()
+          )
+        : [],
+    [allHmeEmails, tabHost]
+  );
 
   useEffect(() => {
     const fetchHmeList = async () => {
@@ -360,6 +385,7 @@ const HmeGenerator = (props: {
         const pms = new PremiumMailSettings(props.client);
         const result = await pms.listHme();
         setFwdToEmail(result.selectedForwardTo);
+        setAllHmeEmails(result.hmeEmails);
       } catch (e) {
         setHmeError(e.toString());
       }
@@ -429,9 +455,13 @@ const HmeGenerator = (props: {
       /* v8 ignore stop */
       try {
         const pms = new PremiumMailSettings(props.client);
-        setReservedHme(
-          await pms.reserveHme(hmeEmail, label || tabHost, note || undefined)
+        const reserved = await pms.reserveHme(
+          hmeEmail,
+          label || tabHost,
+          note || undefined
         );
+        setReservedHme(reserved);
+        setAllHmeEmails((prev) => [...prev, reserved]);
         setLabel(undefined);
         setNote(undefined);
       } catch (e) {
@@ -447,9 +477,69 @@ const HmeGenerator = (props: {
   const reservationFormInputClassName =
     'w-full rounded-2xl border border-slate-800/70 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 transition focus:border-rainbow-purple focus:outline-none focus:ring-2 focus:ring-rainbow-purple/70';
 
+  const onCopyExistingAlias = (hme: string) => {
+    navigator.clipboard.writeText(hme).catch(
+      /* v8 ignore next */
+      () => undefined
+    );
+    setCopiedExistingAlias(hme);
+    /* v8 ignore next */
+    setTimeout(
+      () => setCopiedExistingAlias((prev) => (prev === hme ? undefined : prev)),
+      1500
+    );
+  };
+
   return (
     <TitledComponent hideHeader>
       <div className="space-y-5">
+        {existingAliasesForDomain.length > 0 && !dismissedDomainWarning && (
+          <div
+            className="space-y-2 rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-100"
+            role="alert"
+          >
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex items-center gap-2 font-semibold text-amber-200">
+                <WarningIcon className="h-4 w-4 shrink-0" />
+                Existing{' '}
+                {existingAliasesForDomain.length === 1 ? 'alias' : 'aliases'}{' '}
+                for this site
+              </div>
+              <button
+                type="button"
+                onClick={() => setDismissedDomainWarning(true)}
+                className="shrink-0 text-amber-400 hover:text-amber-200"
+                title="Dismiss"
+              >
+                <XIcon className="h-4 w-4" />
+              </button>
+            </div>
+            {existingAliasesForDomain.map((existing) => (
+              <div
+                key={existing.anonymousId}
+                className="flex items-center gap-2 rounded-xl border border-amber-500/30 bg-amber-900/20 px-3 py-2"
+              >
+                <span className="min-w-0 flex-1 truncate text-xs font-mono text-amber-100">
+                  {existing.hme}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => onCopyExistingAlias(existing.hme)}
+                  title={
+                    copiedExistingAlias === existing.hme ? 'Copied!' : 'Copy'
+                  }
+                  className="shrink-0 rounded-lg p-1 text-amber-400 hover:text-amber-200"
+                >
+                  {copiedExistingAlias === existing.hme ? (
+                    <CheckIcon className="h-3.5 w-3.5 text-emerald-400" />
+                  ) : (
+                    <ClipboardIcon className="h-3.5 w-3.5" />
+                  )}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
         <div className="flex flex-col items-center gap-3 text-center">
           <div className="inline-flex items-center gap-3 rounded-full border border-rainbow-purple/50 bg-slate-900/70 px-5 py-2 text-lg font-semibold text-white shadow-inner shadow-rainbow-purple/20">
             <button
@@ -530,17 +620,27 @@ const HmeDetails = (props: {
   client: ICloudClient;
   activationCallback: () => void;
   deletionCallback: () => void;
+  editCallback: (label: string, note: string) => void;
 }) => {
   const [isActivateSubmitting, setIsActivateSubmitting] = useState(false);
   const [isDeleteSubmitting, setIsDeleteSubmitting] = useState(false);
-
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editLabel, setEditLabel] = useState(props.hme.label);
+  const [editNote, setEditNote] = useState(props.hme.note || '');
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [editError, setEditError] = useState<string>();
   const [error, setError] = useState<string>();
 
-  // Reset the error and the loaders when a new HME prop is passed to this component
   useEffect(() => {
     setError(undefined);
     setIsActivateSubmitting(false);
     setIsDeleteSubmitting(false);
+    setConfirmingDelete(false);
+    setIsEditing(false);
+    setEditLabel(props.hme.label);
+    setEditNote(props.hme.note || '');
+    setEditError(undefined);
   }, [props.hme]);
 
   const onActivationClick = async () => {
@@ -568,9 +668,37 @@ const HmeDetails = (props: {
       props.deletionCallback();
     } catch (e) {
       setError(e.toString());
+      setConfirmingDelete(false);
     } finally {
       setIsDeleteSubmitting(false);
     }
+  };
+
+  const onSaveEdit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!editLabel.trim()) {
+      setEditError('Label cannot be empty.');
+      return;
+    }
+    setIsSavingEdit(true);
+    setEditError(undefined);
+    try {
+      const pms = new PremiumMailSettings(props.client);
+      await pms.updateHmeMetadata(props.hme.anonymousId, editLabel, editNote);
+      props.editCallback(editLabel, editNote);
+      setIsEditing(false);
+    } catch (e) {
+      setEditError(e.toString());
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
+
+  const onCancelEdit = () => {
+    setIsEditing(false);
+    setEditLabel(props.hme.label);
+    setEditNote(props.hme.note || '');
+    setEditError(undefined);
   };
 
   const onCopyClick = async () => {
@@ -587,6 +715,8 @@ const HmeDetails = (props: {
     'text-xs font-semibold uppercase tracking-[0.3em] text-slate-400';
   const valueClassName =
     'mt-1 rounded-xl border border-slate-800/70 bg-slate-950/60 px-3 py-2 text-sm font-medium text-slate-100 truncate';
+  const editInputClassName =
+    'mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 transition focus:border-rainbow-purple focus:outline-none focus:ring-2 focus:ring-rainbow-purple/70';
 
   return (
     <div className="space-y-4 text-slate-100">
@@ -601,9 +731,20 @@ const HmeDetails = (props: {
       </div>
       <div>
         <p className={labelClassName}>Label</p>
-        <p title={props.hme.label} className={valueClassName}>
-          {props.hme.label}
-        </p>
+        {isEditing ? (
+          <input
+            value={editLabel}
+            onChange={(e) => setEditLabel(e.target.value)}
+            className={editInputClassName}
+            required
+            // biome-ignore lint/a11y/noAutofocus: autofocus is intentional when entering edit mode
+            autoFocus
+          />
+        ) : (
+          <p title={props.hme.label} className={valueClassName}>
+            {props.hme.label}
+          </p>
+        )}
       </div>
       <div>
         <p className={labelClassName}>Forward to</p>
@@ -617,57 +758,117 @@ const HmeDetails = (props: {
           {new Date(props.hme.createTimestamp).toLocaleString()}
         </p>
       </div>
-      {props.hme.note && (
-        <div>
-          <p className={labelClassName}>Note</p>
+      <div>
+        <p className={labelClassName}>Note</p>
+        {isEditing && (
+          <textarea
+            rows={2}
+            value={editNote}
+            onChange={(e) => setEditNote(e.target.value)}
+            placeholder="Add a short reminder (optional)"
+            className={editInputClassName}
+          />
+        )}
+        {!isEditing && props.hme.note && (
           <p title={props.hme.note} className={valueClassName}>
             {props.hme.note}
           </p>
-        </div>
-      )}
-      {error && <ErrorMessage>{error}</ErrorMessage>}
-      <div className="grid grid-cols-3 gap-2">
-        <button
-          title="Copy"
-          className={`${buttonBaseClass} bg-slate-800 text-white hover:bg-slate-700 focus:ring-slate-500`}
-          onClick={onCopyClick}
-        >
-          <ClipboardIcon className="h-4 w-4" />
-        </button>
-        <button
-          title="Autofill"
-          className={`${buttonBaseClass} bg-emerald-500 text-white hover:bg-emerald-400 focus:ring-emerald-300`}
-          onClick={onAutofillClick}
-        >
-          <CheckIcon className="h-4 w-4" />
-        </button>
-        <LoadingButton
-          title={props.hme.isActive ? 'Deactivate' : 'Reactivate'}
-          className={`${buttonBaseClass} ${
-            props.hme.isActive
-              ? 'bg-red-500 text-white hover:bg-red-400 focus:ring-red-300'
-              : 'bg-indigo-500 text-white hover:bg-indigo-400 focus:ring-indigo-300'
-          }`}
-          onClick={onActivationClick}
-          loading={isActivateSubmitting}
-        >
-          {props.hme.isActive ? (
-            <BanIcon className="h-4 w-4" />
-          ) : (
-            <RefreshIcon className="h-4 w-4" />
-          )}
-        </LoadingButton>
-        {!props.hme.isActive && (
-          <LoadingButton
-            title="Delete"
-            className={`${buttonBaseClass} col-span-3 bg-red-500 text-white hover:bg-red-400 focus:ring-red-300`}
-            onClick={onDeletionClick}
-            loading={isDeleteSubmitting}
-          >
-            <TrashIcon className="mr-1 h-4 w-4" /> Delete
-          </LoadingButton>
+        )}
+        {!isEditing && !props.hme.note && (
+          <p className="mt-1 text-xs italic text-slate-500">None</p>
         )}
       </div>
+      {(error || editError) && (
+        <ErrorMessage>{error || editError}</ErrorMessage>
+      )}
+      {isEditing ? (
+        <form onSubmit={onSaveEdit} className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={onCancelEdit}
+            className={`${buttonBaseClass} bg-slate-800 text-slate-200 hover:bg-slate-700 focus:ring-slate-500`}
+          >
+            <XIcon className="h-4 w-4" /> Cancel
+          </button>
+          <LoadingButton
+            className={`${buttonBaseClass} bg-indigo-500 text-white hover:bg-indigo-400 focus:ring-indigo-300`}
+            loading={isSavingEdit}
+          >
+            <CheckIcon className="h-4 w-4" /> Save
+          </LoadingButton>
+        </form>
+      ) : (
+        <div className="grid grid-cols-3 gap-2">
+          <button
+            title="Copy"
+            type="button"
+            className={`${buttonBaseClass} bg-slate-800 text-white hover:bg-slate-700 focus:ring-slate-500`}
+            onClick={onCopyClick}
+          >
+            <ClipboardIcon className="h-4 w-4" />
+          </button>
+          <button
+            title="Autofill"
+            type="button"
+            className={`${buttonBaseClass} bg-emerald-500 text-white hover:bg-emerald-400 focus:ring-emerald-300`}
+            onClick={onAutofillClick}
+          >
+            <CheckIcon className="h-4 w-4" />
+          </button>
+          <LoadingButton
+            title={props.hme.isActive ? 'Deactivate' : 'Reactivate'}
+            className={`${buttonBaseClass} ${
+              props.hme.isActive
+                ? 'bg-red-500 text-white hover:bg-red-400 focus:ring-red-300'
+                : 'bg-indigo-500 text-white hover:bg-indigo-400 focus:ring-indigo-300'
+            }`}
+            onClick={onActivationClick}
+            loading={isActivateSubmitting}
+          >
+            {props.hme.isActive ? (
+              <BanIcon className="h-4 w-4" />
+            ) : (
+              <RefreshIcon className="h-4 w-4" />
+            )}
+          </LoadingButton>
+          <button
+            title="Edit label and note"
+            type="button"
+            className={`${buttonBaseClass} col-span-3 bg-slate-800/60 text-slate-300 hover:bg-slate-700 focus:ring-slate-500`}
+            onClick={() => setIsEditing(true)}
+          >
+            <EditIcon className="h-4 w-4" /> Edit label &amp; note
+          </button>
+          {!props.hme.isActive &&
+            (confirmingDelete ? (
+              <div className="col-span-3 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setConfirmingDelete(false)}
+                  className={`${buttonBaseClass} flex-1 bg-slate-800 text-slate-200 hover:bg-slate-700 focus:ring-slate-500`}
+                >
+                  <XIcon className="h-4 w-4" /> Cancel
+                </button>
+                <LoadingButton
+                  className={`${buttonBaseClass} flex-1 bg-red-600 text-white hover:bg-red-500 focus:ring-red-400`}
+                  onClick={onDeletionClick}
+                  loading={isDeleteSubmitting}
+                >
+                  <TrashIcon className="h-4 w-4" /> Confirm delete
+                </LoadingButton>
+              </div>
+            ) : (
+              <button
+                type="button"
+                title="Delete"
+                className={`${buttonBaseClass} col-span-3 bg-red-500/20 text-red-300 hover:bg-red-500/30 focus:ring-red-400`}
+                onClick={() => setConfirmingDelete(true)}
+              >
+                <TrashIcon className="mr-1 h-4 w-4" /> Delete
+              </button>
+            ))}
+        </div>
+      )}
     </div>
   );
 };
@@ -697,6 +898,9 @@ type HmeListViewProps = {
   onSearchPromptChange: (value: string) => void;
   activationCallbackFactory: (hmeEmail: HmeEmail) => () => void;
   deletionCallbackFactory: (hmeEmail: HmeEmail) => () => void;
+  editCallbackFactory: (
+    hmeEmail: HmeEmail
+  ) => (label: string, note: string) => void;
 };
 
 const SearchBar = ({
@@ -730,7 +934,10 @@ const HmeListView = ({
   onSearchPromptChange,
   activationCallbackFactory,
   deletionCallbackFactory,
+  editCallbackFactory,
 }: HmeListViewProps) => {
+  const [copiedId, setCopiedId] = useState<string>();
+
   const hmeEmails = useMemo(
     () =>
       searchHmeEmails(searchPrompt ?? '', fetchedHmeEmails) ?? fetchedHmeEmails,
@@ -747,29 +954,66 @@ const HmeListView = ({
     }
   }, [hmeEmails, selectedIndex, onSelectIndex]);
 
-  const btnBaseClassName =
-    'w-full truncate border-b border-slate-800/50 bg-slate-950/40 px-3 py-3 text-left text-sm font-medium text-slate-200 transition focus:outline-none focus:ring-2 focus:ring-rainbow-purple/60';
-  const btnClassName = `${btnBaseClassName} hover:bg-slate-900/80`;
-  const selectedBtnClassName = `${btnBaseClassName} bg-gradient-to-r from-[rgba(139,92,246,0.4)] via-[rgba(79,70,229,0.4)] to-[rgba(66,133,244,0.4)] text-white shadow-[inset_0_0_0_1px_rgba(129,140,248,0.4)]`;
+  const onQuickCopy = useCallback((hme: HmeEmail, event: React.MouseEvent) => {
+    event.stopPropagation();
+    navigator.clipboard.writeText(hme.hme).catch(
+      /* v8 ignore next */
+      () => undefined
+    );
+    setCopiedId(hme.anonymousId);
+    /* v8 ignore next */
+    setTimeout(
+      () =>
+        setCopiedId((prev) => (prev === hme.anonymousId ? undefined : prev)),
+      1500
+    );
+  }, []);
 
-  const labelList = hmeEmails.map((hme, idx) => (
-    <button
-      key={hme.anonymousId}
-      aria-current={selectedIndex === idx}
-      type="button"
-      className={idx === selectedIndex ? selectedBtnClassName : btnClassName}
-      onClick={() => onSelectIndex(idx)}
-    >
-      {hme.isActive ? (
-        hme.label
-      ) : (
-        <span title="Deactivated" className="inline-flex items-center gap-1">
-          <BanIcon className="h-4 w-4 text-rainbow-red" />
-          {hme.label}
-        </span>
-      )}
-    </button>
-  ));
+  const rowBaseClass =
+    'flex items-center border-b border-slate-800/50 bg-slate-950/40 text-sm font-medium text-slate-200 transition focus-within:ring-2 focus-within:ring-inset focus-within:ring-rainbow-purple/60';
+  const rowSelectedClass =
+    'bg-gradient-to-r from-[rgba(139,92,246,0.4)] via-[rgba(79,70,229,0.4)] to-[rgba(66,133,244,0.4)] text-white shadow-[inset_0_0_0_1px_rgba(129,140,248,0.4)]';
+
+  const labelList = hmeEmails.map((hme, idx) => {
+    const isSelected = idx === selectedIndex;
+    return (
+      <div
+        key={hme.anonymousId}
+        className={`${rowBaseClass} ${isSelected ? rowSelectedClass : 'hover:bg-slate-900/80'} group`}
+      >
+        <button
+          aria-current={isSelected}
+          type="button"
+          className="min-w-0 flex-1 truncate px-3 py-3 text-left focus:outline-none"
+          onClick={() => onSelectIndex(idx)}
+        >
+          {hme.isActive ? (
+            hme.label
+          ) : (
+            <span
+              title="Deactivated"
+              className="inline-flex items-center gap-1"
+            >
+              <BanIcon className="h-4 w-4 text-rainbow-red" />
+              {hme.label}
+            </span>
+          )}
+        </button>
+        <button
+          type="button"
+          title={copiedId === hme.anonymousId ? 'Copied!' : 'Copy alias'}
+          onClick={(e) => onQuickCopy(hme, e)}
+          className="mr-1 shrink-0 rounded-lg p-1.5 text-slate-500 opacity-0 transition hover:text-slate-200 focus:opacity-100 focus:outline-none group-hover:opacity-100"
+        >
+          {copiedId === hme.anonymousId ? (
+            <CheckIcon className="h-3.5 w-3.5 text-emerald-400" />
+          ) : (
+            <ClipboardIcon className="h-3.5 w-3.5" />
+          )}
+        </button>
+      </div>
+    );
+  });
 
   const selectedHmeEmail =
     hmeEmails.length === 0 ? undefined : hmeEmails[selectedIndex];
@@ -799,6 +1043,7 @@ const HmeListView = ({
             hme={selectedHmeEmail}
             activationCallback={activationCallbackFactory(selectedHmeEmail)}
             deletionCallback={deletionCallbackFactory(selectedHmeEmail)}
+            editCallback={editCallbackFactory(selectedHmeEmail)}
           />
         )}
       </div>
@@ -846,6 +1091,11 @@ const HmeManager = (props: {
     setFetchedHmeEmails(createDeletionUpdater(hmeEmail));
   };
 
+  const editCallbackFactory =
+    (hmeEmail: HmeEmail) => (label: string, note: string) => {
+      setFetchedHmeEmails(createEditUpdater(hmeEmail.anonymousId, label, note));
+    };
+
   const handleSelectIndex = useCallback((index: number) => {
     setSelectedHmeIdx(index);
   }, []);
@@ -872,17 +1122,29 @@ const HmeManager = (props: {
       );
     }
 
+    const activeCount = fetchedHmeEmails.filter((e) => e.isActive).length;
+    const inactiveCount = fetchedHmeEmails.length - activeCount;
+
     return (
-      <HmeListView
-        client={props.client}
-        fetchedHmeEmails={fetchedHmeEmails}
-        selectedIndex={selectedHmeIdx}
-        onSelectIndex={handleSelectIndex}
-        searchPrompt={searchPrompt}
-        onSearchPromptChange={handleSearchPromptChange}
-        activationCallbackFactory={activationCallbackFactory}
-        deletionCallbackFactory={deletionCallbackFactory}
-      />
+      <div className="space-y-2">
+        <p className="text-right text-xs text-slate-500">
+          <span className="text-emerald-400">{activeCount} active</span>
+          {inactiveCount > 0 && (
+            <span className="text-slate-500"> · {inactiveCount} inactive</span>
+          )}
+        </p>
+        <HmeListView
+          client={props.client}
+          fetchedHmeEmails={fetchedHmeEmails}
+          selectedIndex={selectedHmeIdx}
+          onSelectIndex={handleSelectIndex}
+          searchPrompt={searchPrompt}
+          onSearchPromptChange={handleSearchPromptChange}
+          activationCallbackFactory={activationCallbackFactory}
+          deletionCallbackFactory={deletionCallbackFactory}
+          editCallbackFactory={editCallbackFactory}
+        />
+      </div>
     );
   };
 
