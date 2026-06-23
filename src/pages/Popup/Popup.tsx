@@ -676,6 +676,10 @@ const HmeDetails = (props: {
 
   const onSaveEdit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!editLabel.trim()) {
+      setEditError('Label cannot be empty.');
+      return;
+    }
     setIsSavingEdit(true);
     setEditError(undefined);
     try {
