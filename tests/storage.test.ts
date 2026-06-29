@@ -78,4 +78,34 @@ describe('storage helpers', () => {
     );
     expect(browserStorageMocks.storage.local.set).not.toHaveBeenCalled();
   });
+
+  it('reads and writes cachedHmeList correctly', async () => {
+    const mockHmeList = {
+      hmeEmails: [
+        {
+          anonymousId: 'id1',
+          hme: 'test@example.com',
+          label: 'Test',
+          note: 'Note',
+          isActive: true,
+          forwardToEmail: 'fwd@example.com',
+          createTimestamp: 123456789,
+        },
+      ],
+      forwardToEmails: ['fwd@example.com'],
+      selectedForwardTo: 'fwd@example.com',
+    };
+    browserStorageMocks.storage.local.get.mockResolvedValue({
+      cachedHmeList: mockHmeList,
+    });
+
+    await expect(getBrowserStorageValue('cachedHmeList')).resolves.toEqual(
+      mockHmeList
+    );
+
+    await setBrowserStorageValue('cachedHmeList', mockHmeList);
+    expect(browserStorageMocks.storage.local.set).toHaveBeenCalledWith({
+      cachedHmeList: mockHmeList,
+    });
+  });
 });
