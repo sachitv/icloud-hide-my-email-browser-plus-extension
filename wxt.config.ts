@@ -169,6 +169,15 @@ export default defineConfig({
         '48': 'icon-48.png',
         '128': 'icon-128.png',
       },
+      commands: {
+        'suggest-alias': {
+          suggested_key: {
+            default: 'Alt+Shift+H',
+            mac: 'Alt+Shift+H',
+          },
+          description: 'Generate and reserve a Hide My Email+ alias',
+        },
+      },
     };
 
     if (browser === 'firefox') {
