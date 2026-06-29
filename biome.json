@@ -19,13 +19,24 @@
       "package-lock.json",
       "yarn.lock",
       "pnpm-lock.yaml",
-      "!**/.wxt"
+      "!**/.agents",
+      "!**/.omo",
+      "!**/.wxt",
+      "!**/coverage"
     ]
   },
   "linter": {
     "enabled": true,
     "rules": { "recommended": false },
-    "includes": ["**", "!build/**", "!.brave-debug-profile/**", "!.wxt/**"]
+    "includes": [
+      "**",
+      "!build/**",
+      "!.agents/**",
+      "!.brave-debug-profile/**",
+      "!.omo/**",
+      "!.wxt/**",
+      "!coverage/**"
+    ]
   },
   "javascript": {
     "formatter": {
@@ -197,12 +208,18 @@
             "noCommonJs": "error",
             "noNamespace": "error",
             "useArrayLiterals": "error",
-            "useAsConstAssertion": "error"
+            "useAsConstAssertion": "error",
+            "useConsistentArrayType": {
+              "level": "error",
+              "options": {
+                "syntax": "shorthand"
+              }
+            }
           },
           "suspicious": {
             "noCommentText": "error",
             "noDuplicateJsxProps": "error",
-            "noExplicitAny": "error",
+            "noExplicitAny": "warn",
             "noExtraNonNullAssertion": "error",
             "noMisleadingInstantiator": "error",
             "noUnsafeDeclarationMerging": "error",

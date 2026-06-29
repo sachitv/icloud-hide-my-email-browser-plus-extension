@@ -26,3 +26,13 @@ secrets.*.js
 
 # Environment variables
 .env
+
+# Local agent/session artifacts
+.agents/
+.omo/
+
+# Test runner output
+test-results/
+
+*storybook.log
+storybook-static
