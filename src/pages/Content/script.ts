@@ -532,6 +532,13 @@ const createMessageListener = (
           (message as Message<ActiveInputElementWriteData>).data
         );
         break;
+      case MessageType.QueryActiveElementFocus: {
+        const activeEl = document.activeElement;
+        const isEmailInput =
+          activeEl instanceof HTMLInputElement &&
+          activeEl.matches(EMAIL_INPUT_QUERY_STRING);
+        return Promise.resolve(isEmailInput);
+      }
       default:
         break;
     }

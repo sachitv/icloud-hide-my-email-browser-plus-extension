@@ -1004,4 +1004,39 @@ describe('content script email button integration', () => {
       });
     }
   });
+
+  it('QueryActiveElementFocus returns true when an email input is the active element', async () => {
+    const input = createInputElement();
+
+    await runContentScript();
+
+    Object.defineProperty(document, 'activeElement', {
+      configurable: true,
+      get: () => input,
+    });
+
+    const result = await (runtimeMessageListener?.({
+      type: MessageType.QueryActiveElementFocus,
+    }) as Promise<boolean>);
+    expect(result).toBe(true);
+
+    Object.defineProperty(document, 'activeElement', {
+      configurable: true,
+      get: () => document.body,
+    });
+  });
+
+  it('QueryActiveElementFocus returns false when a non-email element is active', async () => {
+    await runContentScript();
+
+    Object.defineProperty(document, 'activeElement', {
+      configurable: true,
+      get: () => document.body,
+    });
+
+    const result = await (runtimeMessageListener?.({
+      type: MessageType.QueryActiveElementFocus,
+    }) as Promise<boolean>);
+    expect(result).toBe(false);
+  });
 });

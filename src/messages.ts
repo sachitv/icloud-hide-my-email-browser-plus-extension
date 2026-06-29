@@ -7,6 +7,7 @@ export enum MessageType {
   ReservationRequest,
   ReservationResponse,
   ActiveInputElementWrite,
+  QueryActiveElementFocus,
 }
 
 export type Message<T> = {
