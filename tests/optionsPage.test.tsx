@@ -110,6 +110,15 @@ vi.mock('../src/iCloudClient', () => ({
   PremiumMailSettings: PremiumMailSettingsMock,
 }));
 
+vi.mock('../src/mockClient', () => ({
+  MockPremiumMailSettings: vi.fn(function MockPMS() {
+    return {
+      listHme: listHmeMock,
+      updateForwardToHme: updateForwardToHmeMock,
+    };
+  }),
+}));
+
 vi.mock('webextension-polyfill', () => webExtensionPolyfillMock);
 
 vi.mock('../src/pages/Options/Options.css', () => ({}));
@@ -141,6 +150,10 @@ describe('Options page UI', () => {
       spy: vi.fn(),
       isLoading: false,
     };
+    storageStateMocks.mockMode = {
+      state: false,
+      isLoading: false,
+    };
 
     render(<Options />);
 
@@ -167,12 +180,17 @@ describe('Options page UI', () => {
       spy: vi.fn(),
       isLoading: false,
     };
+    storageStateMocks.mockMode = {
+      state: false,
+      isLoading: false,
+    };
 
     render(<Options />);
 
     expect(screen.getByText(/Disclaimer/i)).toBeInTheDocument();
     expect(screen.getByText(/Forward To Address/i)).toBeInTheDocument();
     expect(screen.getByText(/Autofill/i)).toBeInTheDocument();
+    expect(screen.getByText(/Developer/i)).toBeInTheDocument();
     expect(
       screen.getByText(/This extension is not endorsed by/i)
     ).toBeInTheDocument();
@@ -188,6 +206,10 @@ describe('Options page UI', () => {
     storageStateMocks.clientState = {
       state: createClientStateTestData(),
       spy: vi.fn(),
+      isLoading: false,
+    };
+    storageStateMocks.mockMode = {
+      state: false,
       isLoading: false,
     };
 
@@ -244,6 +266,10 @@ describe('Options page UI', () => {
       spy: vi.fn(),
       isLoading: false,
     };
+    storageStateMocks.mockMode = {
+      state: false,
+      isLoading: false,
+    };
 
     isAuthenticatedMock.mockResolvedValue(false);
 
@@ -269,6 +295,10 @@ describe('Options page UI', () => {
       spy: vi.fn(),
       isLoading: false,
     };
+    storageStateMocks.mockMode = {
+      state: false,
+      isLoading: false,
+    };
 
     isAuthenticatedMock.mockResolvedValue(true);
     listHmeMock.mockRejectedValue(new Error('upstream error'));
@@ -291,7 +321,10 @@ describe('Options page UI', () => {
       spy: vi.fn(),
       isLoading: false,
     };
-
+    storageStateMocks.mockMode = {
+      state: false,
+      isLoading: false,
+    };
     isAuthenticatedMock.mockResolvedValue(true);
     listHmeMock.mockResolvedValue({
       forwardToEmails: [],
@@ -326,6 +359,10 @@ describe('Options page UI', () => {
       spy: vi.fn(),
       isLoading: false,
     };
+    storageStateMocks.mockMode = {
+      state: false,
+      isLoading: false,
+    };
 
     isAuthenticatedMock.mockResolvedValue(true);
     // Returning undefined forwardToEmails means deepEqual(undefined, undefined)
@@ -356,6 +393,10 @@ describe('Options page UI', () => {
       spy: vi.fn(),
       isLoading: false,
     };
+    storageStateMocks.mockMode = {
+      state: false,
+      isLoading: false,
+    };
 
     isAuthenticatedMock.mockResolvedValue(true);
     listHmeMock.mockResolvedValue({
@@ -374,5 +415,58 @@ describe('Options page UI', () => {
     await waitFor(() =>
       expect(screen.getByText(/update failed/i)).toBeInTheDocument()
     );
+  });
+
+  it('skips real iCloud auth in mock mode and shows the forwarding list', async () => {
+    storageStateMocks.iCloudHmeOptions = {
+      state: DEFAULT_STORE.iCloudHmeOptions,
+      isLoading: false,
+    };
+    storageStateMocks.clientState = {
+      state: undefined,
+      spy: vi.fn(),
+      isLoading: false,
+    };
+    storageStateMocks.mockMode = {
+      state: true,
+      isLoading: false,
+    };
+
+    listHmeMock.mockResolvedValue({
+      forwardToEmails: ['you@example.com'],
+      selectedForwardTo: 'you@example.com',
+    });
+
+    render(<Options />);
+
+    await waitFor(() =>
+      expect(screen.getByText(/you@example\.com/i)).toBeInTheDocument()
+    );
+    expect(isAuthenticatedMock).not.toHaveBeenCalled();
+  });
+
+  it('toggles mock mode when the demo-mode checkbox is clicked', async () => {
+    storageStateMocks.iCloudHmeOptions = {
+      state: DEFAULT_STORE.iCloudHmeOptions,
+      isLoading: false,
+    };
+    storageStateMocks.clientState = {
+      state: undefined,
+      spy: vi.fn(),
+      isLoading: false,
+    };
+    storageStateMocks.mockMode = {
+      state: false,
+      spy: vi.fn(),
+      isLoading: false,
+    };
+
+    const user = userEvent.setup();
+    render(<Options />);
+
+    const checkbox = screen.getByRole('checkbox', { name: /demo mode/i });
+    await user.click(checkbox);
+
+    expect(storageStateMocks.mockMode.spy).toHaveBeenCalled();
   });
 });
