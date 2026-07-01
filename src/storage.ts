@@ -1,5 +1,5 @@
 import browser from 'webextension-polyfill';
-import ICloudClient from './iCloudClient';
+import ICloudClient, { ListHmeResult } from './iCloudClient';
 import { PopupState } from './pages/Popup/stateMachine';
 
 export type Autofill = {
@@ -18,6 +18,9 @@ export type Store = {
     setupUrl: ConstructorParameters<typeof ICloudClient>[0];
     webservices: ConstructorParameters<typeof ICloudClient>[1];
   };
+  /** When true the extension uses in-memory mock data instead of the real iCloud API. */
+  mockMode?: boolean;
+  cachedHmeList?: ListHmeResult;
 };
 
 export const DEFAULT_STORE = {
@@ -29,6 +32,8 @@ export const DEFAULT_STORE = {
     },
   },
   clientState: undefined,
+  mockMode: false,
+  cachedHmeList: undefined,
 };
 
 export async function getBrowserStorageValue<K extends keyof Store>(

@@ -8,11 +8,14 @@ import React, {
   ReactElement,
   useMemo,
   useCallback,
+  useRef,
 } from 'react';
 import ICloudClient, {
   PremiumMailSettings,
   HmeEmail,
+  type HmeService,
 } from '../../iCloudClient';
+import { MockPremiumMailSettings } from '../../mockClient';
 import './Popup.css';
 import { useBrowserStorageState } from '../../hooks';
 import type { IconProps } from '../../icons';
@@ -33,6 +36,7 @@ import {
   EditIcon,
   XIcon,
   WarningIcon,
+  SpinnerIcon,
 } from '../../icons';
 import { MessageType, sendMessageToTab } from '../../messages';
 import {
@@ -42,11 +46,12 @@ import {
   TitledComponent,
   Link,
 } from '../../commonComponents';
-import { Store } from '../../storage';
+import { Store, DEFAULT_STORE } from '../../storage';
 
 import browser from 'webextension-polyfill';
 import Fuse from 'fuse.js';
 import { deepEqual } from '../../utils/deepEqual';
+import { formatError } from '../../utils/formatError';
 import {
   PopupAction,
   PopupState,
@@ -54,8 +59,8 @@ import {
   STATE_MACHINE_TRANSITIONS,
   AuthenticatedAndManagingAction,
 } from './stateMachine';
-import { CONTEXT_MENU_ITEM_ID, SIGNED_OUT_CTA_COPY } from '../../constants';
 import { isFirefox } from '../../browserUtils';
+import { performDeauthSideEffects } from '../Background/authSync';
 
 type TransitionCallback<T extends PopupAction> = (action: T) => void;
 
@@ -173,6 +178,7 @@ const SignInInstructions = () => {
 };
 
 const ReservationResult = (props: { hme: HmeEmail }) => {
+  const reservedEmailFontSize = getGeneratedEmailFontSize(props.hme.hme);
   const onCopyToClipboardClick = async () => {
     await navigator.clipboard.writeText(props.hme.hme);
   };
@@ -192,7 +198,11 @@ const ReservationResult = (props: { hme: HmeEmail }) => {
       <p className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-200/90">
         Reserved address
       </p>
-      <p className="break-all text-base font-semibold text-white">
+      <p
+        title={props.hme.hme}
+        className="whitespace-nowrap font-mono font-semibold leading-tight text-white"
+        style={{ fontSize: reservedEmailFontSize }}
+      >
         {props.hme.hme}
       </p>
       <div className="grid grid-cols-2 gap-2">
@@ -216,6 +226,20 @@ const ReservationResult = (props: { hme: HmeEmail }) => {
     </div>
   );
 };
+
+function getGeneratedEmailFontSize(hmeEmail: string | undefined): string {
+  const length = hmeEmail?.length ?? 0;
+  if (length <= 24) {
+    return '1.125rem';
+  }
+  if (length <= 30) {
+    return '1rem';
+  }
+  if (length <= 36) {
+    return '0.9rem';
+  }
+  return '0.82rem';
+}
 
 const FooterButton = (
   props: {
@@ -241,17 +265,6 @@ const FooterButton = (
   );
 };
 
-async function performDeauthSideEffects(): Promise<void> {
-  await browser.contextMenus
-    .update(CONTEXT_MENU_ITEM_ID, {
-      title: SIGNED_OUT_CTA_COPY,
-      enabled: false,
-    })
-    .catch((error) => {
-      console.debug(error);
-    });
-}
-
 const SignOutButton = (props: {
   callback: TransitionCallback<'SIGN_OUT'>;
   client: ICloudClient;
@@ -263,7 +276,7 @@ const SignOutButton = (props: {
       onClick={async () => {
         await props.client.signOut();
         props.setClientState(() => undefined);
-        performDeauthSideEffects();
+        await performDeauthSideEffects();
         props.callback('SIGN_OUT');
       }}
       label="Sign out"
@@ -345,10 +358,21 @@ const ReservationForm = ({
   </form>
 );
 
+const MockModeBanner = () => (
+  <output
+    aria-label="Demo mode active"
+    className="flex items-center justify-center rounded-2xl border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-300"
+  >
+    Demo mode — no real iCloud data
+  </output>
+);
+
 const HmeGenerator = (props: {
   callback: TransitionCallback<AuthenticatedAction>;
-  client: ICloudClient;
+  pms: HmeService;
+  client: ICloudClient | null;
   setClientState: Dispatch<Store['clientState']>;
+  mockMode: boolean;
 }) => {
   const [hmeEmail, setHmeEmail] = useState<string>();
   const [hmeError, setHmeError] = useState<string>();
@@ -362,6 +386,11 @@ const HmeGenerator = (props: {
   const [tabHost, setTabHost] = useState('');
   const [fwdToEmail, setFwdToEmail] = useState<string>();
   const [allHmeEmails, setAllHmeEmails] = useState<HmeEmail[]>([]);
+  const allHmeEmailsRef = useRef<HmeEmail[]>([]);
+  const [, setCachedHmeList] = useBrowserStorageState(
+    'cachedHmeList',
+    undefined
+  );
   const [dismissedDomainWarning, setDismissedDomainWarning] = useState(false);
   const [copiedExistingAlias, setCopiedExistingAlias] = useState<string>();
 
@@ -377,39 +406,39 @@ const HmeGenerator = (props: {
         : [],
     [allHmeEmails, tabHost]
   );
+  const generatedEmailFontSize = getGeneratedEmailFontSize(hmeEmail);
 
   useEffect(() => {
     const fetchHmeList = async () => {
       setHmeError(undefined);
       try {
-        const pms = new PremiumMailSettings(props.client);
-        const result = await pms.listHme();
+        const result = await props.pms.listHme();
         setFwdToEmail(result.selectedForwardTo);
+        allHmeEmailsRef.current = result.hmeEmails;
         setAllHmeEmails(result.hmeEmails);
       } catch (e) {
-        setHmeError(e.toString());
+        setHmeError(formatError(e));
       }
     };
 
     fetchHmeList();
-  }, [props.client]);
+  }, [props.pms]);
 
   useEffect(() => {
     const fetchHmeEmail = async () => {
       setHmeError(undefined);
       setIsEmailRefreshSubmitting(true);
       try {
-        const pms = new PremiumMailSettings(props.client);
-        setHmeEmail(await pms.generateHme());
+        setHmeEmail(await props.pms.generateHme());
       } catch (e) {
-        setHmeError(e.toString());
+        setHmeError(formatError(e));
       } finally {
         setIsEmailRefreshSubmitting(false);
       }
     };
 
     fetchHmeEmail();
-  }, [props.client]);
+  }, [props.pms]);
 
   useEffect(() => {
     const getTabHost = async () => {
@@ -434,10 +463,9 @@ const HmeGenerator = (props: {
     setHmeError(undefined);
     setReserveError(undefined);
     try {
-      const pms = new PremiumMailSettings(props.client);
-      setHmeEmail(await pms.generateHme());
+      setHmeEmail(await props.pms.generateHme());
     } catch (e) {
-      setHmeError(e.toString());
+      setHmeError(formatError(e));
     }
     setIsEmailRefreshSubmitting(false);
   };
@@ -454,18 +482,45 @@ const HmeGenerator = (props: {
     if (hmeEmail !== undefined) {
       /* v8 ignore stop */
       try {
-        const pms = new PremiumMailSettings(props.client);
-        const reserved = await pms.reserveHme(
+        const reserved = await props.pms.reserveHme(
           hmeEmail,
           label || tabHost,
           note || undefined
         );
         setReservedHme(reserved);
-        setAllHmeEmails((prev) => [...prev, reserved]);
+        const nextAllHmeEmails = allHmeEmailsRef.current.some(
+          (e) => e.anonymousId === reserved.anonymousId
+        )
+          ? allHmeEmailsRef.current
+          : [...allHmeEmailsRef.current, reserved];
+        allHmeEmailsRef.current = nextAllHmeEmails;
+        setAllHmeEmails((prev) =>
+          prev.some((e) => e.anonymousId === reserved.anonymousId)
+            ? prev
+            : nextAllHmeEmails
+        );
+        setCachedHmeList((prev) => {
+          if (!prev) {
+            return {
+              hmeEmails: nextAllHmeEmails,
+              forwardToEmails: fwdToEmail ? [fwdToEmail] : [],
+              selectedForwardTo: fwdToEmail || '',
+            };
+          }
+          if (
+            prev.hmeEmails.some((e) => e.anonymousId === reserved.anonymousId)
+          ) {
+            return prev;
+          }
+          return {
+            ...prev,
+            hmeEmails: [...prev.hmeEmails, reserved],
+          };
+        });
         setLabel(undefined);
         setNote(undefined);
       } catch (e) {
-        setReserveError(e.toString());
+        setReserveError(formatError(e));
       }
     }
     setIsUseSubmitting(false);
@@ -493,6 +548,7 @@ const HmeGenerator = (props: {
   return (
     <TitledComponent hideHeader>
       <div className="space-y-5">
+        {props.mockMode && <MockModeBanner />}
         {existingAliasesForDomain.length > 0 && !dismissedDomainWarning && (
           <div
             className="space-y-2 rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-100"
@@ -541,7 +597,7 @@ const HmeGenerator = (props: {
           </div>
         )}
         <div className="flex flex-col items-center gap-3 text-center">
-          <div className="inline-flex items-center gap-3 rounded-full border border-rainbow-purple/50 bg-slate-900/70 px-5 py-2 text-lg font-semibold text-white shadow-inner shadow-rainbow-purple/20">
+          <div className="inline-flex w-full max-w-[360px] min-w-0 items-center gap-3 rounded-full border border-rainbow-purple/50 bg-slate-900/70 px-5 py-2 font-semibold text-white shadow-inner shadow-rainbow-purple/20">
             <button
               className="rounded-full bg-rainbow-purple/20 px-2 py-2 text-rainbow-purple transition hover:bg-rainbow-purple/40 focus:outline-none focus:ring-2 focus:ring-rainbow-purple/70"
               onClick={onEmailRefreshClick}
@@ -553,7 +609,11 @@ const HmeGenerator = (props: {
                 }`}
               />
             </button>
-            <span className="max-w-[260px] break-all text-left">
+            <span
+              title={hmeEmail}
+              className="min-w-0 flex-1 whitespace-nowrap text-left font-mono leading-tight"
+              style={{ fontSize: generatedEmailFontSize }}
+            >
               {hmeEmail}
             </span>
           </div>
@@ -592,11 +652,13 @@ const HmeGenerator = (props: {
           />
         </div>
         <div className="text-right">
-          <SignOutButton
-            callback={props.callback}
-            client={props.client}
-            setClientState={props.setClientState}
-          />
+          {props.client !== null && (
+            <SignOutButton
+              callback={props.callback}
+              client={props.client}
+              setClientState={props.setClientState}
+            />
+          )}
         </div>
       </div>
       <div className="pt-4 text-xs text-slate-400">
@@ -617,7 +679,7 @@ const HmeGenerator = (props: {
 
 const HmeDetails = (props: {
   hme: HmeEmail;
-  client: ICloudClient;
+  pms: HmeService;
   activationCallback: () => void;
   deletionCallback: () => void;
   editCallback: (label: string, note: string) => void;
@@ -646,15 +708,14 @@ const HmeDetails = (props: {
   const onActivationClick = async () => {
     setIsActivateSubmitting(true);
     try {
-      const pms = new PremiumMailSettings(props.client);
       if (props.hme.isActive) {
-        await pms.deactivateHme(props.hme.anonymousId);
+        await props.pms.deactivateHme(props.hme.anonymousId);
       } else {
-        await pms.reactivateHme(props.hme.anonymousId);
+        await props.pms.reactivateHme(props.hme.anonymousId);
       }
       props.activationCallback();
     } catch (e) {
-      setError(e.toString());
+      setError(formatError(e));
     } finally {
       setIsActivateSubmitting(false);
     }
@@ -663,11 +724,10 @@ const HmeDetails = (props: {
   const onDeletionClick = async () => {
     setIsDeleteSubmitting(true);
     try {
-      const pms = new PremiumMailSettings(props.client);
-      await pms.deleteHme(props.hme.anonymousId);
+      await props.pms.deleteHme(props.hme.anonymousId);
       props.deletionCallback();
     } catch (e) {
-      setError(e.toString());
+      setError(formatError(e));
       setConfirmingDelete(false);
     } finally {
       setIsDeleteSubmitting(false);
@@ -683,12 +743,15 @@ const HmeDetails = (props: {
     setIsSavingEdit(true);
     setEditError(undefined);
     try {
-      const pms = new PremiumMailSettings(props.client);
-      await pms.updateHmeMetadata(props.hme.anonymousId, editLabel, editNote);
+      await props.pms.updateHmeMetadata(
+        props.hme.anonymousId,
+        editLabel,
+        editNote
+      );
       props.editCallback(editLabel, editNote);
       setIsEditing(false);
     } catch (e) {
-      setEditError(e.toString());
+      setEditError(formatError(e));
     } finally {
       setIsSavingEdit(false);
     }
@@ -710,73 +773,75 @@ const HmeDetails = (props: {
   };
 
   const buttonBaseClass =
-    'inline-flex items-center justify-center gap-2 rounded-2xl px-3 py-3 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-950';
+    'inline-flex items-center justify-center gap-2 !rounded-xl !px-3 !py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-950';
   const labelClassName =
-    'text-xs font-semibold uppercase tracking-[0.3em] text-slate-400';
+    'text-xs font-semibold uppercase tracking-[0.24em] text-slate-400';
   const valueClassName =
-    'mt-1 rounded-xl border border-slate-800/70 bg-slate-950/60 px-3 py-2 text-sm font-medium text-slate-100 truncate';
+    'mt-0.5 rounded-xl border border-slate-800/70 bg-slate-950/60 px-2.5 py-1.5 text-sm font-medium text-slate-100 truncate';
   const editInputClassName =
-    'mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 transition focus:border-rainbow-purple focus:outline-none focus:ring-2 focus:ring-rainbow-purple/70';
+    'mt-0.5 w-full rounded-xl border border-slate-700 bg-slate-900 px-2.5 py-1.5 text-sm text-slate-100 placeholder-slate-500 transition focus:border-rainbow-purple focus:outline-none focus:ring-2 focus:ring-rainbow-purple/70';
 
   return (
-    <div className="space-y-4 text-slate-100">
-      <div>
-        <p className={labelClassName}>Email</p>
-        <p title={props.hme.hme} className={valueClassName}>
-          {props.hme.isActive || (
-            <BanIcon className="mr-2 inline h-4 w-4 text-rainbow-red" />
+    <div className="space-y-3 text-slate-100">
+      <div className="grid grid-cols-2 gap-x-3 gap-y-2.5">
+        <div className="col-span-2">
+          <p className={labelClassName}>Email</p>
+          <p title={props.hme.hme} className={valueClassName}>
+            {props.hme.isActive || (
+              <BanIcon className="mr-2 inline h-4 w-4 text-rainbow-red" />
+            )}
+            {props.hme.hme}
+          </p>
+        </div>
+        <div className="min-w-0">
+          <p className={labelClassName}>Label</p>
+          {isEditing ? (
+            <input
+              value={editLabel}
+              onChange={(e) => setEditLabel(e.target.value)}
+              className={editInputClassName}
+              required
+              // biome-ignore lint/a11y/noAutofocus: autofocus is intentional when entering edit mode
+              autoFocus
+            />
+          ) : (
+            <p title={props.hme.label} className={valueClassName}>
+              {props.hme.label}
+            </p>
           )}
-          {props.hme.hme}
-        </p>
-      </div>
-      <div>
-        <p className={labelClassName}>Label</p>
-        {isEditing ? (
-          <input
-            value={editLabel}
-            onChange={(e) => setEditLabel(e.target.value)}
-            className={editInputClassName}
-            required
-            // biome-ignore lint/a11y/noAutofocus: autofocus is intentional when entering edit mode
-            autoFocus
-          />
-        ) : (
-          <p title={props.hme.label} className={valueClassName}>
-            {props.hme.label}
+        </div>
+        <div className="min-w-0">
+          <p className={labelClassName}>Created</p>
+          <p className={valueClassName}>
+            {new Date(props.hme.createTimestamp).toLocaleString()}
           </p>
-        )}
-      </div>
-      <div>
-        <p className={labelClassName}>Forward to</p>
-        <p title={props.hme.forwardToEmail} className={valueClassName}>
-          {props.hme.forwardToEmail}
-        </p>
-      </div>
-      <div>
-        <p className={labelClassName}>Created</p>
-        <p className={valueClassName}>
-          {new Date(props.hme.createTimestamp).toLocaleString()}
-        </p>
-      </div>
-      <div>
-        <p className={labelClassName}>Note</p>
-        {isEditing && (
-          <textarea
-            rows={2}
-            value={editNote}
-            onChange={(e) => setEditNote(e.target.value)}
-            placeholder="Add a short reminder (optional)"
-            className={editInputClassName}
-          />
-        )}
-        {!isEditing && props.hme.note && (
-          <p title={props.hme.note} className={valueClassName}>
-            {props.hme.note}
+        </div>
+        <div className="col-span-2">
+          <p className={labelClassName}>Forward to</p>
+          <p title={props.hme.forwardToEmail} className={valueClassName}>
+            {props.hme.forwardToEmail}
           </p>
-        )}
-        {!isEditing && !props.hme.note && (
-          <p className="mt-1 text-xs italic text-slate-500">None</p>
-        )}
+        </div>
+        <div className="col-span-2">
+          <p className={labelClassName}>Note</p>
+          {isEditing && (
+            <textarea
+              rows={2}
+              value={editNote}
+              onChange={(e) => setEditNote(e.target.value)}
+              placeholder="Add a short reminder (optional)"
+              className={editInputClassName}
+            />
+          )}
+          {!isEditing && props.hme.note && (
+            <p title={props.hme.note} className={valueClassName}>
+              {props.hme.note}
+            </p>
+          )}
+          {!isEditing && !props.hme.note && (
+            <p className="mt-0.5 text-xs italic text-slate-500">None</p>
+          )}
+        </div>
       </div>
       {(error || editError) && (
         <ErrorMessage>{error || editError}</ErrorMessage>
@@ -875,22 +940,18 @@ const HmeDetails = (props: {
 
 const searchHmeEmails = (
   searchPrompt: string,
-  hmeEmails: HmeEmail[]
+  searchEngine: Fuse<HmeEmail>
 ): HmeEmail[] | undefined => {
   if (!searchPrompt) {
     return undefined;
   }
 
-  const searchEngine = new Fuse(hmeEmails, {
-    keys: ['label', 'hme'],
-    threshold: 0.4,
-  });
   const searchResults = searchEngine.search(searchPrompt);
   return searchResults.map((result) => result.item);
 };
 
 type HmeListViewProps = {
-  client: ICloudClient;
+  pms: HmeService;
   fetchedHmeEmails: HmeEmail[];
   selectedIndex: number;
   onSelectIndex: (index: number) => void;
@@ -901,32 +962,97 @@ type HmeListViewProps = {
   editCallbackFactory: (
     hmeEmail: HmeEmail
   ) => (label: string, note: string) => void;
+  onBulkDeactivate: (ids: string[]) => void;
+  onBulkDelete: (ids: string[]) => void;
 };
 
 const SearchBar = ({
   searchPrompt,
   onSearchPromptChange,
+  sortBy,
+  onSortByChange,
+  onExportClick,
 }: {
   searchPrompt: string | undefined;
   onSearchPromptChange: (value: string) => void;
+  sortBy: SortBy;
+  onSortByChange: (value: SortBy) => void;
+  onExportClick: () => void;
 }) => (
-  <div className="relative rounded-tl-3xl border-b border-slate-800/60 bg-slate-950 p-3">
-    <div className="pointer-events-none absolute inset-y-0 flex items-center pl-3">
-      <SearchIcon className="h-4 w-4 text-slate-500" />
+  <div className="space-y-2 rounded-tl-3xl border-b border-slate-800/60 bg-slate-950 p-3">
+    <div className="relative">
+      <div className="pointer-events-none absolute inset-y-0 flex items-center pl-3">
+        <SearchIcon className="h-4 w-4 text-slate-500" />
+      </div>
+      <input
+        type="search"
+        className="w-full rounded-2xl border border-slate-700 bg-slate-900 py-2 pl-10 pr-3 text-sm text-slate-100 placeholder-slate-500 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/60"
+        placeholder="Search"
+        aria-label="Search through your Hide My Email+ aliases"
+        defaultValue={searchPrompt ?? ''}
+        onChange={(event) => onSearchPromptChange(event.target.value)}
+      />
     </div>
-    <input
-      type="search"
-      className="w-full rounded-2xl border border-slate-700 bg-slate-900 py-2 pl-10 pr-3 text-sm text-slate-100 placeholder-slate-500 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/60"
-      placeholder="Search"
-      aria-label="Search through your Hide My Email+ aliases"
-      defaultValue={searchPrompt ?? ''}
-      onChange={(event) => onSearchPromptChange(event.target.value)}
-    />
+    <div className="flex gap-2">
+      <select
+        aria-label="Sort aliases"
+        value={sortBy}
+        onChange={(event) => onSortByChange(parseSortBy(event.target.value))}
+        className="flex-1 rounded-xl border border-slate-700 bg-slate-900 px-2 py-1.5 text-xs text-slate-200 focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-400"
+      >
+        <option value="newest">Newest</option>
+        <option value="oldest">Oldest</option>
+        <option value="label">Label</option>
+        <option value="active">Active</option>
+      </select>
+      <button
+        type="button"
+        onClick={onExportClick}
+        className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-200 hover:bg-slate-800 focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-400"
+      >
+        Export
+      </button>
+    </div>
   </div>
 );
 
+type SortBy = 'newest' | 'oldest' | 'label' | 'active';
+type CsvValue = string | number | boolean | null | undefined;
+
+const parseSortBy = (value: string): SortBy => {
+  if (
+    value === 'newest' ||
+    value === 'oldest' ||
+    value === 'label' ||
+    value === 'active'
+  ) {
+    return value;
+  }
+  return 'newest';
+};
+
+const escapeCsvValue = (val: CsvValue): string => {
+  /* v8 ignore next 3 */
+  if (val === undefined || val === null) {
+    return '';
+  }
+  let str = String(val);
+  if (/^[=+\-@]/.test(str)) {
+    str = `'${str}`;
+  }
+  if (
+    str.includes('"') ||
+    str.includes(',') ||
+    str.includes('\n') ||
+    str.includes('\r')
+  ) {
+    return `"${str.replaceAll('"', '""')}"`;
+  }
+  return str;
+};
+
 const HmeListView = ({
-  client,
+  pms,
   fetchedHmeEmails,
   selectedIndex,
   onSelectIndex,
@@ -935,14 +1061,96 @@ const HmeListView = ({
   activationCallbackFactory,
   deletionCallbackFactory,
   editCallbackFactory,
+  onBulkDeactivate,
+  onBulkDelete,
 }: HmeListViewProps) => {
   const [copiedId, setCopiedId] = useState<string>();
+  const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
+  const [confirmingBulkDelete, setConfirmingBulkDelete] = useState(false);
+  const [isBulkProcessing, setIsBulkProcessing] = useState(false);
+  const [rangeAnchorIndex, setRangeAnchorIndex] = useState(selectedIndex);
 
-  const hmeEmails = useMemo(
-    () =>
-      searchHmeEmails(searchPrompt ?? '', fetchedHmeEmails) ?? fetchedHmeEmails,
-    [fetchedHmeEmails, searchPrompt]
+  const [sortBy, setSortBy] = useState<SortBy>(() => {
+    const saved = sessionStorage.getItem('hme_sort_by');
+    if (
+      saved === 'newest' ||
+      saved === 'oldest' ||
+      saved === 'label' ||
+      saved === 'active'
+    ) {
+      return saved;
+    }
+    return 'newest';
+  });
+
+  const handleSortByChange = useCallback(
+    (newSortBy: SortBy) => {
+      setSortBy(newSortBy);
+      sessionStorage.setItem('hme_sort_by', newSortBy);
+      onSelectIndex(0);
+    },
+    [onSelectIndex]
   );
+
+  const searchEngine = useMemo(
+    () =>
+      new Fuse(fetchedHmeEmails, {
+        keys: ['label', 'hme'],
+        threshold: 0.4,
+      }),
+    [fetchedHmeEmails]
+  );
+
+  const hmeEmails = useMemo(() => {
+    const baseList =
+      searchHmeEmails(searchPrompt ?? '', searchEngine) ?? fetchedHmeEmails;
+    return [...baseList].sort((a, b) => {
+      if (sortBy === 'newest') {
+        return b.createTimestamp - a.createTimestamp;
+      }
+      if (sortBy === 'oldest') {
+        return a.createTimestamp - b.createTimestamp;
+      }
+      if (sortBy === 'label') {
+        return a.label.localeCompare(b.label);
+      }
+      /* v8 ignore next */
+      if (sortBy === 'active') {
+        return (
+          /* v8 ignore next */
+          (b.isActive ? 1 : 0) - (a.isActive ? 1 : 0) ||
+          b.createTimestamp - a.createTimestamp
+        );
+      }
+      /* v8 ignore next */
+      return 0;
+    });
+  }, [fetchedHmeEmails, searchEngine, searchPrompt, sortBy]);
+
+  const selectedRowRef = useRef<HTMLDivElement>(null);
+  const selectedButtonRef = useRef<HTMLButtonElement>(null);
+  const listContainerRef = useRef<HTMLDivElement>(null);
+  const isMultiSelectMode = checkedIds.size > 0;
+
+  const clearBulkSelection = useCallback(() => {
+    setCheckedIds(new Set());
+    setConfirmingBulkDelete(false);
+  }, []);
+
+  useEffect(() => {
+    /* v8 ignore next */
+    if (selectedRowRef.current) {
+      selectedRowRef.current.scrollIntoView({
+        behavior: 'auto',
+        block: 'nearest',
+      });
+    }
+
+    /* v8 ignore next 5 */
+    if (listContainerRef.current?.contains(document.activeElement)) {
+      selectedButtonRef.current?.focus();
+    }
+  }, [selectedIndex]);
 
   useEffect(() => {
     if (hmeEmails.length === 0) {
@@ -953,6 +1161,12 @@ const HmeListView = ({
       onSelectIndex(hmeEmails.length - 1);
     }
   }, [hmeEmails, selectedIndex, onSelectIndex]);
+
+  useEffect(() => {
+    if (checkedIds.size === 0) {
+      setConfirmingBulkDelete(false);
+    }
+  }, [checkedIds.size]);
 
   const onQuickCopy = useCallback((hme: HmeEmail, event: React.MouseEvent) => {
     event.stopPropagation();
@@ -969,23 +1183,237 @@ const HmeListView = ({
     );
   }, []);
 
+  const toggleCheckedAtIndex = useCallback(
+    (index: number) => {
+      const hme = hmeEmails[index];
+      /* v8 ignore next 3 */
+      if (hme === undefined) {
+        return;
+      }
+      const anchorHme = hmeEmails[rangeAnchorIndex];
+
+      setCheckedIds((prev) => {
+        const next = new Set(prev);
+        if (next.has(hme.anonymousId)) {
+          next.delete(hme.anonymousId);
+        } else {
+          if (
+            next.size === 0 &&
+            anchorHme !== undefined &&
+            anchorHme.anonymousId !== hme.anonymousId
+          ) {
+            next.add(anchorHme.anonymousId);
+          }
+          next.add(hme.anonymousId);
+        }
+        return next;
+      });
+      setRangeAnchorIndex(index);
+    },
+    [hmeEmails, rangeAnchorIndex]
+  );
+
+  const selectCheckedRange = useCallback(
+    (fromIndex: number, toIndex: number) => {
+      const startIndex = Math.min(fromIndex, toIndex);
+      const endIndex = Math.max(fromIndex, toIndex);
+
+      setCheckedIds(() => {
+        const next = new Set<string>();
+        for (const hme of hmeEmails.slice(startIndex, endIndex + 1)) {
+          next.add(hme.anonymousId);
+        }
+        return next;
+      });
+      setRangeAnchorIndex(toIndex);
+    },
+    [hmeEmails]
+  );
+
+  const handleRowSelect = useCallback(
+    (idx: number, event: React.MouseEvent<HTMLButtonElement>) => {
+      onSelectIndex(idx);
+
+      if (event.shiftKey) {
+        selectCheckedRange(rangeAnchorIndex, idx);
+        return;
+      }
+
+      if (event.metaKey || event.ctrlKey) {
+        toggleCheckedAtIndex(idx);
+        return;
+      }
+
+      clearBulkSelection();
+      setRangeAnchorIndex(idx);
+    },
+    [
+      clearBulkSelection,
+      onSelectIndex,
+      rangeAnchorIndex,
+      selectCheckedRange,
+      toggleCheckedAtIndex,
+    ]
+  );
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Escape' && checkedIds.size > 0) {
+      event.preventDefault();
+      clearBulkSelection();
+      return;
+    }
+
+    if (hmeEmails.length === 0) return;
+
+    const target = event.target;
+    /* v8 ignore next 3 */
+    if (!(target instanceof HTMLElement)) {
+      return;
+    }
+
+    const isRowSelectButton =
+      target.tagName === 'BUTTON' && target.dataset.rowSelectButton === 'true';
+    const isListContainer = target === listContainerRef.current;
+
+    if (!isRowSelectButton && !isListContainer) {
+      return;
+    }
+
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      const nextIndex = Math.min(selectedIndex + 1, hmeEmails.length - 1);
+      onSelectIndex(nextIndex);
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      const prevIndex = Math.max(selectedIndex - 1, 0);
+      onSelectIndex(prevIndex);
+    } else if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      if (event.shiftKey) {
+        selectCheckedRange(rangeAnchorIndex, selectedIndex);
+        return;
+      }
+      if (event.metaKey || event.ctrlKey) {
+        toggleCheckedAtIndex(selectedIndex);
+        return;
+      }
+      selectedButtonRef.current?.click();
+    }
+  };
+
+  const handleExportCsv = useCallback(() => {
+    const headers = [
+      'email',
+      'label',
+      'note',
+      'isActive',
+      'forwardToEmail',
+      'createdAt',
+    ];
+    const rows = hmeEmails.map((hme) => [
+      escapeCsvValue(hme.hme),
+      escapeCsvValue(hme.label),
+      escapeCsvValue(hme.note),
+      escapeCsvValue(hme.isActive),
+      escapeCsvValue(hme.forwardToEmail),
+      escapeCsvValue(new Date(hme.createTimestamp).toISOString()),
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map((row) => row.join(',')),
+    ].join('\r\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute(
+      'download',
+      `icloud_hme_aliases_${new Date().toISOString().split('T')[0]}.csv`
+    );
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+  }, [hmeEmails]);
+
+  const handleBulkDeactivate = useCallback(async () => {
+    setIsBulkProcessing(true);
+    const ids = [...checkedIds];
+    const deactivatedIds: string[] = [];
+    for (const id of ids) {
+      try {
+        await pms.deactivateHme(id);
+        deactivatedIds.push(id);
+      } catch (e) {
+        console.warn(`Failed to deactivate alias ${id}: ${formatError(e)}`);
+      }
+    }
+    onBulkDeactivate(deactivatedIds);
+    clearBulkSelection();
+    setIsBulkProcessing(false);
+  }, [checkedIds, clearBulkSelection, pms, onBulkDeactivate]);
+
+  const handleBulkDelete = useCallback(async () => {
+    setIsBulkProcessing(true);
+    const ids = [...checkedIds];
+    const deletedIds: string[] = [];
+    for (const id of ids) {
+      try {
+        await pms.deleteHme(id);
+        deletedIds.push(id);
+      } catch (e) {
+        console.warn(`Failed to delete alias ${id}: ${formatError(e)}`);
+      }
+    }
+    onBulkDelete(deletedIds);
+    clearBulkSelection();
+    setIsBulkProcessing(false);
+  }, [checkedIds, clearBulkSelection, pms, onBulkDelete]);
+
   const rowBaseClass =
-    'flex items-center border-b border-slate-800/50 bg-slate-950/40 text-sm font-medium text-slate-200 transition focus-within:ring-2 focus-within:ring-inset focus-within:ring-rainbow-purple/60';
+    'flex items-center border-b border-slate-800/50 bg-slate-950/40 text-sm font-medium text-slate-200 transition-colors duration-150 focus-within:ring-2 focus-within:ring-inset focus-within:ring-rainbow-purple/60';
   const rowSelectedClass =
     'bg-gradient-to-r from-[rgba(139,92,246,0.4)] via-[rgba(79,70,229,0.4)] to-[rgba(66,133,244,0.4)] text-white shadow-[inset_0_0_0_1px_rgba(129,140,248,0.4)]';
+  const rowBulkSelectedClass =
+    'bg-gradient-to-r from-rainbow-purple/25 via-indigo-500/20 to-rainbow-blue/20 text-white shadow-[inset_3px_0_0_rgba(139,92,246,0.95)] ring-1 ring-inset ring-indigo-300/25';
+  const rowBulkActiveClass = 'ring-2 ring-inset ring-rainbow-purple/70';
+  const rowActiveClass =
+    'bg-slate-900/95 text-white ring-1 ring-inset ring-rainbow-purple/50';
+
+  const getRowStateClass = (isBulkSelected: boolean, isSelected: boolean) => {
+    if (isBulkSelected) {
+      return `${rowBulkSelectedClass} ${isSelected ? rowBulkActiveClass : ''}`;
+    }
+    if (isSelected && isMultiSelectMode) {
+      return rowActiveClass;
+    }
+    if (isSelected) {
+      return rowSelectedClass;
+    }
+    return 'hover:bg-slate-900/80';
+  };
 
   const labelList = hmeEmails.map((hme, idx) => {
     const isSelected = idx === selectedIndex;
+    const isBulkSelected = checkedIds.has(hme.anonymousId);
+    const rowStateClass = getRowStateClass(isBulkSelected, isSelected);
     return (
       <div
         key={hme.anonymousId}
-        className={`${rowBaseClass} ${isSelected ? rowSelectedClass : 'hover:bg-slate-900/80'} group`}
+        ref={isSelected ? selectedRowRef : undefined}
+        className={`${rowBaseClass} ${rowStateClass} group`}
       >
         <button
+          ref={isSelected ? selectedButtonRef : undefined}
           aria-current={isSelected}
+          aria-pressed={isBulkSelected}
           type="button"
+          data-row-select-button="true"
           className="min-w-0 flex-1 truncate px-3 py-3 text-left focus:outline-none"
-          onClick={() => onSelectIndex(idx)}
+          onClick={(event) => handleRowSelect(idx, event)}
         >
           {hme.isActive ? (
             hme.label
@@ -1025,21 +1453,100 @@ const HmeListView = ({
   );
 
   return (
-    <div
-      className="flex rounded-3xl border border-slate-800/80 bg-slate-950/50 shadow-inner shadow-slate-900/50"
-      style={{ height: 450 }}
-    >
-      <div className="w-[30%] min-w-[220px] max-w-[30%] shrink-0 overflow-y-auto rounded-l-3xl bg-slate-950/70">
+    <div className="flex h-[min(450px,calc(100vh-170px))] min-h-0 overflow-hidden rounded-3xl border border-slate-800/80 bg-slate-950/50 shadow-inner shadow-slate-900/50">
+      <div className="flex min-h-0 w-[30%] min-w-[220px] max-w-[30%] shrink-0 flex-col overflow-hidden rounded-l-3xl bg-slate-950/70">
         <SearchBar
           searchPrompt={searchPrompt}
           onSearchPromptChange={onSearchPromptChange}
+          sortBy={sortBy}
+          onSortByChange={handleSortByChange}
+          onExportClick={handleExportCsv}
         />
-        {hmeEmails.length === 0 && searchPrompt ? noSearchResult : labelList}
+        {checkedIds.size > 0 && (
+          <div className="max-w-full shrink-0 space-y-2 overflow-hidden border-b border-slate-800/60 bg-slate-900/80 px-3 py-3">
+            <div className="flex min-w-0 items-center justify-between gap-2">
+              <span className="min-w-0 truncate text-xs font-medium text-slate-400">
+                {checkedIds.size} selected
+              </span>
+              <div className="flex shrink-0 items-center gap-2">
+                {isBulkProcessing && (
+                  <SpinnerIcon className="h-3.5 w-3.5 animate-spin text-slate-500" />
+                )}
+                <button
+                  type="button"
+                  disabled={isBulkProcessing}
+                  onClick={clearBulkSelection}
+                  aria-label="Clear selection"
+                  className="inline-flex items-center gap-1 rounded-full border border-slate-700/80 bg-slate-950/70 px-2 py-1 text-[11px] font-semibold text-slate-300 transition hover:border-slate-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-rainbow-purple/60 disabled:opacity-50"
+                >
+                  <XIcon className="h-3 w-3" />
+                  Clear
+                </button>
+              </div>
+            </div>
+            <div className="grid gap-2">
+              {confirmingBulkDelete ? (
+                <>
+                  <span className="text-xs font-medium text-red-300">
+                    Delete {checkedIds.size} alias
+                    {checkedIds.size > 1 ? 'es' : ''}?
+                  </span>
+                  <button
+                    type="button"
+                    disabled={isBulkProcessing}
+                    onClick={handleBulkDelete}
+                    className="w-full rounded-lg bg-red-600 px-2 py-1.5 text-xs font-semibold text-white hover:bg-red-500 disabled:opacity-50"
+                  >
+                    Confirm
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isBulkProcessing}
+                    onClick={() => setConfirmingBulkDelete(false)}
+                    className="w-full rounded-lg bg-slate-700 px-2 py-1.5 text-xs font-semibold text-slate-200 hover:bg-slate-600 disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    disabled={isBulkProcessing}
+                    onClick={handleBulkDeactivate}
+                    className="w-full rounded-lg bg-amber-600/80 px-2 py-1.5 text-xs font-semibold text-white hover:bg-amber-500 disabled:opacity-50"
+                  >
+                    Deactivate selected
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isBulkProcessing}
+                    onClick={() => setConfirmingBulkDelete(true)}
+                    className="w-full rounded-lg bg-red-600/80 px-2 py-1.5 text-xs font-semibold text-white hover:bg-red-500 disabled:opacity-50"
+                  >
+                    Delete selected
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+        <div
+          ref={listContainerRef}
+          onKeyDown={handleKeyDown}
+          className="min-h-0 flex-1 overflow-y-auto focus:outline-none"
+          role="tree"
+          tabIndex={0}
+          aria-label="Hide My Email aliases"
+          aria-multiselectable={isMultiSelectMode}
+        >
+          {hmeEmails.length === 0 && searchPrompt ? noSearchResult : labelList}
+        </div>
       </div>
-      <div className="basis-[70%] grow overflow-y-auto rounded-r-3xl border-l border-slate-800/60 bg-slate-950/80 p-4">
+      <div className="min-h-0 basis-[70%] grow overflow-hidden rounded-r-3xl border-l border-slate-800/60 bg-slate-950/80 p-3">
         {selectedHmeEmail && (
           <HmeDetails
-            client={client}
+            pms={pms}
             hme={selectedHmeEmail}
             activationCallback={activationCallbackFactory(selectedHmeEmail)}
             deletionCallback={deletionCallbackFactory(selectedHmeEmail)}
@@ -1053,35 +1560,86 @@ const HmeListView = ({
 
 const HmeManager = (props: {
   callback: TransitionCallback<AuthenticatedAndManagingAction>;
-  client: ICloudClient;
+  pms: HmeService;
+  client: ICloudClient | null;
   setClientState: Dispatch<Store['clientState']>;
+  mockMode: boolean;
 }) => {
   const [fetchedHmeEmails, setFetchedHmeEmails] = useState<HmeEmail[]>();
   const [hmeEmailsError, setHmeEmailsError] = useState<string>();
   const [isFetching, setIsFetching] = useState(true);
+  const [isBackgroundFetching, setIsBackgroundFetching] = useState(false);
   const [selectedHmeIdx, setSelectedHmeIdx] = useState(0);
   const [searchPrompt, setSearchPrompt] = useState<string>();
 
+  const [cachedHmeList, setCachedHmeList, isCacheLoading] =
+    useBrowserStorageState('cachedHmeList', undefined);
+
+  const [initialCacheLoaded, setInitialCacheLoaded] = useState(false);
+
   useEffect(() => {
+    if (isCacheLoading || initialCacheLoaded) return;
+
+    setInitialCacheLoaded(true);
+
+    if (cachedHmeList) {
+      const sortedEmails = [...cachedHmeList.hmeEmails].sort(
+        (a, b) => b.createTimestamp - a.createTimestamp
+      );
+      setFetchedHmeEmails(sortedEmails);
+      setIsFetching(false);
+    } else {
+      setIsFetching(true);
+    }
+
     const fetchHmeList = async () => {
       setHmeEmailsError(undefined);
-      setIsFetching(true);
+      setIsBackgroundFetching(true);
       try {
-        const pms = new PremiumMailSettings(props.client);
-        const result = await pms.listHme();
+        const result = await props.pms.listHme();
         const sortedEmails = [...result.hmeEmails].sort(
           (a, b) => b.createTimestamp - a.createTimestamp
         );
         setFetchedHmeEmails(sortedEmails);
+        setCachedHmeList(result);
       } catch (e) {
-        setHmeEmailsError(e.toString());
+        if (cachedHmeList) {
+          console.warn('Background refresh failed, using cached list:', e);
+        } else {
+          setHmeEmailsError(formatError(e));
+        }
       } finally {
         setIsFetching(false);
+        setIsBackgroundFetching(false);
       }
     };
 
     fetchHmeList();
-  }, [props.client]);
+  }, [
+    isCacheLoading,
+    initialCacheLoaded,
+    cachedHmeList,
+    props.pms,
+    setCachedHmeList,
+  ]);
+
+  // Keep offline cache in sync when user edits/activates/deletes
+  useEffect(() => {
+    if (!fetchedHmeEmails || !initialCacheLoaded) return;
+    if (
+      !cachedHmeList ||
+      !deepEqual(cachedHmeList.hmeEmails, fetchedHmeEmails)
+    ) {
+      setCachedHmeList((prev) => {
+        /* v8 ignore next */
+        if (!prev) return undefined;
+        return {
+          ...prev,
+          hmeEmails: fetchedHmeEmails,
+        };
+      });
+    }
+  }, [fetchedHmeEmails, cachedHmeList, setCachedHmeList, initialCacheLoaded]);
 
   const activationCallbackFactory = (hmeEmail: HmeEmail) => () => {
     setFetchedHmeEmails(createActivationUpdater(hmeEmail));
@@ -1102,6 +1660,25 @@ const HmeManager = (props: {
 
   const handleSearchPromptChange = useCallback((value: string) => {
     setSearchPrompt(value);
+    setSelectedHmeIdx(0);
+  }, []);
+
+  const handleBulkDeactivate = useCallback((ids: string[]) => {
+    setFetchedHmeEmails((prev) => {
+      /* v8 ignore next */
+      if (!prev) return prev;
+      return prev.map((e) =>
+        ids.includes(e.anonymousId) ? { ...e, isActive: false } : e
+      );
+    });
+  }, []);
+
+  const handleBulkDelete = useCallback((ids: string[]) => {
+    setFetchedHmeEmails((prev) => {
+      /* v8 ignore next */
+      if (!prev) return prev;
+      return prev.filter((e) => !ids.includes(e.anonymousId));
+    });
     setSelectedHmeIdx(0);
   }, []);
 
@@ -1127,14 +1704,27 @@ const HmeManager = (props: {
 
     return (
       <div className="space-y-2">
-        <p className="text-right text-xs text-slate-500">
-          <span className="text-emerald-400">{activeCount} active</span>
-          {inactiveCount > 0 && (
-            <span className="text-slate-500"> · {inactiveCount} inactive</span>
-          )}
-        </p>
+        <div className="flex justify-between items-center text-xs">
+          <div>
+            {isBackgroundFetching && (
+              <span className="flex items-center gap-1.5 text-slate-400 font-medium">
+                <SpinnerIcon className="h-3.5 w-3.5 animate-spin" />
+                Refreshing...
+              </span>
+            )}
+          </div>
+          <p className="text-right text-slate-500">
+            <span className="text-emerald-400">{activeCount} active</span>
+            {inactiveCount > 0 && (
+              <span className="text-slate-500">
+                {' '}
+                · {inactiveCount} inactive
+              </span>
+            )}
+          </p>
+        </div>
         <HmeListView
-          client={props.client}
+          pms={props.pms}
           fetchedHmeEmails={fetchedHmeEmails}
           selectedIndex={selectedHmeIdx}
           onSelectIndex={handleSelectIndex}
@@ -1143,6 +1733,8 @@ const HmeManager = (props: {
           activationCallbackFactory={activationCallbackFactory}
           deletionCallbackFactory={deletionCallbackFactory}
           editCallbackFactory={editCallbackFactory}
+          onBulkDeactivate={handleBulkDeactivate}
+          onBulkDelete={handleBulkDelete}
         />
       </div>
     );
@@ -1150,6 +1742,7 @@ const HmeManager = (props: {
 
   return (
     <TitledComponent hideHeader>
+      {props.mockMode && <MockModeBanner />}
       {renderMainContent()}
       <div className="grid grid-cols-2 pt-3">
         <div>
@@ -1161,22 +1754,22 @@ const HmeManager = (props: {
           />
         </div>
         <div className="text-right">
-          <SignOutButton
-            callback={props.callback}
-            client={props.client}
-            setClientState={props.setClientState}
-          />
+          {props.client !== null && (
+            <SignOutButton
+              callback={props.callback}
+              client={props.client}
+              setClientState={props.setClientState}
+            />
+          )}
         </div>
       </div>
     </TitledComponent>
   );
 };
 
-const constructClient = (clientState: Store['clientState']): ICloudClient => {
-  if (clientState === undefined) {
-    throw new Error('Cannot construct client when client state is undefined');
-  }
-
+const constructClient = (
+  clientState: NonNullable<Store['clientState']>
+): ICloudClient => {
   return new ICloudClient(clientState.setupUrl, clientState.webservices);
 };
 
@@ -1184,31 +1777,64 @@ const transitionToNextStateElement = (
   state: PopupState,
   setState: Dispatch<PopupState>,
   clientState: Store['clientState'],
-  setClientState: Dispatch<Store['clientState']>
+  setClientState: Dispatch<Store['clientState']>,
+  mockMode: boolean,
+  mockPremiumMailSettings: HmeService
 ): ReactElement => {
   switch (state) {
     case PopupState.SignedOut: {
+      // In mock mode we never reach SignedOut — the Popup component handles it.
       return <SignInInstructions />;
     }
     case PopupState.Authenticated: {
       const callback = (action: AuthenticatedAction) =>
         setState(STATE_MACHINE_TRANSITIONS[state][action]);
+      if (mockMode) {
+        return (
+          <HmeGenerator
+            callback={callback}
+            pms={mockPremiumMailSettings}
+            client={null}
+            setClientState={setClientState}
+            mockMode={mockMode}
+          />
+        );
+      }
+      const client = constructClient(clientState);
+      const pms: HmeService = new PremiumMailSettings(client);
       return (
         <HmeGenerator
           callback={callback}
-          client={constructClient(clientState)}
+          pms={pms}
+          client={client}
           setClientState={setClientState}
+          mockMode={mockMode}
         />
       );
     }
     case PopupState.AuthenticatedAndManaging: {
       const callback = (action: AuthenticatedAndManagingAction) =>
         setState(STATE_MACHINE_TRANSITIONS[state][action]);
+      if (mockMode) {
+        return (
+          <HmeManager
+            callback={callback}
+            pms={mockPremiumMailSettings}
+            client={null}
+            setClientState={setClientState}
+            mockMode={mockMode}
+          />
+        );
+      }
+      const client = constructClient(clientState);
+      const pms: HmeService = new PremiumMailSettings(client);
       return (
         <HmeManager
           callback={callback}
-          client={constructClient(clientState)}
+          pms={pms}
+          client={client}
           setClientState={setClientState}
+          mockMode={mockMode}
         />
       );
     }
@@ -1236,7 +1862,7 @@ const syncClientAuthState = async (
   } else {
     setState(PopupState.SignedOut);
     setClientState(undefined);
-    performDeauthSideEffects();
+    await performDeauthSideEffects();
   }
 
   setClientAuthStateSynced(true);
@@ -1252,7 +1878,28 @@ const Popup = () => {
     useBrowserStorageState('clientState', undefined);
   const [clientAuthStateSynced, setClientAuthStateSynced] = useState(false);
 
+  const [mockMode, , isMockModeLoading] = useBrowserStorageState(
+    'mockMode',
+    DEFAULT_STORE.mockMode
+  );
+  const [mockPremiumMailSettings] = useState<HmeService>(
+    () => new MockPremiumMailSettings()
+  );
+  const shouldRenderSignedOut =
+    !mockMode &&
+    clientState === undefined &&
+    (state === PopupState.Authenticated ||
+      state === PopupState.AuthenticatedAndManaging);
+
+  // When mock mode is on, skip real iCloud auth entirely and jump to Authenticated.
   useEffect(() => {
+    /* v8 ignore next */
+    if (isMockModeLoading) return;
+    if (mockMode) {
+      setState(PopupState.Authenticated);
+      setClientAuthStateSynced(true);
+      return;
+    }
     if (!isClientStateLoading && !clientAuthStateSynced) {
       syncClientAuthState(
         clientState,
@@ -1262,6 +1909,8 @@ const Popup = () => {
       );
     }
   }, [
+    mockMode,
+    isMockModeLoading,
     setState,
     setClientState,
     clientAuthStateSynced,
@@ -1269,17 +1918,31 @@ const Popup = () => {
     isClientStateLoading,
   ]);
 
+  useEffect(() => {
+    if (shouldRenderSignedOut) {
+      setState(PopupState.SignedOut);
+    }
+  }, [setState, shouldRenderSignedOut]);
+
+  const isLoading =
+    isStateLoading ||
+    isMockModeLoading ||
+    (!mockMode && !clientAuthStateSynced);
+  const nextState = shouldRenderSignedOut ? PopupState.SignedOut : state;
+
   return (
     <div className="flex items-start justify-center px-4 py-4 text-slate-100">
       <div className="w-full max-w-[960px]">
-        {isStateLoading || !clientAuthStateSynced ? (
+        {isLoading ? (
           <Spinner />
         ) : (
           transitionToNextStateElement(
-            state,
+            nextState,
             setState,
             clientState,
-            setClientState
+            setClientState,
+            /* v8 ignore next */ mockMode ?? false,
+            mockPremiumMailSettings
           )
         )}
       </div>

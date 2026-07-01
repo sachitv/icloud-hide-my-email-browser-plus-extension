@@ -103,6 +103,26 @@ export type ListHmeResult = {
   forwardToEmails: string[];
 };
 
+/**
+ * Common interface satisfied by both PremiumMailSettings (real) and
+ * MockPremiumMailSettings (testing/demo). Pass this type into components
+ * instead of the concrete class so mock mode works transparently.
+ */
+export interface HmeService {
+  listHme(): Promise<ListHmeResult>;
+  generateHme(): Promise<string>;
+  reserveHme(hme: string, label: string, note?: string): Promise<HmeEmail>;
+  updateHmeMetadata(
+    anonymousId: string,
+    label: string,
+    note?: string
+  ): Promise<void>;
+  deactivateHme(anonymousId: string): Promise<void>;
+  reactivateHme(anonymousId: string): Promise<void>;
+  deleteHme(anonymousId: string): Promise<void>;
+  updateForwardToHme(forwardToEmail: string): Promise<void>;
+}
+
 type PremiumMailSettingsResponse<T = unknown> = {
   success: boolean;
   result: T;

@@ -1,11 +1,4 @@
-export type Autofill = {
-  button: boolean;
-  contextMenu: boolean;
-};
-
-export type Options = {
-  autofill: Autofill;
-};
+export type { Autofill, Options } from './storage';
 
 export const DEFAULT_OPTIONS: Options = {
   autofill: {

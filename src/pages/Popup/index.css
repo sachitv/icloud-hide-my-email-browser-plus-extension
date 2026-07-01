@@ -22,6 +22,8 @@ body {
     ),
     #020617;
   color: #e2e8f0;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 #app-container {

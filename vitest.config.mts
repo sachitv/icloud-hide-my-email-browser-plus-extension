@@ -4,6 +4,14 @@ export default defineConfig({
   test: {
     environment: 'happy-dom',
     include: ['tests/**/*.test.ts', 'tests/**/*.test.tsx'],
+    exclude: [
+      'tests/e2e/**',
+      'node_modules/**',
+      'dist/**',
+      '.idea/**',
+      '.git/**',
+      '.cache/**',
+    ],
     setupFiles: ['tests/setupTests.ts'],
     coverage: {
       provider: 'v8',
@@ -12,6 +20,7 @@ export default defineConfig({
       include: ['src/**/*.{ts,tsx}'],
       exclude: [
         '**/*.d.ts',
+        '**/*.stories.tsx',
         'src/options.ts',
         'src/pages/**/index.ts',
         'src/pages/**/index.tsx',
@@ -23,12 +32,10 @@ export default defineConfig({
         'build/**',
       ],
       thresholds: {
-        global: {
-          statements: 90,
-          branches: 90,
-          functions: 90,
-          lines: 90,
-        },
+        statements: 100,
+        branches: 100,
+        functions: 100,
+        lines: 100,
       },
     },
   },
