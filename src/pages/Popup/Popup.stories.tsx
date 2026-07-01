@@ -8,9 +8,9 @@
  */
 import type { Meta, StoryObj } from '@storybook/react';
 import React, { useEffect, useState } from 'react';
-import { MockPremiumMailSettings } from '../mockClient';
-import type { HmeEmail, ListHmeResult } from '../iCloudClient';
-import '../pages/Popup/index.css';
+import { MockPremiumMailSettings } from '../../mockClient';
+import type { HmeEmail, ListHmeResult } from '../../iCloudClient';
+import './index.css';
 
 // ---------------------------------------------------------------------------
 // HmeGenerator Story — shows the alias generation screen
