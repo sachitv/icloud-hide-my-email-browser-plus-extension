@@ -247,13 +247,12 @@ const Options = () => {
       <div className="mx-auto flex max-w-3xl flex-col gap-10">
         <TitledComponent title="Control Center" subtitle="Tune your experience">
           {mockMode && (
-            <div
-              role="status"
-              className="flex items-center justify-center gap-2 rounded-2xl border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-300"
+            <output
+              aria-label="Demo mode active"
+              className="flex items-center justify-center rounded-2xl border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-300"
             >
-              <span aria-hidden="true">⚠</span>
               Demo mode active — no real iCloud data
-            </div>
+            </output>
           )}
           <div className="space-y-3">
             <h3 className="text-lg font-semibold text-white">Disclaimer</h3>

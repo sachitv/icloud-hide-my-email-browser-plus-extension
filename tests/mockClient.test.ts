@@ -26,6 +26,20 @@ describe('MockPremiumMailSettings', () => {
     expect(alias).toMatch(/@privaterelay\.appleid\.com$/);
   });
 
+  it('cycles generated alias numbers after 99', async () => {
+    const aliases: string[] = [];
+
+    for (let i = 0; i < 100; i += 1) {
+      const promise = pms.generateHme();
+      await vi.runAllTimersAsync();
+      aliases.push(await promise);
+    }
+
+    expect(
+      aliases.some((alias) => alias.endsWith('.10@privaterelay.appleid.com'))
+    ).toBe(true);
+  });
+
   it('reserveHme adds the alias to the list and returns the HmeEmail', async () => {
     const reservePromise = pms.reserveHme(
       'new@privaterelay.appleid.com',

@@ -102,10 +102,20 @@ const NOUNS = [
   'lantern',
 ];
 
+const mockAliasIndexes = {
+  adjective: 0,
+  noun: 0,
+  number: 10,
+};
+
 function generateAlias(): string {
-  const adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
-  const noun = NOUNS[Math.floor(Math.random() * NOUNS.length)];
-  const num = Math.floor(Math.random() * 90 + 10);
+  const adj = ADJECTIVES[mockAliasIndexes.adjective];
+  const noun = NOUNS[mockAliasIndexes.noun];
+  const num = mockAliasIndexes.number;
+  mockAliasIndexes.adjective =
+    (mockAliasIndexes.adjective + 1) % ADJECTIVES.length;
+  mockAliasIndexes.noun = (mockAliasIndexes.noun + 3) % NOUNS.length;
+  mockAliasIndexes.number = mockAliasIndexes.number === 99 ? 10 : num + 1;
   return `${adj}.${noun}.${num}@privaterelay.appleid.com`;
 }
 
@@ -115,7 +125,7 @@ function generateAlias(): string {
 
 export class MockPremiumMailSettings implements HmeService {
   private emails: HmeEmail[] = structuredClone(SEED_EMAILS);
-  private forwardToEmails = ['you@example.com', 'backup@example.com'];
+  private readonly forwardToEmails = ['you@example.com', 'backup@example.com'];
   private selectedForwardTo = 'you@example.com';
 
   async listHme(): Promise<ListHmeResult> {
