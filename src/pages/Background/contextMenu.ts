@@ -107,6 +107,41 @@ export const generateAndAutofill = async (
   }
 };
 
+const openPopup = async () => {
+  if (typeof browser.action?.openPopup !== 'function') {
+    return;
+  }
+  await browser.action.openPopup().catch(console.debug);
+};
+
+const handleSuggestAliasCommand = async () => {
+  try {
+    const [activeTab] = await browser.tabs.query({
+      active: true,
+      currentWindow: true,
+    });
+
+    if (activeTab?.id === undefined) {
+      await openPopup();
+      return;
+    }
+
+    const isFocused = await browser.tabs.sendMessage(activeTab.id, {
+      type: MessageType.QueryActiveElementFocus,
+    });
+
+    if (isFocused === true) {
+      await generateAndAutofill(activeTab);
+      return;
+    }
+
+    await openPopup();
+  } catch (e) {
+    console.debug('Failed to run suggest-alias command:', e);
+    await openPopup();
+  }
+};
+
 export const setupContextMenuListeners = () => {
   browser.runtime.onInstalled.addListener(setupContextMenu);
 
@@ -137,56 +172,10 @@ export const setupContextMenuListeners = () => {
   });
 
   browser.commands.onCommand.addListener(async (command) => {
-    if (command === 'suggest-alias') {
-      try {
-        const [activeTab] = await browser.tabs.query({
-          active: true,
-          currentWindow: true,
-        });
-
-        if (activeTab && activeTab.id !== undefined) {
-          try {
-            const isFocused = await browser.tabs.sendMessage(activeTab.id, {
-              type: MessageType.QueryActiveElementFocus,
-            });
-
-            if (isFocused === true) {
-              await generateAndAutofill(activeTab);
-            } else {
-              /* v8 ignore next 6 */
-              if (
-                browser.action &&
-                typeof browser.action.openPopup === 'function'
-              ) {
-                await browser.action.openPopup().catch(console.debug);
-              }
-            }
-          } catch (e) {
-            console.debug(
-              'Failed to query active element focus, opening popup:',
-              e
-            );
-            /* v8 ignore next 6 */
-            if (
-              browser.action &&
-              typeof browser.action.openPopup === 'function'
-            ) {
-              await browser.action.openPopup().catch(console.debug);
-            }
-          }
-        } else {
-          /* v8 ignore next 6 */
-          if (
-            browser.action &&
-            typeof browser.action.openPopup === 'function'
-          ) {
-            await browser.action.openPopup().catch(console.debug);
-          }
-        }
-      } catch (e) {
-        console.debug('Error query tab or opening popup:', e);
-      }
+    if (command !== 'suggest-alias') {
+      return;
     }
+    await handleSuggestAliasCommand();
   });
 
   /* v8 ignore next 3 */

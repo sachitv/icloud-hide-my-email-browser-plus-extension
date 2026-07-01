@@ -31,6 +31,7 @@ export const performDeauthSideEffects = async () => {
   await Promise.all([
     setBrowserStorageValue('popupState', DEFAULT_STORE.popupState),
     setBrowserStorageValue('clientState', DEFAULT_STORE.clientState),
+    setBrowserStorageValue('cachedHmeList', DEFAULT_STORE.cachedHmeList),
   ]);
 
   await browser.contextMenus

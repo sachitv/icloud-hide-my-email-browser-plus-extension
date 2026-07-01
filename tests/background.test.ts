@@ -197,6 +197,9 @@ describe('Background Script Refactored Modules', () => {
     it('performs deauthentication side effects', async () => {
       await performDeauthSideEffects();
       expect(browserMocks.storage.local.set).toHaveBeenCalled();
+      expect(browserMocks.storage.local.remove).toHaveBeenCalledWith(
+        'cachedHmeList'
+      );
       expect(browserMocks.contextMenus.update).toHaveBeenCalled();
     });
 
@@ -321,6 +324,24 @@ describe('Background Script Refactored Modules', () => {
       await commandListener('suggest-alias');
 
       expect(browserMocks.action.openPopup).toHaveBeenCalled();
+    });
+
+    it('suggest-alias command tolerates browsers without popup API', async () => {
+      const originalOpenPopup = browserMocks.action.openPopup;
+      Reflect.deleteProperty(browserMocks.action, 'openPopup');
+      setupContextMenuListeners();
+      const commandListener = listeners.commandsCommand[0];
+
+      browserMocks.tabs.query.mockResolvedValue([
+        { id: 1, url: 'https://example.com/login' },
+      ]);
+      browserMocks.tabs.sendMessage.mockResolvedValueOnce(false);
+
+      try {
+        await expect(commandListener('suggest-alias')).resolves.not.toThrow();
+      } finally {
+        browserMocks.action.openPopup = originalOpenPopup;
+      }
     });
   });
 
