@@ -2002,7 +2002,7 @@ describe('Popup UI', () => {
     render(<Popup />);
 
     // Wait for aliases to load
-    const listbox = await screen.findByRole('listbox');
+    const listbox = await screen.findByRole('tree');
 
     // Initial selection index is 0. Select option 1 (which is index 0).
     // newest is 'id-2' (since created time is greater/newest).
@@ -2449,7 +2449,7 @@ describe('Popup UI', () => {
     fireEvent.click(secondAliasButton, { metaKey: true });
     await screen.findByText(/2 selected/i);
 
-    fireEvent.keyDown(screen.getByRole('listbox'), { key: 'Escape' });
+    fireEvent.keyDown(screen.getByRole('tree'), { key: 'Escape' });
 
     await waitFor(() =>
       expect(screen.queryByText(/selected/i)).not.toBeInTheDocument()
@@ -2514,7 +2514,7 @@ describe('Popup UI', () => {
       expect(screen.getByText(/2 selected/i)).toBeInTheDocument()
     );
 
-    const listbox = screen.getByRole('listbox');
+    const listbox = screen.getByRole('tree');
     fireEvent.keyDown(listbox, { key: 'ArrowDown' });
     fireEvent.keyDown(listbox, { key: ' ', ctrlKey: true });
 
@@ -2556,7 +2556,7 @@ describe('Popup UI', () => {
     });
     firstAliasButton.focus();
 
-    const listbox = screen.getByRole('listbox');
+    const listbox = screen.getByRole('tree');
     fireEvent.keyDown(listbox, { key: 'ArrowDown' });
     fireEvent.keyDown(listbox, { key: 'Enter', shiftKey: true });
 
@@ -3005,7 +3005,9 @@ describe('Popup UI', () => {
     const sortSelect = screen.getByRole('combobox', { name: /sort aliases/i });
     await user.selectOptions(sortSelect, 'label');
 
-    await screen.findByRole('button', { name: 'A' });
+    expect(
+      await screen.findByRole('button', { name: 'A' })
+    ).toBeInTheDocument();
   });
 
   it('unselects an alias when modifier-clicked a second time', async () => {
@@ -3188,6 +3190,9 @@ describe('Popup UI', () => {
           'Failed to delete alias id-delete-error: delete failed'
         )
       );
+      expect(
+        screen.getByRole('button', { name: 'Delete error alias' })
+      ).toBeInTheDocument();
       expect(screen.queryByText(/1 selected/i)).not.toBeInTheDocument();
     } finally {
       warnSpy.mockRestore();
@@ -3555,7 +3560,7 @@ describe('Popup UI', () => {
     const lastAliasButton = screen.getByRole('button', {
       name: 'Last edge alias',
     });
-    const listbox = screen.getByRole('listbox');
+    const listbox = screen.getByRole('tree');
 
     fireEvent.keyDown(listbox, { key: 'ArrowUp' });
     expect(firstAliasButton).toHaveAttribute('aria-current', 'true');
@@ -3593,7 +3598,7 @@ describe('Popup UI', () => {
     await screen.findByRole('button', { name: 'Searchable alias' });
     await user.type(screen.getByRole('searchbox'), 'missing');
 
-    const listbox = screen.getByRole('listbox');
+    const listbox = screen.getByRole('tree');
     await screen.findByText(/No results for/i);
     fireEvent.keyDown(listbox, { key: 'ArrowDown' });
 
@@ -3665,7 +3670,7 @@ describe('Popup UI', () => {
     await user.click(deleteBtn);
 
     // With 2 items selected, the confirmation should show "aliases" (plural)
-    await screen.findByText(/Delete 2 aliases\?/i);
+    expect(await screen.findByText(/Delete 2 aliases\?/i)).toBeInTheDocument();
   });
 
   it('bulk deactivate leaves non-selected emails unchanged (line 1509 false branch)', async () => {

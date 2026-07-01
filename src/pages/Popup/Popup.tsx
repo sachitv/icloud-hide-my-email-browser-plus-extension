@@ -359,14 +359,12 @@ const ReservationForm = ({
 );
 
 const MockModeBanner = () => (
-  <div
-    role="status"
+  <output
     aria-label="Demo mode active"
-    className="flex items-center justify-center gap-2 rounded-2xl border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-300"
+    className="flex items-center justify-center rounded-2xl border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-300"
   >
-    <span aria-hidden="true">⚠</span>
     Demo mode — no real iCloud data
-  </div>
+  </output>
 );
 
 const HmeGenerator = (props: {
@@ -977,8 +975,8 @@ const SearchBar = ({
 }: {
   searchPrompt: string | undefined;
   onSearchPromptChange: (value: string) => void;
-  sortBy: 'newest' | 'oldest' | 'label' | 'active';
-  onSortByChange: (value: 'newest' | 'oldest' | 'label' | 'active') => void;
+  sortBy: SortBy;
+  onSortByChange: (value: SortBy) => void;
   onExportClick: () => void;
 }) => (
   <div className="space-y-2 rounded-tl-3xl border-b border-slate-800/60 bg-slate-950 p-3">
@@ -1018,9 +1016,10 @@ const SearchBar = ({
   </div>
 );
 
-const parseSortBy = (
-  value: string
-): 'newest' | 'oldest' | 'label' | 'active' => {
+type SortBy = 'newest' | 'oldest' | 'label' | 'active';
+type CsvValue = string | number | boolean | null | undefined;
+
+const parseSortBy = (value: string): SortBy => {
   if (
     value === 'newest' ||
     value === 'oldest' ||
@@ -1032,13 +1031,13 @@ const parseSortBy = (
   return 'newest';
 };
 
-const escapeCsvValue = (val: unknown): string => {
+const escapeCsvValue = (val: CsvValue): string => {
   /* v8 ignore next 3 */
   if (val === undefined || val === null) {
     return '';
   }
   let str = String(val);
-  if (/^[=\+\-@]/.test(str)) {
+  if (/^[=+\-@]/.test(str)) {
     str = `'${str}`;
   }
   if (
@@ -1047,7 +1046,7 @@ const escapeCsvValue = (val: unknown): string => {
     str.includes('\n') ||
     str.includes('\r')
   ) {
-    return `"${str.replace(/"/g, '""')}"`;
+    return `"${str.replaceAll('"', '""')}"`;
   }
   return str;
 };
@@ -1071,9 +1070,7 @@ const HmeListView = ({
   const [isBulkProcessing, setIsBulkProcessing] = useState(false);
   const [rangeAnchorIndex, setRangeAnchorIndex] = useState(selectedIndex);
 
-  const [sortBy, setSortByState] = useState<
-    'newest' | 'oldest' | 'label' | 'active'
-  >(() => {
+  const [sortBy, setSortByState] = useState<SortBy>(() => {
     const saved = sessionStorage.getItem('hme_sort_by');
     if (
       saved === 'newest' ||
@@ -1087,7 +1084,7 @@ const HmeListView = ({
   });
 
   const setSortBy = useCallback(
-    (newSortBy: 'newest' | 'oldest' | 'label' | 'active') => {
+    (newSortBy: SortBy) => {
       setSortByState(newSortBy);
       sessionStorage.setItem('hme_sort_by', newSortBy);
       onSelectIndex(0);
@@ -1150,10 +1147,7 @@ const HmeListView = ({
     }
 
     /* v8 ignore next 5 */
-    if (
-      listContainerRef.current &&
-      listContainerRef.current.contains(document.activeElement)
-    ) {
+    if (listContainerRef.current?.contains(document.activeElement)) {
       selectedButtonRef.current?.focus();
     }
   }, [selectedIndex]);
@@ -1278,8 +1272,7 @@ const HmeListView = ({
     }
 
     const isRowSelectButton =
-      target.tagName === 'BUTTON' &&
-      target.getAttribute('data-row-select-button') === 'true';
+      target.tagName === 'BUTTON' && target.dataset.rowSelectButton === 'true';
     const isListContainer = target === listContainerRef.current;
 
     if (!isRowSelectButton && !isListContainer) {
@@ -1342,21 +1335,23 @@ const HmeListView = ({
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
+    link.remove();
     setTimeout(() => URL.revokeObjectURL(url), 0);
   }, [hmeEmails]);
 
   const handleBulkDeactivate = useCallback(async () => {
     setIsBulkProcessing(true);
     const ids = [...checkedIds];
+    const deactivatedIds: string[] = [];
     for (const id of ids) {
       try {
         await pms.deactivateHme(id);
+        deactivatedIds.push(id);
       } catch (e) {
         console.warn(`Failed to deactivate alias ${id}: ${formatError(e)}`);
       }
     }
-    onBulkDeactivate(ids);
+    onBulkDeactivate(deactivatedIds);
     clearBulkSelection();
     setIsBulkProcessing(false);
   }, [checkedIds, clearBulkSelection, pms, onBulkDeactivate]);
@@ -1364,14 +1359,16 @@ const HmeListView = ({
   const handleBulkDelete = useCallback(async () => {
     setIsBulkProcessing(true);
     const ids = [...checkedIds];
+    const deletedIds: string[] = [];
     for (const id of ids) {
       try {
         await pms.deleteHme(id);
+        deletedIds.push(id);
       } catch (e) {
         console.warn(`Failed to delete alias ${id}: ${formatError(e)}`);
       }
     }
-    onBulkDelete(ids);
+    onBulkDelete(deletedIds);
     clearBulkSelection();
     setIsBulkProcessing(false);
   }, [checkedIds, clearBulkSelection, pms, onBulkDelete]);
@@ -1386,16 +1383,23 @@ const HmeListView = ({
   const rowActiveClass =
     'bg-slate-900/95 text-white ring-1 ring-inset ring-rainbow-purple/50';
 
+  const getRowStateClass = (isBulkSelected: boolean, isSelected: boolean) => {
+    if (isBulkSelected) {
+      return `${rowBulkSelectedClass} ${isSelected ? rowBulkActiveClass : ''}`;
+    }
+    if (isSelected && isMultiSelectMode) {
+      return rowActiveClass;
+    }
+    if (isSelected) {
+      return rowSelectedClass;
+    }
+    return 'hover:bg-slate-900/80';
+  };
+
   const labelList = hmeEmails.map((hme, idx) => {
     const isSelected = idx === selectedIndex;
     const isBulkSelected = checkedIds.has(hme.anonymousId);
-    const rowStateClass = isBulkSelected
-      ? `${rowBulkSelectedClass} ${isSelected ? rowBulkActiveClass : ''}`
-      : isSelected
-        ? isMultiSelectMode
-          ? rowActiveClass
-          : rowSelectedClass
-        : 'hover:bg-slate-900/80';
+    const rowStateClass = getRowStateClass(isBulkSelected, isSelected);
     return (
       <div
         key={hme.anonymousId}
@@ -1481,26 +1485,7 @@ const HmeListView = ({
               </div>
             </div>
             <div className="grid gap-2">
-              {!confirmingBulkDelete ? (
-                <>
-                  <button
-                    type="button"
-                    disabled={isBulkProcessing}
-                    onClick={handleBulkDeactivate}
-                    className="w-full rounded-lg bg-amber-600/80 px-2 py-1.5 text-xs font-semibold text-white hover:bg-amber-500 disabled:opacity-50"
-                  >
-                    Deactivate selected
-                  </button>
-                  <button
-                    type="button"
-                    disabled={isBulkProcessing}
-                    onClick={() => setConfirmingBulkDelete(true)}
-                    className="w-full rounded-lg bg-red-600/80 px-2 py-1.5 text-xs font-semibold text-white hover:bg-red-500 disabled:opacity-50"
-                  >
-                    Delete selected
-                  </button>
-                </>
-              ) : (
+              {confirmingBulkDelete ? (
                 <>
                   <span className="text-xs font-medium text-red-300">
                     Delete {checkedIds.size} alias
@@ -1523,6 +1508,25 @@ const HmeListView = ({
                     Cancel
                   </button>
                 </>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    disabled={isBulkProcessing}
+                    onClick={handleBulkDeactivate}
+                    className="w-full rounded-lg bg-amber-600/80 px-2 py-1.5 text-xs font-semibold text-white hover:bg-amber-500 disabled:opacity-50"
+                  >
+                    Deactivate selected
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isBulkProcessing}
+                    onClick={() => setConfirmingBulkDelete(true)}
+                    className="w-full rounded-lg bg-red-600/80 px-2 py-1.5 text-xs font-semibold text-white hover:bg-red-500 disabled:opacity-50"
+                  >
+                    Delete selected
+                  </button>
+                </>
               )}
             </div>
           </div>
@@ -1531,7 +1535,7 @@ const HmeListView = ({
           ref={listContainerRef}
           onKeyDown={handleKeyDown}
           className="min-h-0 flex-1 overflow-y-auto focus:outline-none"
-          role="listbox"
+          role="tree"
           tabIndex={0}
           aria-label="Hide My Email aliases"
           aria-multiselectable={isMultiSelectMode}
