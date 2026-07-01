@@ -1070,7 +1070,7 @@ const HmeListView = ({
   const [isBulkProcessing, setIsBulkProcessing] = useState(false);
   const [rangeAnchorIndex, setRangeAnchorIndex] = useState(selectedIndex);
 
-  const [sortBy, setSortByState] = useState<SortBy>(() => {
+  const [sortBy, setSortBy] = useState<SortBy>(() => {
     const saved = sessionStorage.getItem('hme_sort_by');
     if (
       saved === 'newest' ||
@@ -1083,9 +1083,9 @@ const HmeListView = ({
     return 'newest';
   });
 
-  const setSortBy = useCallback(
+  const handleSortByChange = useCallback(
     (newSortBy: SortBy) => {
-      setSortByState(newSortBy);
+      setSortBy(newSortBy);
       sessionStorage.setItem('hme_sort_by', newSortBy);
       onSelectIndex(0);
     },
@@ -1459,7 +1459,7 @@ const HmeListView = ({
           searchPrompt={searchPrompt}
           onSearchPromptChange={onSearchPromptChange}
           sortBy={sortBy}
-          onSortByChange={setSortBy}
+          onSortByChange={handleSortByChange}
           onExportClick={handleExportCsv}
         />
         {checkedIds.size > 0 && (
@@ -1885,7 +1885,7 @@ const Popup = () => {
   const [mockPremiumMailSettings] = useState<HmeService>(
     () => new MockPremiumMailSettings()
   );
-  const shouldRenderSignedOutForMissingClientState =
+  const shouldRenderSignedOut =
     !mockMode &&
     clientState === undefined &&
     (state === PopupState.Authenticated ||
@@ -1919,15 +1919,16 @@ const Popup = () => {
   ]);
 
   useEffect(() => {
-    if (shouldRenderSignedOutForMissingClientState) {
+    if (shouldRenderSignedOut) {
       setState(PopupState.SignedOut);
     }
-  }, [setState, shouldRenderSignedOutForMissingClientState]);
+  }, [setState, shouldRenderSignedOut]);
 
   const isLoading =
     isStateLoading ||
     isMockModeLoading ||
     (!mockMode && !clientAuthStateSynced);
+  const nextState = shouldRenderSignedOut ? PopupState.SignedOut : state;
 
   return (
     <div className="flex items-start justify-center px-4 py-4 text-slate-100">
@@ -1936,9 +1937,7 @@ const Popup = () => {
           <Spinner />
         ) : (
           transitionToNextStateElement(
-            shouldRenderSignedOutForMissingClientState
-              ? PopupState.SignedOut
-              : state,
+            nextState,
             setState,
             clientState,
             setClientState,
