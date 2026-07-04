@@ -78,7 +78,7 @@
     "typescript": "^6.0.3",
     "vitest": "^4.0.7",
     "web-ext": "^10.4.0",
-    "wxt": "^0.20.26"
+    "wxt": "^0.20.27"
   },
   "overrides": {
     "shell-quote": ">=1.8.4",
