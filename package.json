@@ -68,7 +68,7 @@
     "@vitest/coverage-v8": "^4.1.6",
     "happy-dom": "^20.9.0",
     "jsdom": "^28.1.0",
-    "license-checker-rseidelsohn": "^4.4.2",
+    "license-checker-rseidelsohn": "^5.0.1",
     "postcss": "^8.5.14",
     "prettier": "^3.8.1",
     "publish-browser-extension": "^4.0.5",
