@@ -1,17 +1,31 @@
 @import url("https://fonts.googleapis.com/css2?family=Crimson+Text&display=swap");
 @import "tailwindcss";
 
+/* The browser sizes the popup window to the document, so the document must never
+   be sized from the viewport. `min-height: 100vh` here would make the content at
+   least as tall as the popup, which both ratchets the popup to its largest
+   previous state and feeds the popup's height back into its own content height. */
 html,
 body {
   width: 740px;
-  min-height: 100vh;
-  height: fit-content;
   margin: 0;
   padding: 0;
   box-sizing: border-box;
   font-family:
     "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", sans-serif;
+  color: #e2e8f0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* The gradient lives on html only, because the root background propagates to the
+   canvas and so always covers the viewport. Repeating it on body would paint a
+   second gradient sized to body's own box, seaming where body ends.
+   `fixed` makes the viewport the positioning area: without it the gradient is
+   sized to html's content box and tiles below it, which seams the same way now
+   that the document is no longer stretched to 100vh. */
+html {
   background:
     radial-gradient(circle at 5% 20%, rgba(236, 72, 153, 0.22), transparent 48%),
     radial-gradient(circle at 90% 10%, rgba(37, 99, 235, 0.18), transparent 50%),
@@ -21,9 +35,8 @@ body {
       transparent 55%
     ),
     #020617;
-  color: #e2e8f0;
-  overflow-x: hidden;
-  overflow-y: auto;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
 }
 
 #app-container {

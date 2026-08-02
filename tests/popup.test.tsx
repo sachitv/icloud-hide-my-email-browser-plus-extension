@@ -1610,6 +1610,84 @@ describe('Popup UI', () => {
   });
 
   // ──────────────────────────────────────────────────────────────────────────
+  // Popup sizing
+  //
+  // These assert the wiring only. The heights themselves live in Popup.css and
+  // happy-dom does not apply it, so the numbers — and the fact that they do not
+  // depend on the viewport — are covered by tests/e2e/extension.test.ts.
+  // ──────────────────────────────────────────────────────────────────────────
+
+  it('sizes the alias panel for a popup without the demo banner', async () => {
+    popupStateValue = PopupState.AuthenticatedAndManaging;
+    clientStateValue = createClientStateTestData();
+    listHmeMock.mockResolvedValue({
+      hmeEmails: [createHmeEmailTestData({ label: 'Alpha' })],
+      forwardToEmails: [],
+      selectedForwardTo: 'forward@example.com',
+    });
+
+    render(<Popup />);
+
+    const tree = await screen.findByRole('tree', {
+      name: 'Hide My Email aliases',
+    });
+    const panel = tree.closest('.popup-list-panel');
+
+    expect(panel).not.toBeNull();
+    expect(panel).not.toHaveClass('popup-list-panel--with-demo-banner');
+  });
+
+  it('shortens the alias panel when the demo banner takes popup height', async () => {
+    useBrowserStorageStateMock.mockImplementation((key: string) => {
+      if (key === 'popupState')
+        return [
+          PopupState.AuthenticatedAndManaging,
+          popupStateSetterMock,
+          false,
+        ];
+      if (key === 'clientState')
+        return [undefined, clientStateSetterMock, false];
+      if (key === 'mockMode') return [true, vi.fn(), false];
+      if (key === 'cachedHmeList')
+        return [undefined, cachedHmeListSetterMock, false];
+      throw new Error(`Unexpected key: ${key}`);
+    });
+
+    listHmeMock.mockResolvedValue({
+      hmeEmails: [createHmeEmailTestData({ label: 'Alpha' })],
+      forwardToEmails: [],
+      selectedForwardTo: 'forward@example.com',
+    });
+
+    render(<Popup />);
+
+    await screen.findByRole('status', { name: /demo mode active/i });
+    const tree = await screen.findByRole('tree', {
+      name: 'Hide My Email aliases',
+    });
+
+    expect(tree.closest('.popup-list-panel')).toHaveClass(
+      'popup-list-panel--with-demo-banner'
+    );
+  });
+
+  it('renders no alias panel while popup state is still loading', () => {
+    popupStateValue = PopupState.AuthenticatedAndManaging;
+    clientStateValue = createClientStateTestData();
+    popupStateLoading = true;
+
+    render(<Popup />);
+
+    // The popup must open at spinner size and grow once loading resolves,
+    // rather than reserving the manager's height up front.
+    expect(document.querySelector('svg.animate-spin')).not.toBeNull();
+    expect(
+      screen.queryByRole('tree', { name: 'Hide My Email aliases' })
+    ).not.toBeInTheDocument();
+    expect(document.querySelector('.popup-list-panel')).toBeNull();
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
   // Quick-copy alias from sidebar
   // ──────────────────────────────────────────────────────────────────────────
 

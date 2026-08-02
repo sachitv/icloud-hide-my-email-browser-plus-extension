@@ -19,3 +19,26 @@ input[type="search"]:focus::-webkit-search-cancel-button {
 input[type="search"].dark::-webkit-search-cancel-button {
   filter: invert(1);
 }
+
+/* The alias panel's height must be a constant.
+   A browser-action popup sizes itself to its content, so a panel height derived
+   from `100vh` is circular: the panel sets the content height, the content sets
+   the popup height, and the popup height is what `100vh` reports. Each layout
+   pass then resolves to `previous height - reserved + actual chrome`, which only
+   holds still if the reserved figure matches the real chrome exactly. Reserve
+   too much and the popup shrinks a little every pass until the panel is gone —
+   that is the squashed manager. Reserve too little and it climbs to the 600px
+   cap and pushes the footer off the bottom.
+
+   So: measure the chrome and hardcode the panel. Chrome around the panel is
+   163px (page padding, the active/inactive count row, the footer buttons),
+   leaving 437px of the 600px cap; 400px keeps 37px of slack. The demo banner
+   costs 75px more — its own box, plus the larger padding TitledComponent gives
+   a child that is no longer first — leaving 362px, so that variant takes 350px. */
+.popup-list-panel {
+  height: 400px;
+}
+
+.popup-list-panel--with-demo-banner {
+  height: 350px;
+}

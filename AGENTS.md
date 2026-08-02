@@ -42,7 +42,8 @@ Run all commands from the repository root.
 - Firefox dev: `npm run start:firefox` launches MV2 tooling; confirm MV3 behaviour with a production build before shipping.
 - Production builds: `npm run build` (Brave default), or `npm run build:brave`, `npm run build:chrome`, `npm run build:edge`, `npm run build:firefox`.
 - Packaging: `npm run package[:browser]` outputs store-ready ZIPs; `npm run package:sources` zips source bundle.
-- Tests: `npm run test` executes the Vitest suite with JSDOM.
+- Tests: `npm run test` executes the Vitest suite with JSDOM; `npm run test:e2e` builds a demo-mode bundle and runs Playwright against it.
+- Demo mode (Options → Developer) is development-only. It is compiled out of every production build via `__DEMO_MODE_AVAILABLE__`, so it exists only in `wxt dev` and in `npm run build:e2e` (which outputs to `build/chrome-mv3-e2e`). `npm run check:release-build -- <dir>` asserts a release artifact is free of it, and CI runs that against every packaged bundle.
 - Linting/formatting: `npm run lint` (Biome with auto-fix), `npm run lint:check` (no writes), `npm run biome:format` / `npm run biome:format:check`, `npm run prettier[:check]` for Markdown/SCSS.
 - Licenses: `npm run check:licenses` (validate), `npm run report:licenses` (regenerate `ATTRIBUTIONS.md`).
 

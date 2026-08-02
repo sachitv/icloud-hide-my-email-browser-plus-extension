@@ -8,10 +8,16 @@ export const test = base.extend<{
   extensionId: string;
 }>({
   context: async ({}, runTestWithContext) => {
-    const pathToExtension = path.resolve(__dirname, '../../build/chrome-mv3');
+    // Deliberately not build/chrome-mv3: these tests drive the UI through demo
+    // mode, which is compiled out of release builds. `--mode e2e` gives its own
+    // output directory, so a release build can never be picked up by accident.
+    const pathToExtension = path.resolve(
+      __dirname,
+      '../../build/chrome-mv3-e2e'
+    );
     if (!fs.existsSync(pathToExtension)) {
       throw new Error(
-        `Extension build not found at ${pathToExtension}. Run 'npm run build:chrome' first.`
+        `Demo-mode build not found at ${pathToExtension}. Run 'npm run build:e2e' first.`
       );
     }
     const userDataDir = fs.mkdtempSync(
@@ -43,3 +49,4 @@ export const test = base.extend<{
 });
 
 export { expect } from '@playwright/test';
+export type { Page } from '@playwright/test';

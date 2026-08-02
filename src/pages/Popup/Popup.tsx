@@ -548,7 +548,7 @@ const HmeGenerator = (props: {
   return (
     <TitledComponent hideHeader>
       <div className="space-y-5">
-        {props.mockMode && <MockModeBanner />}
+        {__DEMO_MODE_AVAILABLE__ && props.mockMode && <MockModeBanner />}
         {existingAliasesForDomain.length > 0 && !dismissedDomainWarning && (
           <div
             className="space-y-2 rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-100"
@@ -611,6 +611,7 @@ const HmeGenerator = (props: {
             </button>
             <span
               title={hmeEmail}
+              data-testid="generated-email"
               className="min-w-0 flex-1 whitespace-nowrap text-left font-mono leading-tight"
               style={{ fontSize: generatedEmailFontSize }}
             >
@@ -964,6 +965,8 @@ type HmeListViewProps = {
   ) => (label: string, note: string) => void;
   onBulkDeactivate: (ids: string[]) => void;
   onBulkDelete: (ids: string[]) => void;
+  /** The demo banner eats into the popup's 600px height budget. See Popup.css. */
+  showsDemoBanner: boolean;
 };
 
 const SearchBar = ({
@@ -1063,6 +1066,7 @@ const HmeListView = ({
   editCallbackFactory,
   onBulkDeactivate,
   onBulkDelete,
+  showsDemoBanner,
 }: HmeListViewProps) => {
   const [copiedId, setCopiedId] = useState<string>();
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
@@ -1453,7 +1457,11 @@ const HmeListView = ({
   );
 
   return (
-    <div className="flex h-[min(450px,calc(100vh-170px))] min-h-0 overflow-hidden rounded-3xl border border-slate-800/80 bg-slate-950/50 shadow-inner shadow-slate-900/50">
+    <div
+      className={`popup-list-panel ${
+        showsDemoBanner ? 'popup-list-panel--with-demo-banner' : ''
+      } flex min-h-0 overflow-hidden rounded-3xl border border-slate-800/80 bg-slate-950/50 shadow-inner shadow-slate-900/50`}
+    >
       <div className="flex min-h-0 w-[30%] min-w-[220px] max-w-[30%] shrink-0 flex-col overflow-hidden rounded-l-3xl bg-slate-950/70">
         <SearchBar
           searchPrompt={searchPrompt}
@@ -1543,7 +1551,9 @@ const HmeListView = ({
           {hmeEmails.length === 0 && searchPrompt ? noSearchResult : labelList}
         </div>
       </div>
-      <div className="min-h-0 basis-[70%] grow overflow-hidden rounded-r-3xl border-l border-slate-800/60 bg-slate-950/80 p-3">
+      {/* Scrolls rather than clips: the panel is a fixed height, so at large font
+          sizes or with a long note the detail actions must stay reachable. */}
+      <div className="min-h-0 basis-[70%] grow overflow-x-hidden overflow-y-auto rounded-r-3xl border-l border-slate-800/60 bg-slate-950/80 p-3">
         {selectedHmeEmail && (
           <HmeDetails
             pms={pms}
@@ -1735,6 +1745,7 @@ const HmeManager = (props: {
           editCallbackFactory={editCallbackFactory}
           onBulkDeactivate={handleBulkDeactivate}
           onBulkDelete={handleBulkDelete}
+          showsDemoBanner={props.mockMode}
         />
       </div>
     );
@@ -1742,7 +1753,7 @@ const HmeManager = (props: {
 
   return (
     <TitledComponent hideHeader>
-      {props.mockMode && <MockModeBanner />}
+      {__DEMO_MODE_AVAILABLE__ && props.mockMode && <MockModeBanner />}
       {renderMainContent()}
       <div className="grid grid-cols-2 pt-3">
         <div>
@@ -1779,7 +1790,7 @@ const transitionToNextStateElement = (
   clientState: Store['clientState'],
   setClientState: Dispatch<Store['clientState']>,
   mockMode: boolean,
-  mockPremiumMailSettings: HmeService
+  mockPremiumMailSettings: HmeService | null
 ): ReactElement => {
   switch (state) {
     case PopupState.SignedOut: {
@@ -1789,7 +1800,7 @@ const transitionToNextStateElement = (
     case PopupState.Authenticated: {
       const callback = (action: AuthenticatedAction) =>
         setState(STATE_MACHINE_TRANSITIONS[state][action]);
-      if (mockMode) {
+      if (mockMode && mockPremiumMailSettings) {
         return (
           <HmeGenerator
             callback={callback}
@@ -1815,7 +1826,7 @@ const transitionToNextStateElement = (
     case PopupState.AuthenticatedAndManaging: {
       const callback = (action: AuthenticatedAndManagingAction) =>
         setState(STATE_MACHINE_TRANSITIONS[state][action]);
-      if (mockMode) {
+      if (mockMode && mockPremiumMailSettings) {
         return (
           <HmeManager
             callback={callback}
@@ -1878,12 +1889,21 @@ const Popup = () => {
     useBrowserStorageState('clientState', undefined);
   const [clientAuthStateSynced, setClientAuthStateSynced] = useState(false);
 
-  const [mockMode, , isMockModeLoading] = useBrowserStorageState(
+  const [storedMockMode, , isMockModeLoading] = useBrowserStorageState(
     'mockMode',
     DEFAULT_STORE.mockMode
   );
-  const [mockPremiumMailSettings] = useState<HmeService>(
-    () => new MockPremiumMailSettings()
+
+  // A release build ignores whatever a development build left in storage.
+  const mockMode = __DEMO_MODE_AVAILABLE__ && storedMockMode === true;
+
+  // __DEMO_MODE_AVAILABLE__ is substituted at build time, so only one arm of
+  // this survives into any given bundle and the other is unreachable from unit
+  // tests. The release arm is covered by utils/checkReleaseBuild.mjs, which
+  // asserts mockClient.ts is absent from the shipped artifact.
+  /* v8 ignore next */
+  const [mockPremiumMailSettings] = useState<HmeService | null>(() =>
+    __DEMO_MODE_AVAILABLE__ ? new MockPremiumMailSettings() : null
   );
   const shouldRenderSignedOut =
     !mockMode &&
@@ -1941,7 +1961,7 @@ const Popup = () => {
             setState,
             clientState,
             setClientState,
-            /* v8 ignore next */ mockMode ?? false,
+            mockMode,
             mockPremiumMailSettings
           )
         )}

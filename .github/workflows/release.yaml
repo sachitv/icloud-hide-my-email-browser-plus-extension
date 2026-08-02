@@ -52,6 +52,8 @@ jobs:
         run: npm ci
       - name: Package extension for Brave
         run: npm run package:brave
+      - name: Assert demo mode is absent from the Brave release build
+        run: npm run check:release-build -- build/brave-mv3
       - name: Upload Brave artifact
         uses: actions/upload-artifact@v7
         with:
@@ -76,6 +78,8 @@ jobs:
         run: npm ci
       - name: Package extension for Chrome
         run: npm run package:chrome
+      - name: Assert demo mode is absent from the Chrome release build
+        run: npm run check:release-build -- build/chrome-mv3
       - name: Upload Chrome artifact
         uses: actions/upload-artifact@v7
         with:
@@ -100,6 +104,8 @@ jobs:
         run: npm ci
       - name: Package extension for Edge
         run: npm run package:edge
+      - name: Assert demo mode is absent from the Edge release build
+        run: npm run check:release-build -- build/edge-mv3
       - name: Upload Edge artifact
         uses: actions/upload-artifact@v7
         with:
@@ -124,6 +130,8 @@ jobs:
         run: npm ci
       - name: Package extension for Firefox
         run: npm run package:firefox
+      - name: Assert demo mode is absent from the Firefox release build
+        run: npm run check:release-build -- build/firefox-mv3
       - name: Lint Firefox package
         run: npx web-ext lint --source-dir build/firefox-mv3
       - name: Upload Firefox artifact
