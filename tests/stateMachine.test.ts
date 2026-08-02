@@ -50,17 +50,16 @@ describe('STATE_MACHINE_TRANSITIONS', () => {
     },
   ];
 
-  it.each(allTransitions)('$fromLabel + $action => $expectedLabel', ({
-    fromState,
-    action,
-    expectedState,
-  }) => {
-    const transitions = STATE_MACHINE_TRANSITIONS[fromState] as Record<
-      string,
-      PopupState
-    >;
-    expect(transitions[action]).toBe(expectedState);
-  });
+  it.each(allTransitions)(
+    '$fromLabel + $action => $expectedLabel',
+    ({ fromState, action, expectedState }) => {
+      const transitions = STATE_MACHINE_TRANSITIONS[fromState] as Record<
+        string,
+        PopupState
+      >;
+      expect(transitions[action]).toBe(expectedState);
+    }
+  );
 
   it('covers every state defined in the transition table', () => {
     const definedStates = Object.keys(STATE_MACHINE_TRANSITIONS).map(Number);
