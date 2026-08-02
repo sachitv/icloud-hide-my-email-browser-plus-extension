@@ -611,6 +611,7 @@ const HmeGenerator = (props: {
             </button>
             <span
               title={hmeEmail}
+              data-testid="generated-email"
               className="min-w-0 flex-1 whitespace-nowrap text-left font-mono leading-tight"
               style={{ fontSize: generatedEmailFontSize }}
             >
@@ -964,6 +965,8 @@ type HmeListViewProps = {
   ) => (label: string, note: string) => void;
   onBulkDeactivate: (ids: string[]) => void;
   onBulkDelete: (ids: string[]) => void;
+  /** The demo banner eats into the popup's 600px height budget. See Popup.css. */
+  showsDemoBanner: boolean;
 };
 
 const SearchBar = ({
@@ -1063,6 +1066,7 @@ const HmeListView = ({
   editCallbackFactory,
   onBulkDeactivate,
   onBulkDelete,
+  showsDemoBanner,
 }: HmeListViewProps) => {
   const [copiedId, setCopiedId] = useState<string>();
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
@@ -1453,7 +1457,11 @@ const HmeListView = ({
   );
 
   return (
-    <div className="flex h-[min(450px,calc(100vh-170px))] min-h-0 overflow-hidden rounded-3xl border border-slate-800/80 bg-slate-950/50 shadow-inner shadow-slate-900/50">
+    <div
+      className={`popup-list-panel ${
+        showsDemoBanner ? 'popup-list-panel--with-demo-banner' : ''
+      } flex min-h-0 overflow-hidden rounded-3xl border border-slate-800/80 bg-slate-950/50 shadow-inner shadow-slate-900/50`}
+    >
       <div className="flex min-h-0 w-[30%] min-w-[220px] max-w-[30%] shrink-0 flex-col overflow-hidden rounded-l-3xl bg-slate-950/70">
         <SearchBar
           searchPrompt={searchPrompt}
@@ -1543,7 +1551,9 @@ const HmeListView = ({
           {hmeEmails.length === 0 && searchPrompt ? noSearchResult : labelList}
         </div>
       </div>
-      <div className="min-h-0 basis-[70%] grow overflow-hidden rounded-r-3xl border-l border-slate-800/60 bg-slate-950/80 p-3">
+      {/* Scrolls rather than clips: the panel is a fixed height, so at large font
+          sizes or with a long note the detail actions must stay reachable. */}
+      <div className="min-h-0 basis-[70%] grow overflow-x-hidden overflow-y-auto rounded-r-3xl border-l border-slate-800/60 bg-slate-950/80 p-3">
         {selectedHmeEmail && (
           <HmeDetails
             pms={pms}
@@ -1735,6 +1745,7 @@ const HmeManager = (props: {
           editCallbackFactory={editCallbackFactory}
           onBulkDeactivate={handleBulkDeactivate}
           onBulkDelete={handleBulkDelete}
+          showsDemoBanner={props.mockMode}
         />
       </div>
     );
