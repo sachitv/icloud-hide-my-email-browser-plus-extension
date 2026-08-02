@@ -196,10 +196,13 @@ const AutofillForm = () => {
 };
 
 const Options = () => {
-  const [mockMode, setMockMode] = useBrowserStorageState(
+  const [storedMockMode, setMockMode] = useBrowserStorageState(
     'mockMode',
     DEFAULT_STORE.mockMode
   );
+
+  // A release build ignores whatever a development build left in storage.
+  const mockMode = __DEMO_MODE_AVAILABLE__ && storedMockMode === true;
 
   const [clientState, , isClientStateLoading] = useBrowserStorageState(
     'clientState',
@@ -211,7 +214,7 @@ const Options = () => {
 
   useEffect(() => {
     // In mock mode, skip auth entirely.
-    if (mockMode) {
+    if (__DEMO_MODE_AVAILABLE__ && mockMode) {
       setPms(new MockPremiumMailSettings());
       return;
     }
@@ -246,7 +249,7 @@ const Options = () => {
     <div className="min-h-screen px-4 py-10 text-slate-100">
       <div className="mx-auto flex max-w-3xl flex-col gap-10">
         <TitledComponent title="Control Center" subtitle="Tune your experience">
-          {mockMode && (
+          {__DEMO_MODE_AVAILABLE__ && mockMode && (
             <output
               aria-label="Demo mode active"
               className="flex items-center justify-center rounded-2xl border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-300"
@@ -268,30 +271,32 @@ const Options = () => {
             <h3 className="text-lg font-semibold text-white">Autofill</h3>
             <AutofillForm />
           </div>
-          <div className="space-y-3">
-            <h3 className="text-lg font-semibold text-white">Developer</h3>
-            <p className="text-sm leading-relaxed text-slate-400">
-              Enable Demo mode to explore the extension with realistic fake data
-              — no iCloud sign-in required. Useful for testing and UI
-              development.
-            </p>
-            <div className="flex items-center gap-3 rounded-2xl border border-slate-800/60 bg-slate-950/50 px-4 py-3 shadow-inner shadow-slate-900/25">
-              <input
-                onChange={() => setMockMode(!mockMode)}
-                checked={!!mockMode}
-                id="checkbox-mock-mode"
-                type="checkbox"
-                name="checkbox-mock-mode"
-                className="h-4 w-4 cursor-pointer accent-rainbow-green"
-              />
-              <label
-                htmlFor="checkbox-mock-mode"
-                className="cursor-pointer text-sm font-medium text-slate-100"
-              >
-                Demo mode
-              </label>
+          {__DEMO_MODE_AVAILABLE__ && (
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold text-white">Developer</h3>
+              <p className="text-sm leading-relaxed text-slate-400">
+                Enable Demo mode to explore the extension with realistic fake
+                data — no iCloud sign-in required. Useful for testing and UI
+                development.
+              </p>
+              <div className="flex items-center gap-3 rounded-2xl border border-slate-800/60 bg-slate-950/50 px-4 py-3 shadow-inner shadow-slate-900/25">
+                <input
+                  onChange={() => setMockMode(!mockMode)}
+                  checked={mockMode}
+                  id="checkbox-mock-mode"
+                  type="checkbox"
+                  name="checkbox-mock-mode"
+                  className="h-4 w-4 cursor-pointer accent-rainbow-green"
+                />
+                <label
+                  htmlFor="checkbox-mock-mode"
+                  className="cursor-pointer text-sm font-medium text-slate-100"
+                >
+                  Demo mode
+                </label>
+              </div>
             </div>
-          </div>
+          )}
         </TitledComponent>
       </div>
     </div>

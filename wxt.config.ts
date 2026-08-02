@@ -115,6 +115,16 @@ const webExtConfig = Object.keys(browserBinaries).length
 
 export default defineConfig({
   modules: ['@wxt-dev/webextension-polyfill'],
+  // Demo mode is compiled in only for non-release builds. Replacing the flag at
+  // build time (rather than exporting a runtime constant) lets the bundler drop
+  // the demo UI and mockClient.ts from release output instead of shipping them
+  // unreachable. WXT gives every non-production mode its own output directory,
+  // so a demo-enabled build cannot be mistaken for a release artifact.
+  vite: (env) => ({
+    define: {
+      __DEMO_MODE_AVAILABLE__: JSON.stringify(env.mode !== 'production'),
+    },
+  }),
   root: '.',
   srcDir: '.',
   entrypointsDir: 'entrypoints',

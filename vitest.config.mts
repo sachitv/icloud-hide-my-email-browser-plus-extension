@@ -1,6 +1,12 @@
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
+  // Unit tests exercise the demo-mode paths, so the build-time flag is on.
+  // Its release-build value is covered by asserting on the built artifact
+  // instead — see the "release build" checks in tests/demoMode.test.ts.
+  define: {
+    __DEMO_MODE_AVAILABLE__: 'true',
+  },
   test: {
     environment: 'happy-dom',
     include: ['tests/**/*.test.ts', 'tests/**/*.test.tsx'],

@@ -37,7 +37,10 @@ function makeMockEmail(
 // Seed data — realistic-looking aliases shown on first load
 // ---------------------------------------------------------------------------
 
-const SEED_EMAILS: HmeEmail[] = [
+// Built lazily rather than at module scope: makeMockEmail bumps a module-level
+// counter, and a top-level call to it is a side effect the bundler must keep,
+// which would pin this whole file into release builds that never use it.
+const createSeedEmails = (): HmeEmail[] => [
   makeMockEmail({
     anonymousId: 'seed-1',
     hme: 'sparkling.river.42@privaterelay.appleid.com',
@@ -124,7 +127,7 @@ function generateAlias(): string {
 // ---------------------------------------------------------------------------
 
 export class MockPremiumMailSettings implements HmeService {
-  private emails: HmeEmail[] = structuredClone(SEED_EMAILS);
+  private emails: HmeEmail[] = createSeedEmails();
   private readonly forwardToEmails = ['you@example.com', 'backup@example.com'];
   private selectedForwardTo = 'you@example.com';
 
