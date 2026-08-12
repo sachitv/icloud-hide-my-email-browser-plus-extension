@@ -626,7 +626,7 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [symbol-tree@3.2.4](https://github.com/jsdom/js-symbol-tree)                                                                 | MIT                                 |
 | [tailwindcss@4.3.3](https://github.com/tailwindlabs/tailwindcss)                                                             | MIT                                 |
 | [tapable@2.3.3](https://github.com/webpack/tapable)                                                                          | MIT                                 |
-| [tar@7.5.19](https://github.com/isaacs/node-tar)                                                                             | BlueOak-1.0.0                       |
+| [tar@7.5.22](https://github.com/isaacs/node-tar)                                                                             | BlueOak-1.0.0                       |
 | [tasuku@2.3.0](https://github.com/privatenumber/tasuku)                                                                      | MIT                                 |
 | [thread-stream@4.2.0](https://github.com/mcollina/thread-stream)                                                             | MIT                                 |
 | [through@2.3.8](https://github.com/dominictarr/through)                                                                      | MIT                                 |
