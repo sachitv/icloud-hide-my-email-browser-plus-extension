@@ -1,9 +1,9 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import Options from '../src/pages/Options/Options';
 import { DEFAULT_STORE } from '../src/storage';
-import React from 'react';
 import { createClientStateTestData } from './testUtils';
 
 type Store = Record<
@@ -157,13 +157,11 @@ describe('Options page UI', () => {
 
     render(<Options />);
 
-    await waitFor(() =>
-      expect(
-        screen.getByText(
-          /To select a new Forward-To address, you first need to sign in/i
-        )
-      ).toBeInTheDocument()
-    );
+    expect(
+      await screen.findByText(
+        /To select a new Forward-To address, you first need to sign in/i
+      )
+    ).toBeInTheDocument();
 
     expect(ICloudClientConstructorMock).not.toHaveBeenCalled();
     expect(listHmeMock).not.toHaveBeenCalled();
@@ -275,13 +273,11 @@ describe('Options page UI', () => {
 
     render(<Options />);
 
-    await waitFor(() =>
-      expect(
-        screen.getByText(
-          /To select a new Forward-To address, you first need to sign in/i
-        )
-      ).toBeInTheDocument()
-    );
+    expect(
+      await screen.findByText(
+        /To select a new Forward-To address, you first need to sign in/i
+      )
+    ).toBeInTheDocument();
   });
 
   // Ensures listHme exceptions bubble into surfaced errors.
@@ -305,9 +301,7 @@ describe('Options page UI', () => {
 
     render(<Options />);
 
-    await waitFor(() =>
-      expect(screen.getByText(/upstream error/i)).toBeInTheDocument()
-    );
+    expect(await screen.findByText(/upstream error/i)).toBeInTheDocument();
   });
 
   // Guard clause: submitting without a selection should show validation feedback.
@@ -338,11 +332,9 @@ describe('Options page UI', () => {
       await screen.findByRole('button', { name: /update forwarding/i })
     );
 
-    await waitFor(() =>
-      expect(
-        screen.getByText(/No Forward To address has been selected/i)
-      ).toBeInTheDocument()
-    );
+    expect(
+      await screen.findByText(/No Forward To address has been selected/i)
+    ).toBeInTheDocument();
     expect(updateForwardToHmeMock).not.toHaveBeenCalled();
   });
 
@@ -376,11 +368,9 @@ describe('Options page UI', () => {
     render(<Options />);
 
     // Form should be visible (no list error) once loading completes
-    await waitFor(() =>
-      expect(
-        screen.getByRole('button', { name: /update forwarding/i })
-      ).toBeInTheDocument()
-    );
+    expect(
+      await screen.findByRole('button', { name: /update forwarding/i })
+    ).toBeInTheDocument();
   });
 
   it('surfaces an error when the forwarding address fails to update', async () => {
@@ -412,9 +402,7 @@ describe('Options page UI', () => {
       await screen.findByRole('button', { name: /update forwarding/i })
     );
 
-    await waitFor(() =>
-      expect(screen.getByText(/update failed/i)).toBeInTheDocument()
-    );
+    expect(await screen.findByText(/update failed/i)).toBeInTheDocument();
   });
 
   it('skips real iCloud auth in mock mode and shows the forwarding list', async () => {
@@ -439,9 +427,7 @@ describe('Options page UI', () => {
 
     render(<Options />);
 
-    await waitFor(() =>
-      expect(screen.getByText(/you@example\.com/i)).toBeInTheDocument()
-    );
+    expect(await screen.findByText(/you@example\.com/i)).toBeInTheDocument();
     expect(isAuthenticatedMock).not.toHaveBeenCalled();
   });
 

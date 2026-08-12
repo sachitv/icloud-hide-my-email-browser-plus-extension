@@ -1,19 +1,19 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import browser from 'webextension-polyfill';
+import ICloudClient from '../src/iCloudClient';
+import { MessageType } from '../src/messages';
 import {
-  setupAuthSync,
   constructClient,
   performAuthSideEffects,
   performDeauthSideEffects,
+  setupAuthSync,
 } from '../src/pages/Background/authSync';
 import {
-  setupContextMenuListeners,
   setupContextMenu,
+  setupContextMenuListeners,
 } from '../src/pages/Background/contextMenu';
-import { setupMessageHandlers } from '../src/pages/Background/messageHandlers';
 import { setupLifecycle } from '../src/pages/Background/lifecycle';
-import { MessageType } from '../src/messages';
-import ICloudClient from '../src/iCloudClient';
+import { setupMessageHandlers } from '../src/pages/Background/messageHandlers';
 
 const { browserMocks, listeners, mockICloudClientClasses } = vi.hoisted(() => {
   const mockIsAuthenticated = vi.fn().mockResolvedValue(true);
@@ -510,35 +510,31 @@ describe('Background Script Refactored Modules', () => {
       expect(browserMocks.tabs.create).not.toHaveBeenCalled();
     });
 
-    it('performs auth side effects on install when client is authenticated', async () => {
-      browserMocks.storage.local.get.mockResolvedValue({});
-      mockIsAuthenticated.mockResolvedValue(true);
-      setupLifecycle();
-      const authListener = listeners.runtimeInstalled[0];
-      await authListener({
+    it.each([
+      {
+        title:
+          'performs auth side effects on install when client is authenticated',
         reason: 'install',
-      } as browser.Runtime.OnInstalledDetailsType);
-      expect(browserMocks.storage.local.set).toHaveBeenCalled();
-    });
-
-    it('performs deauth side effects on install when client is not authenticated', async () => {
-      browserMocks.storage.local.get.mockResolvedValue({});
-      mockIsAuthenticated.mockResolvedValue(false);
-      setupLifecycle();
-      const authListener = listeners.runtimeInstalled[0];
-      await authListener({
+        isAuthenticated: true,
+      },
+      {
+        title:
+          'performs deauth side effects on install when client is not authenticated',
         reason: 'install',
-      } as browser.Runtime.OnInstalledDetailsType);
-      expect(browserMocks.storage.local.set).toHaveBeenCalled();
-    });
-
-    it('performs auth side effects on update', async () => {
-      browserMocks.storage.local.get.mockResolvedValue({});
-      mockIsAuthenticated.mockResolvedValue(true);
-      setupLifecycle();
-      const authListener = listeners.runtimeInstalled[0];
-      await authListener({
+        isAuthenticated: false,
+      },
+      {
+        title: 'performs auth side effects on update',
         reason: 'update',
+        isAuthenticated: true,
+      },
+    ] as const)('$title', async ({ reason, isAuthenticated }) => {
+      browserMocks.storage.local.get.mockResolvedValue({});
+      mockIsAuthenticated.mockResolvedValue(isAuthenticated);
+      setupLifecycle();
+      const authListener = listeners.runtimeInstalled[0];
+      await authListener({
+        reason,
       } as browser.Runtime.OnInstalledDetailsType);
       expect(browserMocks.storage.local.set).toHaveBeenCalled();
     });
