@@ -1,14 +1,14 @@
-import {
-  ActiveInputElementWriteData,
-  GenerationResponseData,
-  Message,
-  MessageType,
-  ReservationRequestData,
-} from '../../messages';
 import { v4 as uuidv4 } from 'uuid';
 import browser from 'webextension-polyfill';
-import { getBrowserStorageValue } from '../../storage';
 import { LOADING_COPY, SIGNED_OUT_CTA_COPY } from '../../constants';
+import {
+  type ActiveInputElementWriteData,
+  type GenerationResponseData,
+  type Message,
+  MessageType,
+  type ReservationRequestData,
+} from '../../messages';
+import { getBrowserStorageValue } from '../../storage';
 
 const EMAIL_INPUT_QUERY_STRING =
   'input[type="email"], input[name="email"], input[id="email"], input[autocomplete~="email" i]';
