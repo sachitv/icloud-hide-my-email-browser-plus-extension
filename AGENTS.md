@@ -4,7 +4,7 @@
 
 - **Purpose:** Cross-browser extension that surfaces iCloud Hide My Email workflows across Chromium-based browsers and Firefox.
 - **Core UX:** Background service worker coordinates with iCloud, content scripts augment email inputs, popup/options React apps manage aliases and settings.
-- **Primary Dependencies:** TypeScript 5, React 19, Tailwind CSS 4, WXT 0.20, `webextension-polyfill`, Fuse.js for search, `uuid` for alias identifiers.
+- **Primary Dependencies:** TypeScript 5, React 19, Tailwind CSS 4, Vite 8, WXT 0.21, `webextension-polyfill`, Fuse.js for search, `uuid` for alias identifiers.
 
 ## Repository Layout
 
