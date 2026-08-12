@@ -167,7 +167,7 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [addons-linter@10.8.0](https://github.com/mozilla/addons-linter)                                                             | MPL-2.0                             |
 | [addons-moz-compare@1.3.0](https://github.com/mozilla/addons-moz-compare)                                                    | MPL-2.0                             |
 | [addons-scanner-utils@15.4.0](https://github.com/mozilla/addons-scanner-utils)                                               | MPL-2.0                             |
-| [adm-zip@0.5.17](https://github.com/cthackers/adm-zip)                                                                       | MIT                                 |
+| [adm-zip@0.6.0](https://github.com/cthackers/adm-zip)                                                                        | MIT                                 |
 | [agent-base@7.1.4](https://github.com/TooTallNate/proxy-agents)                                                              | MIT                                 |
 | [ajv@6.15.0](https://github.com/ajv-validator/ajv)                                                                           | MIT                                 |
 | [ajv@8.20.0](https://github.com/ajv-validator/ajv)                                                                           | MIT                                 |
@@ -501,7 +501,7 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [ms@2.1.3](https://github.com/vercel/ms)                                                                                     | MIT                                 |
 | [multimatch@6.0.0](https://github.com/sindresorhus/multimatch)                                                               | MIT                                 |
 | [nano-spawn@2.1.0](https://github.com/sindresorhus/nano-spawn)                                                               | MIT                                 |
-| [nanoid@3.3.16](https://github.com/ai/nanoid)                                                                                | MIT                                 |
+| [nanoid@3.3.17](https://github.com/ai/nanoid)                                                                                | MIT                                 |
 | [nanospinner@1.2.2](https://github.com/usmanyunusov/nanospinner)                                                             | MIT                                 |
 | [natural-compare@1.4.0](https://github.com/litejs/natural-compare-lite)                                                      | MIT                                 |
 | [negotiator@1.0.0](https://github.com/jshttp/negotiator)                                                                     | MIT                                 |
@@ -627,7 +627,7 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [setimmediate@1.0.5](https://github.com/YuzuJS/setImmediate)                                                                 | MIT                                 |
 | [shebang-command@2.0.0](https://github.com/kevva/shebang-command)                                                            | MIT                                 |
 | [shebang-regex@3.0.0](https://github.com/sindresorhus/shebang-regex)                                                         | MIT                                 |
-| [shell-quote@1.8.4](https://github.com/ljharb/shell-quote)                                                                   | MIT                                 |
+| [shell-quote@1.9.0](https://github.com/ljharb/shell-quote)                                                                   | MIT                                 |
 | [shellwords@0.1.1](https://github.com/jimmycuadra/shellwords)                                                                | MIT                                 |
 | [siginfo@2.0.0](https://github.com/emilbayes/siginfo)                                                                        | ISC                                 |
 | [signal-exit@4.1.0](https://github.com/tapjs/signal-exit)                                                                    | ISC                                 |
