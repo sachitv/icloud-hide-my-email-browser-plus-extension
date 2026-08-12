@@ -557,9 +557,7 @@ const HmeGenerator = (props: {
               <div className="flex items-center gap-2 font-semibold text-amber-200">
                 <WarningIcon className="h-4 w-4 shrink-0" />
                 Existing{' '}
-                {existingAliasesForDomain.length === 1
-                  ? 'alias'
-                  : 'aliases'}{' '}
+                {existingAliasesForDomain.length === 1 ? 'alias' : 'aliases'}{' '}
                 for this site
               </div>
               <button
