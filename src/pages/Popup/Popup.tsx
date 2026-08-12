@@ -1,66 +1,65 @@
 import React, {
-  useState,
-  Dispatch,
-  useEffect,
   ButtonHTMLAttributes,
   DetailedHTMLProps,
-  ReactNode,
+  Dispatch,
   ReactElement,
-  useMemo,
+  ReactNode,
   useCallback,
+  useEffect,
+  useMemo,
   useRef,
+  useState,
 } from 'react';
 import ICloudClient, {
-  PremiumMailSettings,
   HmeEmail,
   type HmeService,
+  PremiumMailSettings,
 } from '../../iCloudClient';
 import { MockPremiumMailSettings } from '../../mockClient';
 import './Popup.css';
-import { useBrowserStorageState } from '../../hooks';
-import type { IconProps } from '../../icons';
-import {
-  RefreshIcon,
-  ClipboardIcon,
-  CheckIcon,
-  ListIcon,
-  SignOutIcon,
-  PlusIcon,
-  TrashIcon,
-  BanIcon,
-  SearchIcon,
-  InfoCircleIcon,
-  ExternalLinkIcon,
-  QuestionCircleIcon,
-  FirefoxIcon,
-  EditIcon,
-  XIcon,
-  WarningIcon,
-  SpinnerIcon,
-} from '../../icons';
-import { MessageType, sendMessageToTab } from '../../messages';
+import Fuse from 'fuse.js';
+import browser from 'webextension-polyfill';
+import { isFirefox } from '../../browserUtils';
 import {
   ErrorMessage,
+  Link,
   LoadingButton,
   Spinner,
   TitledComponent,
-  Link,
 } from '../../commonComponents';
-import { Store, DEFAULT_STORE } from '../../storage';
-
-import browser from 'webextension-polyfill';
-import Fuse from 'fuse.js';
+import { useBrowserStorageState } from '../../hooks';
+import type { IconProps } from '../../icons';
+import {
+  BanIcon,
+  CheckIcon,
+  ClipboardIcon,
+  EditIcon,
+  ExternalLinkIcon,
+  FirefoxIcon,
+  InfoCircleIcon,
+  ListIcon,
+  PlusIcon,
+  QuestionCircleIcon,
+  RefreshIcon,
+  SearchIcon,
+  SignOutIcon,
+  SpinnerIcon,
+  TrashIcon,
+  WarningIcon,
+  XIcon,
+} from '../../icons';
+import { MessageType, sendMessageToTab } from '../../messages';
+import { DEFAULT_STORE, Store } from '../../storage';
 import { deepEqual } from '../../utils/deepEqual';
 import { formatError } from '../../utils/formatError';
+import { performDeauthSideEffects } from '../Background/authSync';
 import {
+  AuthenticatedAction,
+  AuthenticatedAndManagingAction,
   PopupAction,
   PopupState,
-  AuthenticatedAction,
   STATE_MACHINE_TRANSITIONS,
-  AuthenticatedAndManagingAction,
 } from './stateMachine';
-import { isFirefox } from '../../browserUtils';
-import { performDeauthSideEffects } from '../Background/authSync';
 
 type TransitionCallback<T extends PopupAction> = (action: T) => void;
 
@@ -258,7 +257,7 @@ const FooterButton = (
     .join(' ');
   const Icon = icon;
   return (
-    <button className={composedClassName} {...rest}>
+    <button type="button" className={composedClassName} {...rest}>
       <Icon className="h-4 w-4" />
       {label}
     </button>
@@ -558,7 +557,9 @@ const HmeGenerator = (props: {
               <div className="flex items-center gap-2 font-semibold text-amber-200">
                 <WarningIcon className="h-4 w-4 shrink-0" />
                 Existing{' '}
-                {existingAliasesForDomain.length === 1 ? 'alias' : 'aliases'}{' '}
+                {existingAliasesForDomain.length === 1
+                  ? 'alias'
+                  : 'aliases'}{' '}
                 for this site
               </div>
               <button
@@ -599,6 +600,7 @@ const HmeGenerator = (props: {
         <div className="flex flex-col items-center gap-3 text-center">
           <div className="inline-flex w-full max-w-[360px] min-w-0 items-center gap-3 rounded-full border border-rainbow-purple/50 bg-slate-900/70 px-5 py-2 font-semibold text-white shadow-inner shadow-rainbow-purple/20">
             <button
+              type="button"
               className="rounded-full bg-rainbow-purple/20 px-2 py-2 text-rainbow-purple transition hover:bg-rainbow-purple/40 focus:outline-none focus:ring-2 focus:ring-rainbow-purple/70"
               onClick={onEmailRefreshClick}
               aria-label="Refresh email"
