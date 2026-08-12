@@ -38,7 +38,7 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "npm run build:e2e && playwright test",
     "publish": "publish-extension",
-    "report:licenses": "node utils/generateLicenseTable.mjs > ATTRIBUTIONS.md && npm exec -- prettier --write ATTRIBUTIONS.md",
+    "report:licenses": "node utils/generateLicenseTable.mjs > ATTRIBUTIONS.md && ./node_modules/.bin/prettier --write ATTRIBUTIONS.md",
     "start:brave": "wxt --browser=brave",
     "start:chrome": "wxt --browser=chrome",
     "start:edge": "wxt --browser=edge",
