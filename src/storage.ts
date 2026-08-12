@@ -1,5 +1,5 @@
 import browser from 'webextension-polyfill';
-import ICloudClient, { ListHmeResult } from './iCloudClient';
+import ICloudClient, { type ListHmeResult } from './iCloudClient';
 import { PopupState } from './pages/Popup/stateMachine';
 
 export type Autofill = {
