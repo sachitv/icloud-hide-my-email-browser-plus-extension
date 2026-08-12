@@ -1,3 +1,5 @@
+import type { Options } from './storage';
+
 export type { Autofill, Options } from './storage';
 
 export const DEFAULT_OPTIONS: Options = {

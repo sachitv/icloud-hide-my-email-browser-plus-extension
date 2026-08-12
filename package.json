@@ -76,17 +76,17 @@
     "license-checker-rseidelsohn": "^5.0.1",
     "postcss": "^8.5.24",
     "prettier": "^3.8.1",
-    "publish-browser-extension": "^6.0.0",
+    "publish-browser-extension": "^6.1.1",
     "spdx-expression-parse": "^4.0.0",
     "storybook": "^10.5.5",
     "tailwindcss": "^4.3.2",
     "typescript": "^7.0.2",
+    "vite": "^8.0.16",
     "vitest": "^4.0.7",
-    "web-ext": "^10.5.0",
-    "wxt": "^0.20.27"
+    "web-ext": "^10.6.0",
+    "wxt": "^0.21.4"
   },
   "overrides": {
-    "shell-quote": ">=1.8.4",
     "tmp": ">=0.2.6",
     "esbuild": ">=0.28.1",
     "node-notifier": {

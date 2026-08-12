@@ -1,7 +1,7 @@
 import React, {
-  ButtonHTMLAttributes,
-  DetailedHTMLProps,
-  ReactNode,
+  type ButtonHTMLAttributes,
+  type DetailedHTMLProps,
+  type ReactNode,
   useId,
 } from 'react';
 import { SpinnerIcon } from './icons';

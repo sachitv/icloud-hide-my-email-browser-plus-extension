@@ -1,9 +1,9 @@
 import React, {
-  ButtonHTMLAttributes,
-  DetailedHTMLProps,
-  Dispatch,
-  ReactElement,
-  ReactNode,
+  type ButtonHTMLAttributes,
+  type DetailedHTMLProps,
+  type Dispatch,
+  type ReactElement,
+  type ReactNode,
   useCallback,
   useEffect,
   useMemo,
@@ -11,7 +11,7 @@ import React, {
   useState,
 } from 'react';
 import ICloudClient, {
-  HmeEmail,
+  type HmeEmail,
   type HmeService,
   PremiumMailSettings,
 } from '../../iCloudClient';
@@ -49,14 +49,14 @@ import {
   XIcon,
 } from '../../icons';
 import { MessageType, sendMessageToTab } from '../../messages';
-import { DEFAULT_STORE, Store } from '../../storage';
+import { DEFAULT_STORE, type Store } from '../../storage';
 import { deepEqual } from '../../utils/deepEqual';
 import { formatError } from '../../utils/formatError';
 import { performDeauthSideEffects } from '../Background/authSync';
 import {
-  AuthenticatedAction,
-  AuthenticatedAndManagingAction,
-  PopupAction,
+  type AuthenticatedAction,
+  type AuthenticatedAndManagingAction,
+  type PopupAction,
   PopupState,
   STATE_MACHINE_TRANSITIONS,
 } from './stateMachine';

@@ -1,13 +1,13 @@
 import browser from 'webextension-polyfill';
+import { SIGNED_OUT_CTA_COPY } from '../../constants';
+import ICloudClient, { PremiumMailSettings } from '../../iCloudClient';
 import {
-  Message,
+  type Message,
   MessageType,
-  ReservationRequestData,
+  type ReservationRequestData,
   sendMessageToTab,
 } from '../../messages';
 import { getBrowserStorageValue } from '../../storage';
-import ICloudClient, { PremiumMailSettings } from '../../iCloudClient';
-import { SIGNED_OUT_CTA_COPY } from '../../constants';
 import { formatError } from '../../utils/formatError';
 import { performDeauthSideEffects } from './authSync';
 

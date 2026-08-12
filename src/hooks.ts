@@ -1,14 +1,14 @@
 import {
-  Dispatch,
+  type Dispatch,
+  type SetStateAction,
+  useCallback,
   useEffect,
   useState,
-  SetStateAction,
-  useCallback,
 } from 'react';
 import {
   getBrowserStorageValue,
+  type Store,
   setBrowserStorageValue,
-  Store,
 } from './storage';
 import { deepEqual } from './utils/deepEqual';
 
