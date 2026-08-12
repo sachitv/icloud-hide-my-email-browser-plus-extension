@@ -45,7 +45,7 @@ jobs:
       - name: Install npm deps
         run: |
           npm ci --ignore-scripts
-          ./node_modules/.bin/wxt prepare
+          npm run prepare:wxt
       - name: Prettier formatting
         run: |
           npm run prettier:check || {
@@ -74,7 +74,7 @@ jobs:
       - name: Install npm deps
         run: |
           npm ci --ignore-scripts
-          ./node_modules/.bin/wxt prepare
+          npm run prepare:wxt
       - name: Lint
         run: |
           npm run lint:check || {
@@ -111,7 +111,7 @@ jobs:
       - name: Install npm deps
         run: |
           npm ci --ignore-scripts
-          ./node_modules/.bin/wxt prepare
+          npm run prepare:wxt
       - name: Prepare coverage directory
         run: mkdir -p coverage
       - name: Run unit tests with coverage
@@ -151,7 +151,7 @@ jobs:
       - name: Install npm deps
         run: |
           npm ci --ignore-scripts
-          ./node_modules/.bin/wxt prepare
+          npm run prepare:wxt
       - name: Package Brave bundle
         run: |
           npm run package:brave
@@ -185,7 +185,7 @@ jobs:
       - name: Install npm deps
         run: |
           npm ci --ignore-scripts
-          ./node_modules/.bin/wxt prepare
+          npm run prepare:wxt
       - name: Package Chrome bundle
         run: |
           npm run package:chrome
@@ -219,7 +219,7 @@ jobs:
       - name: Install npm deps
         run: |
           npm ci --ignore-scripts
-          ./node_modules/.bin/wxt prepare
+          npm run prepare:wxt
       - name: Package Edge bundle
         run: |
           npm run package:edge
@@ -253,7 +253,7 @@ jobs:
       - name: Install npm deps
         run: |
           npm ci --ignore-scripts
-          ./node_modules/.bin/wxt prepare
+          npm run prepare:wxt
       - name: Package Firefox bundle
         run: |
           npm run package:firefox
@@ -266,7 +266,7 @@ jobs:
       - name: Assert demo mode is absent from the Firefox release build
         run: npm run check:release-build -- build/firefox-mv3
       - name: Lint Firefox bundle
-        run: ./node_modules/.bin/web-ext lint --source-dir build/firefox-mv3
+        run: npm run lint:firefox
       - name: Upload Firefox artifact
         uses: actions/upload-artifact@v7
         with:
@@ -289,6 +289,6 @@ jobs:
       - name: Install npm deps
         run: |
           npm ci --ignore-scripts
-          ./node_modules/.bin/wxt prepare
+          npm run prepare:wxt
       - name: Check dependency licenses
         run: npm run check:licenses -- --verbose

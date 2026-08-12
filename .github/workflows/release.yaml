@@ -51,7 +51,7 @@ jobs:
       - name: Install npm deps
         run: |
           npm ci --ignore-scripts
-          ./node_modules/.bin/wxt prepare
+          npm run prepare:wxt
       - name: Package extension for Brave
         run: npm run package:brave
       - name: Assert demo mode is absent from the Brave release build
@@ -79,7 +79,7 @@ jobs:
       - name: Install npm deps
         run: |
           npm ci --ignore-scripts
-          ./node_modules/.bin/wxt prepare
+          npm run prepare:wxt
       - name: Package extension for Chrome
         run: npm run package:chrome
       - name: Assert demo mode is absent from the Chrome release build
@@ -107,7 +107,7 @@ jobs:
       - name: Install npm deps
         run: |
           npm ci --ignore-scripts
-          ./node_modules/.bin/wxt prepare
+          npm run prepare:wxt
       - name: Package extension for Edge
         run: npm run package:edge
       - name: Assert demo mode is absent from the Edge release build
@@ -135,13 +135,13 @@ jobs:
       - name: Install npm deps
         run: |
           npm ci --ignore-scripts
-          ./node_modules/.bin/wxt prepare
+          npm run prepare:wxt
       - name: Package extension for Firefox
         run: npm run package:firefox
       - name: Assert demo mode is absent from the Firefox release build
         run: npm run check:release-build -- build/firefox-mv3
       - name: Lint Firefox package
-        run: ./node_modules/.bin/web-ext lint --source-dir build/firefox-mv3
+        run: npm run lint:firefox
       - name: Upload Firefox artifact
         uses: actions/upload-artifact@v7
         with:
@@ -165,7 +165,7 @@ jobs:
       - name: Install npm deps
         run: |
           npm ci --ignore-scripts
-          ./node_modules/.bin/wxt prepare
+          npm run prepare:wxt
       - name: Package sources
         run: npm run package:sources
       - name: Upload sources artifact
@@ -214,7 +214,7 @@ jobs:
       - name: Install npm deps
         run: |
           npm ci --ignore-scripts
-          ./node_modules/.bin/wxt prepare
+          npm run prepare:wxt
       - name: Download packaged Chrome artifact
         uses: actions/download-artifact@v8
         with:
