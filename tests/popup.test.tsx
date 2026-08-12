@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   act,
   fireEvent,
@@ -8,6 +7,7 @@ import {
   within,
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import React from 'react';
 import {
   afterAll,
   afterEach,
@@ -18,11 +18,11 @@ import {
   it,
   vi,
 } from 'vitest';
+import { CONTEXT_MENU_ITEM_ID } from '../src/constants';
+import type { ListHmeResult } from '../src/iCloudClient';
 import Popup from '../src/pages/Popup/Popup';
 import { PopupState } from '../src/pages/Popup/stateMachine';
-import { CONTEXT_MENU_ITEM_ID } from '../src/constants';
-import { createHmeEmailTestData, createClientStateTestData } from './testUtils';
-import type { ListHmeResult } from '../src/iCloudClient';
+import { createClientStateTestData, createHmeEmailTestData } from './testUtils';
 
 const {
   useBrowserStorageStateMock,
@@ -346,9 +346,7 @@ describe('Popup UI', () => {
   it('renders sign-in guidance when the popup is signed out', async () => {
     render(<Popup />);
 
-    await waitFor(() =>
-      expect(screen.getByText(/Sign in to iCloud/i)).toBeInTheDocument()
-    );
+    expect(await screen.findByText(/Sign in to iCloud/i)).toBeInTheDocument();
 
     expect(runtimeGetUrlMock).toHaveBeenCalledWith('userguide.html');
     expect(contextMenuUpdateMock).toHaveBeenCalledWith(
@@ -550,11 +548,9 @@ describe('Popup UI', () => {
 
     render(<Popup />);
 
-    await waitFor(() =>
-      expect(
-        screen.getByRole('button', { name: /Generate new email/i })
-      ).toBeInTheDocument()
-    );
+    expect(
+      await screen.findByRole('button', { name: /Generate new email/i })
+    ).toBeInTheDocument();
 
     const deactivateButton = await screen.findByRole('button', {
       name: /Deactivate/i,
@@ -584,9 +580,7 @@ describe('Popup UI', () => {
     });
     await user.click(betaButton);
 
-    await waitFor(() =>
-      expect(screen.getByText(/Beta note/i)).toBeInTheDocument()
-    );
+    expect(await screen.findByText(/Beta note/i)).toBeInTheDocument();
     clipboardWriteMock.mockClear();
     sendMessageToTabMock.mockClear();
 
@@ -687,9 +681,7 @@ describe('Popup UI', () => {
 
     render(<Popup />);
 
-    await waitFor(() =>
-      expect(screen.getByText(/loading failed/i)).toBeInTheDocument()
-    );
+    expect(await screen.findByText(/loading failed/i)).toBeInTheDocument();
   });
 
   // Empty state branch when no aliases are returned.
@@ -705,11 +697,9 @@ describe('Popup UI', () => {
 
     render(<Popup />);
 
-    await waitFor(() =>
-      expect(
-        screen.getByText(/There are no emails to list/i)
-      ).toBeInTheDocument()
-    );
+    expect(
+      await screen.findByText(/There are no emails to list/i)
+    ).toBeInTheDocument();
   });
 
   it('renders signed-out guidance when authenticated state is missing persisted client state', async () => {
@@ -888,9 +878,7 @@ describe('Popup UI', () => {
     });
     await user.click(useButton);
 
-    await waitFor(() =>
-      expect(screen.getByText(/reserve failed/i)).toBeInTheDocument()
-    );
+    expect(await screen.findByText(/reserve failed/i)).toBeInTheDocument();
 
     const refreshButton = await screen.findByRole('button', {
       name: /Refresh email/i,
@@ -938,9 +926,7 @@ describe('Popup UI', () => {
       name: /Deactivate/i,
     });
     await user.click(deactivateButton);
-    await waitFor(() =>
-      expect(screen.getByText(/deactivate failed/i)).toBeInTheDocument()
-    );
+    expect(await screen.findByText(/deactivate failed/i)).toBeInTheDocument();
 
     const searchInput = screen.getByRole('searchbox', {
       name: /Search through your Hide My Email\+ aliases/i,
@@ -957,9 +943,7 @@ describe('Popup UI', () => {
       name: /Reactivate/i,
     });
     await user.click(reactivateButton);
-    await waitFor(() =>
-      expect(screen.getByText(/reactivate failed/i)).toBeInTheDocument()
-    );
+    expect(await screen.findByText(/reactivate failed/i)).toBeInTheDocument();
 
     const deleteButton = await screen.findByRole('button', {
       name: /^Delete$/i,
@@ -969,9 +953,7 @@ describe('Popup UI', () => {
       name: /Confirm delete/i,
     });
     await user.click(confirmDeleteButton);
-    await waitFor(() =>
-      expect(screen.getByText(/delete failed/i)).toBeInTheDocument()
-    );
+    expect(await screen.findByText(/delete failed/i)).toBeInTheDocument();
   });
 
   it('handles errors when fetching forward-to email list', async () => {
@@ -982,9 +964,7 @@ describe('Popup UI', () => {
 
     render(<Popup />);
 
-    await waitFor(() =>
-      expect(screen.getByText(/list failed/i)).toBeInTheDocument()
-    );
+    expect(await screen.findByText(/list failed/i)).toBeInTheDocument();
   });
 
   it('handles errors when generating new email on mount', async () => {
@@ -995,9 +975,7 @@ describe('Popup UI', () => {
 
     render(<Popup />);
 
-    await waitFor(() =>
-      expect(screen.getByText(/generate failed/i)).toBeInTheDocument()
-    );
+    expect(await screen.findByText(/generate failed/i)).toBeInTheDocument();
   });
 
   it('handles errors when manually refreshing email', async () => {
@@ -1015,9 +993,7 @@ describe('Popup UI', () => {
 
     await user.click(refreshButton);
 
-    await waitFor(() =>
-      expect(screen.getByText(/refresh failed/i)).toBeInTheDocument()
-    );
+    expect(await screen.findByText(/refresh failed/i)).toBeInTheDocument();
   });
 
   it('adjusts selected index when it exceeds filtered results', async () => {
@@ -1055,11 +1031,9 @@ describe('Popup UI', () => {
 
     render(<Popup />);
 
-    await waitFor(() =>
-      expect(
-        screen.getByRole('button', { name: /Apple service/i })
-      ).toBeInTheDocument()
-    );
+    expect(
+      await screen.findByRole('button', { name: /Apple service/i })
+    ).toBeInTheDocument();
 
     // Select the third item (index 2)
     const thirdButton = screen.getByRole('button', { name: /Cherry service/i });
@@ -1143,11 +1117,9 @@ describe('Popup UI', () => {
     });
     await user.click(secondButton);
 
-    await waitFor(() =>
-      expect(
-        screen.getByRole('button', { name: /Second alias/i })
-      ).toHaveAttribute('aria-current', 'true')
-    );
+    expect(
+      await screen.findByRole('button', { name: /Second alias/i })
+    ).toHaveAttribute('aria-current', 'true');
 
     // Delete the second alias — the list shrinks to length 1, but selectedIndex
     // is still 1. The useEffect in HmeListView detects selectedIndex (1) >=
@@ -1259,11 +1231,9 @@ describe('Popup UI', () => {
     );
 
     // Sidebar label reflects the updated value after save
-    await waitFor(() =>
-      expect(
-        screen.getByRole('button', { name: 'New label' })
-      ).toBeInTheDocument()
-    );
+    expect(
+      await screen.findByRole('button', { name: 'New label' })
+    ).toBeInTheDocument();
   });
 
   it('can cancel editing without calling the API or changing displayed values', async () => {
@@ -1335,9 +1305,7 @@ describe('Popup UI', () => {
     );
     await user.click(screen.getByRole('button', { name: /^Save$/i }));
 
-    await waitFor(() =>
-      expect(screen.getByText(/save failed/i)).toBeInTheDocument()
-    );
+    expect(await screen.findByText(/save failed/i)).toBeInTheDocument();
   });
 
   it('clears the edit error when cancelling after a failed save', async () => {
@@ -1365,9 +1333,7 @@ describe('Popup UI', () => {
       await screen.findByRole('button', { name: /Edit label & note/i })
     );
     await user.click(screen.getByRole('button', { name: /^Save$/i }));
-    await waitFor(() =>
-      expect(screen.getByText(/save failed/i)).toBeInTheDocument()
-    );
+    expect(await screen.findByText(/save failed/i)).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /^Cancel$/i }));
 
@@ -1417,11 +1383,9 @@ describe('Popup UI', () => {
 
     await user.click(screen.getByRole('button', { name: /^Save$/i }));
 
-    await waitFor(() =>
-      expect(
-        screen.getByRole('button', { name: 'Renamed alias' })
-      ).toBeInTheDocument()
-    );
+    expect(
+      await screen.findByRole('button', { name: 'Renamed alias' })
+    ).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: 'Second alias' })
     ).toBeInTheDocument();
@@ -1462,11 +1426,9 @@ describe('Popup UI', () => {
 
     await user.click(screen.getByRole('button', { name: 'Second alias' }));
 
-    await waitFor(() =>
-      expect(
-        screen.getByRole('button', { name: /Edit label & note/i })
-      ).toBeInTheDocument()
-    );
+    expect(
+      await screen.findByRole('button', { name: /Edit label & note/i })
+    ).toBeInTheDocument();
     expect(
       screen.queryByRole('button', { name: /^Save$/i })
     ).not.toBeInTheDocument();
@@ -1528,11 +1490,9 @@ describe('Popup UI', () => {
     await user.click(await screen.findByRole('button', { name: /^Delete$/i }));
     await user.click(screen.getByRole('button', { name: /^Cancel$/i }));
 
-    await waitFor(() =>
-      expect(
-        screen.getByRole('button', { name: /^Delete$/i })
-      ).toBeInTheDocument()
-    );
+    expect(
+      await screen.findByRole('button', { name: /^Delete$/i })
+    ).toBeInTheDocument();
     expect(
       screen.queryByRole('button', { name: /Confirm delete/i })
     ).not.toBeInTheDocument();
@@ -1713,9 +1673,7 @@ describe('Popup UI', () => {
     const copyAliasButton = await screen.findByTitle('Copy alias');
     await user.click(copyAliasButton);
 
-    await waitFor(() =>
-      expect(screen.getByTitle('Copied!')).toBeInTheDocument()
-    );
+    expect(await screen.findByTitle('Copied!')).toBeInTheDocument();
   });
 
   it('resets the sidebar copy button title after 1.5 seconds', async () => {
@@ -1742,17 +1700,13 @@ describe('Popup UI', () => {
     const copyAliasButton = await screen.findByTitle('Copy alias');
     await user.click(copyAliasButton);
 
-    await waitFor(() =>
-      expect(screen.getByTitle('Copied!')).toBeInTheDocument()
-    );
+    expect(await screen.findByTitle('Copied!')).toBeInTheDocument();
 
     await act(async () => {
       vi.runAllTimers();
     });
 
-    await waitFor(() =>
-      expect(screen.getByTitle('Copy alias')).toBeInTheDocument()
-    );
+    expect(await screen.findByTitle('Copy alias')).toBeInTheDocument();
   });
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -1781,11 +1735,9 @@ describe('Popup UI', () => {
 
     render(<Popup />);
 
-    await waitFor(() =>
-      expect(
-        screen.getByText(/Existing alias for this site/i)
-      ).toBeInTheDocument()
-    );
+    expect(
+      await screen.findByText(/Existing alias for this site/i)
+    ).toBeInTheDocument();
     expect(screen.getByText('existing@hide.example.com')).toBeInTheDocument();
   });
 
@@ -1860,15 +1812,13 @@ describe('Popup UI', () => {
 
     render(<Popup />);
 
-    await waitFor(() =>
-      expect(screen.getByText('existing@hide.example.com')).toBeInTheDocument()
-    );
+    expect(
+      await screen.findByText('existing@hide.example.com')
+    ).toBeInTheDocument();
 
     await user.click(screen.getByTitle('Copy'));
 
-    await waitFor(() =>
-      expect(screen.getByTitle('Copied!')).toBeInTheDocument()
-    );
+    expect(await screen.findByTitle('Copied!')).toBeInTheDocument();
   });
 
   it('resets the domain-match copy button title after 1.5 seconds', async () => {
@@ -1894,19 +1844,17 @@ describe('Popup UI', () => {
 
     render(<Popup />);
 
-    await waitFor(() =>
-      expect(screen.getByText('existing@hide.example.com')).toBeInTheDocument()
-    );
+    expect(
+      await screen.findByText('existing@hide.example.com')
+    ).toBeInTheDocument();
 
     await user.click(screen.getByTitle('Copy'));
-    await waitFor(() =>
-      expect(screen.getByTitle('Copied!')).toBeInTheDocument()
-    );
+    expect(await screen.findByTitle('Copied!')).toBeInTheDocument();
 
     await act(async () => {
       vi.runAllTimers();
     });
-    await waitFor(() => expect(screen.getByTitle('Copy')).toBeInTheDocument());
+    expect(await screen.findByTitle('Copy')).toBeInTheDocument();
   });
 
   it('uses plural heading when multiple aliases exist for the current site', async () => {
@@ -1936,11 +1884,9 @@ describe('Popup UI', () => {
 
     render(<Popup />);
 
-    await waitFor(() =>
-      expect(
-        screen.getByText('Existing aliases for this site')
-      ).toBeInTheDocument()
-    );
+    expect(
+      await screen.findByText('Existing aliases for this site')
+    ).toBeInTheDocument();
   });
 
   it('can dismiss the domain-match warning notice', async () => {
@@ -1964,9 +1910,7 @@ describe('Popup UI', () => {
 
     render(<Popup />);
 
-    await waitFor(() =>
-      expect(screen.getByText(/Existing alias/i)).toBeInTheDocument()
-    );
+    expect(await screen.findByText(/Existing alias/i)).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /Dismiss/i }));
 
@@ -2026,11 +1970,9 @@ describe('Popup UI', () => {
     render(<Popup />);
 
     // The cached alias should be displayed instantly
-    await waitFor(() => {
-      expect(
-        screen.getByRole('button', { name: 'Cached Alias' })
-      ).toBeInTheDocument();
-    });
+    expect(
+      await screen.findByRole('button', { name: 'Cached Alias' })
+    ).toBeInTheDocument();
 
     // "Refreshing..." indicator should be visible
     expect(screen.getByText('Refreshing...')).toBeInTheDocument();
@@ -2588,17 +2530,13 @@ describe('Popup UI', () => {
     expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
 
     fireEvent.click(thirdAliasButton, { ctrlKey: true });
-    await waitFor(() =>
-      expect(screen.getByText(/2 selected/i)).toBeInTheDocument()
-    );
+    expect(await screen.findByText(/2 selected/i)).toBeInTheDocument();
 
     const listbox = screen.getByRole('tree');
     fireEvent.keyDown(listbox, { key: 'ArrowDown' });
     fireEvent.keyDown(listbox, { key: ' ', ctrlKey: true });
 
-    await waitFor(() =>
-      expect(screen.getByText(/3 selected/i)).toBeInTheDocument()
-    );
+    expect(await screen.findByText(/3 selected/i)).toBeInTheDocument();
   });
 
   it('supports keyboard shift range selection from the focused alias row', async () => {
@@ -2751,11 +2689,9 @@ describe('Popup UI', () => {
       render(<Popup />);
 
       // The cached alias is displayed instantly
-      await waitFor(() => {
-        expect(
-          screen.getByRole('button', { name: 'Cached Alias' })
-        ).toBeInTheDocument();
-      });
+      expect(
+        await screen.findByRole('button', { name: 'Cached Alias' })
+      ).toBeInTheDocument();
 
       // Background refresh failure occurs
       await act(async () => {
@@ -2763,11 +2699,9 @@ describe('Popup UI', () => {
       });
 
       // Verify that the cached list remains visible and the error text is not shown
-      await waitFor(() => {
-        expect(
-          screen.getByRole('button', { name: 'Cached Alias' })
-        ).toBeInTheDocument();
-      });
+      expect(
+        await screen.findByRole('button', { name: 'Cached Alias' })
+      ).toBeInTheDocument();
       expect(
         screen.queryByText('Network offline or iCloud failed')
       ).not.toBeInTheDocument();
