@@ -1,23 +1,23 @@
 import browser from 'webextension-polyfill';
-import {
-  getBrowserStorageValue,
-  DEFAULT_STORE,
-  Store,
-  Options,
-} from '../../storage';
+import { isFirefox } from '../../browserUtils';
 import {
   CONTEXT_MENU_ITEM_ID,
   LOADING_COPY,
   SIGNED_OUT_CTA_COPY,
 } from '../../constants';
+import { PremiumMailSettings } from '../../iCloudClient';
 import {
-  ActiveInputElementWriteData,
+  type ActiveInputElementWriteData,
   MessageType,
   sendMessageToTab,
 } from '../../messages';
+import {
+  DEFAULT_STORE,
+  getBrowserStorageValue,
+  type Options,
+  type Store,
+} from '../../storage';
 import { formatError } from '../../utils/formatError';
-import { PremiumMailSettings } from '../../iCloudClient';
-import { isFirefox } from '../../browserUtils';
 import {
   constructClient,
   performAuthSideEffects,

@@ -79,15 +79,14 @@
     "storybook": "^10.5.5",
     "tailwindcss": "^4.3.2",
     "typescript": "^7.0.2",
+    "vite": "^8.0.16",
     "vitest": "^4.0.7",
-    "web-ext": "^10.5.0",
-    "wxt": "^0.20.27"
+    "web-ext": "^10.6.0",
+    "wxt": "^0.21.4"
   },
   "overrides": {
-    "shell-quote": "1.9.0",
     "tmp": ">=0.2.6",
     "esbuild": ">=0.28.1",
-    "adm-zip": "0.6.0",
     "node-notifier": {
       "uuid": ">=11.1.1"
     }
