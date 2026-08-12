@@ -49,7 +49,9 @@ jobs:
           node-version: 22
           cache: 'npm'
       - name: Install npm deps
-        run: npm ci
+        run: |
+          npm ci --ignore-scripts
+          npm exec -- wxt prepare
       - name: Package extension for Brave
         run: npm run package:brave
       - name: Assert demo mode is absent from the Brave release build
@@ -75,7 +77,9 @@ jobs:
           node-version: 22
           cache: 'npm'
       - name: Install npm deps
-        run: npm ci
+        run: |
+          npm ci --ignore-scripts
+          npm exec -- wxt prepare
       - name: Package extension for Chrome
         run: npm run package:chrome
       - name: Assert demo mode is absent from the Chrome release build
@@ -101,7 +105,9 @@ jobs:
           node-version: 22
           cache: 'npm'
       - name: Install npm deps
-        run: npm ci
+        run: |
+          npm ci --ignore-scripts
+          npm exec -- wxt prepare
       - name: Package extension for Edge
         run: npm run package:edge
       - name: Assert demo mode is absent from the Edge release build
@@ -127,13 +133,15 @@ jobs:
           node-version: 22
           cache: 'npm'
       - name: Install npm deps
-        run: npm ci
+        run: |
+          npm ci --ignore-scripts
+          npm exec -- wxt prepare
       - name: Package extension for Firefox
         run: npm run package:firefox
       - name: Assert demo mode is absent from the Firefox release build
         run: npm run check:release-build -- build/firefox-mv3
       - name: Lint Firefox package
-        run: npx web-ext lint --source-dir build/firefox-mv3
+        run: npm exec -- web-ext lint --source-dir build/firefox-mv3
       - name: Upload Firefox artifact
         uses: actions/upload-artifact@v7
         with:
@@ -155,7 +163,9 @@ jobs:
           node-version: 22
           cache: 'npm'
       - name: Install npm deps
-        run: npm ci
+        run: |
+          npm ci --ignore-scripts
+          npm exec -- wxt prepare
       - name: Package sources
         run: npm run package:sources
       - name: Upload sources artifact
@@ -202,7 +212,9 @@ jobs:
           node-version: 22
           cache: 'npm'
       - name: Install npm deps
-        run: npm ci
+        run: |
+          npm ci --ignore-scripts
+          npm exec -- wxt prepare
       - name: Download packaged Chrome artifact
         uses: actions/download-artifact@v8
         with:
