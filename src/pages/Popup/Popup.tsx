@@ -1,66 +1,65 @@
 import React, {
-  useState,
-  Dispatch,
-  useEffect,
-  ButtonHTMLAttributes,
-  DetailedHTMLProps,
-  ReactNode,
-  ReactElement,
-  useMemo,
+  type ButtonHTMLAttributes,
+  type DetailedHTMLProps,
+  type Dispatch,
+  type ReactElement,
+  type ReactNode,
   useCallback,
+  useEffect,
+  useMemo,
   useRef,
+  useState,
 } from 'react';
 import ICloudClient, {
-  PremiumMailSettings,
-  HmeEmail,
+  type HmeEmail,
   type HmeService,
+  PremiumMailSettings,
 } from '../../iCloudClient';
 import { MockPremiumMailSettings } from '../../mockClient';
 import './Popup.css';
-import { useBrowserStorageState } from '../../hooks';
-import type { IconProps } from '../../icons';
-import {
-  RefreshIcon,
-  ClipboardIcon,
-  CheckIcon,
-  ListIcon,
-  SignOutIcon,
-  PlusIcon,
-  TrashIcon,
-  BanIcon,
-  SearchIcon,
-  InfoCircleIcon,
-  ExternalLinkIcon,
-  QuestionCircleIcon,
-  FirefoxIcon,
-  EditIcon,
-  XIcon,
-  WarningIcon,
-  SpinnerIcon,
-} from '../../icons';
-import { MessageType, sendMessageToTab } from '../../messages';
+import Fuse from 'fuse.js';
+import browser from 'webextension-polyfill';
+import { isFirefox } from '../../browserUtils';
 import {
   ErrorMessage,
+  Link,
   LoadingButton,
   Spinner,
   TitledComponent,
-  Link,
 } from '../../commonComponents';
-import { Store, DEFAULT_STORE } from '../../storage';
-
-import browser from 'webextension-polyfill';
-import Fuse from 'fuse.js';
+import { useBrowserStorageState } from '../../hooks';
+import type { IconProps } from '../../icons';
+import {
+  BanIcon,
+  CheckIcon,
+  ClipboardIcon,
+  EditIcon,
+  ExternalLinkIcon,
+  FirefoxIcon,
+  InfoCircleIcon,
+  ListIcon,
+  PlusIcon,
+  QuestionCircleIcon,
+  RefreshIcon,
+  SearchIcon,
+  SignOutIcon,
+  SpinnerIcon,
+  TrashIcon,
+  WarningIcon,
+  XIcon,
+} from '../../icons';
+import { MessageType, sendMessageToTab } from '../../messages';
+import { DEFAULT_STORE, type Store } from '../../storage';
 import { deepEqual } from '../../utils/deepEqual';
 import { formatError } from '../../utils/formatError';
-import {
-  PopupAction,
-  PopupState,
-  AuthenticatedAction,
-  STATE_MACHINE_TRANSITIONS,
-  AuthenticatedAndManagingAction,
-} from './stateMachine';
-import { isFirefox } from '../../browserUtils';
 import { performDeauthSideEffects } from '../Background/authSync';
+import {
+  type AuthenticatedAction,
+  type AuthenticatedAndManagingAction,
+  type PopupAction,
+  PopupState,
+  STATE_MACHINE_TRANSITIONS,
+} from './stateMachine';
 
 type TransitionCallback<T extends PopupAction> = (action: T) => void;
 
