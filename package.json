@@ -72,7 +72,7 @@
     "@types/webextension-polyfill": "^0.12.5",
     "@vitest/coverage-v8": "^4.1.10",
     "happy-dom": "^20.9.0",
-    "jsdom": "^28.1.0",
+    "jsdom": "^30.0.1",
     "license-checker-rseidelsohn": "^5.0.1",
     "postcss": "^8.5.24",
     "prettier": "^3.8.1",
