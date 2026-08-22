@@ -75,7 +75,7 @@
     "jsdom": "^30.0.1",
     "license-checker-rseidelsohn": "^5.0.1",
     "postcss": "^8.5.26",
-    "prettier": "^3.8.1",
+    "prettier": "^3.9.6",
     "publish-browser-extension": "^6.1.1",
     "spdx-expression-parse": "^4.0.0",
     "storybook": "^10.5.5",
