@@ -70,7 +70,7 @@
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "@types/webextension-polyfill": "^0.12.5",
-    "@vitest/coverage-v8": "^4.1.10",
+    "@vitest/coverage-v8": "^4.1.11",
     "happy-dom": "^20.11.2",
     "jsdom": "^30.0.1",
     "license-checker-rseidelsohn": "^5.0.1",
