@@ -32,6 +32,11 @@ jobs:
             attributions:
               - 'ATTRIBUTIONS.md'
               - 'utils/generateLicenseTable.mjs'
+              # The generator resolves Prettier config, so changing it changes
+              # the expected bytes of the generated table.
+              - '.prettierrc'
+              - '.prettierrc.*'
+              - 'prettier.config.*'
 
   format:
     permissions:

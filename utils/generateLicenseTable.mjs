@@ -142,6 +142,11 @@ try {
   const markdown = await format(`${lines.join('\n')}\n`, {
     ...prettierOptions,
     filepath: outputPath,
+    // This table is generated, never hand-annotated, so it must be formatted
+    // whatever the repository's pragma settings say. With `requirePragma: true`
+    // Prettier would hand back the raw markdown untouched -- and `prettier
+    // --check` would skip the pragma-free file too, hiding the result.
+    requirePragma: false,
   });
 
   if (checkOnly) {
