@@ -117,10 +117,10 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [@tufjs/canonical-json@2.0.0](https://github.com/theupdateframework/tuf-js)                                                  | MIT                                 |
 | [@tufjs/models@4.1.0](https://github.com/theupdateframework/tuf-js)                                                          | MIT                                 |
 | [@types/aria-query@5.0.4](https://github.com/DefinitelyTyped/DefinitelyTyped)                                                | MIT                                 |
-| [@types/babel__core@7.20.5](https://github.com/DefinitelyTyped/DefinitelyTyped)                                              | MIT                                 |
-| [@types/babel__generator@7.27.0](https://github.com/DefinitelyTyped/DefinitelyTyped)                                         | MIT                                 |
-| [@types/babel__template@7.4.4](https://github.com/DefinitelyTyped/DefinitelyTyped)                                           | MIT                                 |
-| [@types/babel__traverse@7.28.0](https://github.com/DefinitelyTyped/DefinitelyTyped)                                          | MIT                                 |
+| [@types/babel\_\_core@7.20.5](https://github.com/DefinitelyTyped/DefinitelyTyped)                                            | MIT                                 |
+| [@types/babel\_\_generator@7.27.0](https://github.com/DefinitelyTyped/DefinitelyTyped)                                       | MIT                                 |
+| [@types/babel\_\_template@7.4.4](https://github.com/DefinitelyTyped/DefinitelyTyped)                                         | MIT                                 |
+| [@types/babel\_\_traverse@7.28.0](https://github.com/DefinitelyTyped/DefinitelyTyped)                                        | MIT                                 |
 | [@types/chai@5.2.3](https://github.com/DefinitelyTyped/DefinitelyTyped)                                                      | MIT                                 |
 | [@types/chrome@0.2.2](https://github.com/DefinitelyTyped/DefinitelyTyped)                                                    | MIT                                 |
 | [@types/deep-eql@4.0.2](https://github.com/DefinitelyTyped/DefinitelyTyped)                                                  | MIT                                 |
@@ -691,7 +691,7 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [which@6.0.1](https://github.com/npm/node-which)                                                                             | ISC                                 |
 | [why-is-node-running@2.3.0](https://github.com/mafintosh/why-is-node-running)                                                | MIT                                 |
 | [widest-line@5.0.0](https://github.com/sindresorhus/widest-line)                                                             | MIT                                 |
-| [winreg@0.0.12](https://github.com/fresc81/node-winreg)                                                                      | BSD*                                |
+| [winreg@0.0.12](https://github.com/fresc81/node-winreg)                                                                      | BSD\*                               |
 | [word-wrap@1.2.5](https://github.com/jonschlinkert/word-wrap)                                                                | MIT                                 |
 | [wrap-ansi@7.0.0](https://github.com/chalk/wrap-ansi)                                                                        | MIT                                 |
 | [wrap-ansi@9.0.2](https://github.com/chalk/wrap-ansi)                                                                        | MIT                                 |
