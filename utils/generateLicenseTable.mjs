@@ -3,6 +3,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { promisify } from 'node:util';
 import { init as licenseCheckerInit } from 'license-checker-rseidelsohn';
+import { format, resolveConfig } from 'prettier';
 
 // license-checker exposes a callback interface; wrap it so we can use async/await.
 const initAsync = promisify(licenseCheckerInit);
@@ -57,6 +58,10 @@ function markdownLink(identifier, repository) {
 }
 
 const start = path.resolve(process.cwd());
+const outputPath = path.join(start, 'ATTRIBUTIONS.md');
+// `--check` verifies the committed table without rewriting it, so CI can catch
+// a stale or hand-edited ATTRIBUTIONS.md.
+const checkOnly = process.argv.includes('--check');
 
 // Exclude this repository from the generated list.
 const pkg = JSON.parse(
@@ -129,7 +134,44 @@ try {
     lines.push(`| ${link} | ${license} |`);
   }
 
-  console.log(lines.join('\n'));
+  // Format here rather than piping through the prettier CLI afterwards. A shell
+  // redirect truncates ATTRIBUTIONS.md before this script even starts, so a
+  // generator failure used to leave a destroyed file behind that the following
+  // `&& prettier` step never got to touch.
+  const prettierOptions = await resolveConfig(outputPath);
+  const markdown = await format(`${lines.join('\n')}\n`, {
+    ...prettierOptions,
+    filepath: outputPath,
+    // This table is generated, never hand-annotated, so it must be formatted
+    // whatever the repository's pragma settings say. With `requirePragma: true`
+    // Prettier would hand back the raw markdown untouched -- and `prettier
+    // --check` would skip the pragma-free file too, hiding the result.
+    requirePragma: false,
+  });
+
+  if (checkOnly) {
+    const current = fs.existsSync(outputPath)
+      ? fs.readFileSync(outputPath, 'utf8')
+      : '';
+
+    if (current !== markdown) {
+      console.error(
+        `${path.basename(outputPath)} is out of date. Run \`npm run report:licenses\` and commit the result.`
+      );
+      process.exitCode = 1;
+    }
+  } else {
+    // Write to a sibling temp file and rename, so the destination is only ever
+    // replaced by a complete, formatted table.
+    const tempPath = `${outputPath}.tmp`;
+    try {
+      fs.writeFileSync(tempPath, markdown);
+      fs.renameSync(tempPath, outputPath);
+    } catch (error) {
+      fs.rmSync(tempPath, { force: true });
+      throw error;
+    }
+  }
 } catch (error) {
   console.error('Failed to generate license markdown table:', error);
   process.exitCode = 1;

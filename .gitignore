@@ -36,3 +36,6 @@ test-results/
 
 *storybook.log
 storybook-static
+
+# Transient output from utils/generateLicenseTable.mjs (renamed into place on success)
+ATTRIBUTIONS.md.tmp
