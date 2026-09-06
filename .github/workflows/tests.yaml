@@ -11,10 +11,10 @@ jobs:
     permissions:
       contents: read
       pull-requests: read
-    if: github.actor != 'attributions-bot'
     runs-on: ubuntu-24.04-arm
     outputs:
       licenses: ${{ steps.filter.outputs.licenses }}
+      attributions: ${{ steps.filter.outputs.attributions }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -29,6 +29,9 @@ jobs:
               - 'ATTRIBUTIONS.md'
               - 'utils/generateLicenseTable.mjs'
               - 'utils/checkLicenses.mjs'
+            attributions:
+              - 'ATTRIBUTIONS.md'
+              - 'utils/generateLicenseTable.mjs'
 
   format:
     permissions:
@@ -277,7 +280,7 @@ jobs:
     permissions:
       contents: read
     needs: detect-license-changes
-    if: needs.detect-license-changes.outputs.licenses == 'true'
+    if: needs.detect-license-changes.outputs.licenses == 'true' && github.actor != 'attributions-bot'
     runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v7
@@ -292,3 +295,30 @@ jobs:
           npm run prepare:wxt
       - name: Check dependency licenses
         run: npm run check:licenses -- --verbose
+
+  attributions:
+    permissions:
+      contents: read
+    needs: detect-license-changes
+    # Runs whenever ATTRIBUTIONS.md or its generator changes -- including on the
+    # attributions bot's own PRs, which every other job skips. That made the
+    # generated file the one thing reaching main without ever being verified.
+    if: needs.detect-license-changes.outputs.attributions == 'true'
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v7
+      - name: Use Node.js 22.x
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: 'npm'
+      - name: Install npm deps
+        run: |
+          npm ci --ignore-scripts
+          npm run prepare:wxt
+      - name: Verify ATTRIBUTIONS.md matches generated output
+        run: |
+          npm run report:licenses:check || {
+            echo '::error::ATTRIBUTIONS.md does not match the generated table. Run "npm run report:licenses" and commit the result.';
+            exit 1;
+          }
