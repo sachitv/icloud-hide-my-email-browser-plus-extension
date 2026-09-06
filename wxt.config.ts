@@ -5,101 +5,68 @@ import path from 'node:path';
 const detectBinary = (...candidates: Array<string | undefined>) =>
   candidates.find((candidate) => candidate && existsSync(candidate));
 
-const resolveBraveBinary = () => {
-  const candidates: Array<string | undefined> = [
-    process.env.BRAVE_BROWSER_BINARY,
-    process.env.BRAVE_BINARY,
-  ];
+type BrowserBinarySpec = {
+  /** Environment variables checked first, in order of precedence. */
+  envVars: string[];
+  /** Absolute path to the macOS app bundle executable. */
+  darwinPath: string;
+  /** Path segments below "Program Files" on Windows. */
+  windowsPathSegments: string[];
+  /** Absolute paths to try on Linux and other platforms. */
+  linuxPaths: string[];
+};
+
+const resolveBrowserBinary = ({
+  envVars,
+  darwinPath,
+  windowsPathSegments,
+  linuxPaths,
+}: BrowserBinarySpec) => {
+  const candidates: Array<string | undefined> = envVars.map(
+    (envVar) => process.env[envVar]
+  );
 
   if (process.platform === 'darwin') {
-    candidates.push(
-      '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser'
-    );
+    candidates.push(darwinPath);
   } else if (process.platform === 'win32') {
-    const programFiles = process.env.PROGRAMFILES;
-    const programFilesX86 = process.env['PROGRAMFILES(X86)'];
-    if (programFiles) {
-      candidates.push(
-        path.join(
-          programFiles,
-          'BraveSoftware',
-          'Brave-Browser',
-          'Application',
-          'brave.exe'
-        )
-      );
-    }
-    if (programFilesX86) {
-      candidates.push(
-        path.join(
-          programFilesX86,
-          'BraveSoftware',
-          'Brave-Browser',
-          'Application',
-          'brave.exe'
-        )
-      );
+    for (const programFiles of [
+      process.env.PROGRAMFILES,
+      process.env['PROGRAMFILES(X86)'],
+    ]) {
+      if (programFiles) {
+        candidates.push(path.join(programFiles, ...windowsPathSegments));
+      }
     }
   } else {
-    candidates.push(
-      '/usr/bin/brave-browser',
-      '/usr/bin/brave',
-      '/snap/bin/brave'
-    );
+    candidates.push(...linuxPaths);
   }
 
   return detectBinary(...candidates);
 };
 
-const resolveEdgeBinary = () => {
-  const candidates: Array<string | undefined> = [
-    process.env.EDGE_BROWSER_BINARY,
-    process.env.EDGE_BINARY,
-  ];
+const braveBinary = resolveBrowserBinary({
+  envVars: ['BRAVE_BROWSER_BINARY', 'BRAVE_BINARY'],
+  darwinPath: '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser',
+  windowsPathSegments: [
+    'BraveSoftware',
+    'Brave-Browser',
+    'Application',
+    'brave.exe',
+  ],
+  linuxPaths: ['/usr/bin/brave-browser', '/usr/bin/brave', '/snap/bin/brave'],
+});
 
-  if (process.platform === 'darwin') {
-    candidates.push(
-      '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge'
-    );
-  } else if (process.platform === 'win32') {
-    const programFiles = process.env.PROGRAMFILES;
-    const programFilesX86 = process.env['PROGRAMFILES(X86)'];
-    if (programFiles) {
-      candidates.push(
-        path.join(
-          programFiles,
-          'Microsoft',
-          'Edge',
-          'Application',
-          'msedge.exe'
-        )
-      );
-    }
-    if (programFilesX86) {
-      candidates.push(
-        path.join(
-          programFilesX86,
-          'Microsoft',
-          'Edge',
-          'Application',
-          'msedge.exe'
-        )
-      );
-    }
-  } else {
-    candidates.push(
-      '/usr/bin/microsoft-edge',
-      '/usr/bin/microsoft-edge-stable',
-      '/usr/bin/microsoft-edge-beta',
-      '/usr/bin/microsoft-edge-dev'
-    );
-  }
-
-  return detectBinary(...candidates);
-};
-
-const braveBinary = resolveBraveBinary();
-const edgeBinary = resolveEdgeBinary();
+const edgeBinary = resolveBrowserBinary({
+  envVars: ['EDGE_BROWSER_BINARY', 'EDGE_BINARY'],
+  darwinPath: '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge',
+  windowsPathSegments: ['Microsoft', 'Edge', 'Application', 'msedge.exe'],
+  linuxPaths: [
+    '/usr/bin/microsoft-edge',
+    '/usr/bin/microsoft-edge-stable',
+    '/usr/bin/microsoft-edge-beta',
+    '/usr/bin/microsoft-edge-dev',
+  ],
+});
 
 const browserBinaries: Record<string, string> = {};
 if (braveBinary) {

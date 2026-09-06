@@ -31,6 +31,8 @@
 - typescript:S6544 — src/pages/Content/script.ts:261: Converted the reservation handler to fire-and-forget without returning its promise.
 - typescript:S7735 — src/iCloudClient.ts:27: Stored `webservices` locally and returned early to avoid the negated condition.
 - typescript:S6754 — src/pages/Userguide/Userguide.tsx:101: Renamed the setter to `setAutofillableInputValue` so the state pair aligns with hook conventions.
+- Quality gate (new_duplicated_lines_density, 11.9% vs. 3% threshold) — .sonarcloud.properties: All 1,168 duplicated lines on new code sat in tests/popup.test.tsx, tests/milestone4.stress.test.tsx and tests/background.test.ts. Sonar never runs duplication detection on code declared through `sonar.tests`, but automatic analysis does not support that property, so the suite was being scanned as production source. Added `sonar.cpd.exclusions=tests/**` to express the same intent. Duplication detection remains on for all production code.
+- Duplication — wxt.config.ts:8-99: Collapsed the near-identical `resolveBraveBinary` and `resolveEdgeBinary` helpers (83 duplicated lines, 37.7% of the file) into a single `resolveBrowserBinary` driven by a per-browser spec.
 
 ## Remaining Issues
 
