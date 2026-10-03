@@ -65,7 +65,7 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [@jridgewell/gen-mapping@0.3.13](https://github.com/jridgewell/sourcemaps)                                                   | MIT                                 |
 | [@jridgewell/remapping@2.3.5](https://github.com/jridgewell/sourcemaps)                                                      | MIT                                 |
 | [@jridgewell/resolve-uri@3.1.2](https://github.com/jridgewell/resolve-uri)                                                   | MIT                                 |
-| [@jridgewell/sourcemap-codec@1.5.5](https://github.com/jridgewell/sourcemaps)                                                | MIT                                 |
+| [@jridgewell/sourcemap-codec@1.6.0](https://github.com/jridgewell/sourcemaps)                                                | MIT                                 |
 | [@jridgewell/trace-mapping@0.3.31](https://github.com/jridgewell/sourcemaps)                                                 | MIT                                 |
 | [@mdn/browser-compat-data@8.0.8](https://github.com/mdn/browser-compat-data)                                                 | CC0-1.0                             |
 | [@npmcli/agent@4.0.2](https://github.com/npm/agent)                                                                          | ISC                                 |
@@ -83,7 +83,7 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [@npmcli/redact@4.0.0](https://github.com/npm/redact)                                                                        | ISC                                 |
 | [@npmcli/run-script@10.0.4](https://github.com/npm/run-script)                                                               | ISC                                 |
 | [@oxc-project/types@0.127.0](https://github.com/oxc-project/oxc)                                                             | MIT                                 |
-| [@oxc-project/types@0.133.0](https://github.com/oxc-project/oxc)                                                             | MIT                                 |
+| [@oxc-project/types@0.149.0](https://github.com/oxc-project/oxc)                                                             | MIT                                 |
 | [@pinojs/redact@0.4.0](https://github.com/pinojs/redact)                                                                     | MIT                                 |
 | [@playwright/test@1.62.1](https://github.com/microsoft/playwright)                                                           | Apache-2.0                          |
 | [@pnpm/config.env-replace@1.1.0](https://github.com/pnpm/components)                                                         | MIT                                 |
@@ -120,7 +120,7 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [@types/babel__template@7.4.4](https://github.com/DefinitelyTyped/DefinitelyTyped)                                           | MIT                                 |
 | [@types/babel__traverse@7.28.0](https://github.com/DefinitelyTyped/DefinitelyTyped)                                          | MIT                                 |
 | [@types/chai@5.2.3](https://github.com/DefinitelyTyped/DefinitelyTyped)                                                      | MIT                                 |
-| [@types/chrome@0.2.2](https://github.com/DefinitelyTyped/DefinitelyTyped)                                                    | MIT                                 |
+| [@types/chrome@0.3.0](https://github.com/DefinitelyTyped/DefinitelyTyped)                                                    | MIT                                 |
 | [@types/deep-eql@4.0.2](https://github.com/DefinitelyTyped/DefinitelyTyped)                                                  | MIT                                 |
 | [@types/doctrine@0.0.9](https://github.com/DefinitelyTyped/DefinitelyTyped)                                                  | MIT                                 |
 | [@types/estree@1.0.9](https://github.com/DefinitelyTyped/DefinitelyTyped)                                                    | MIT                                 |
@@ -133,17 +133,17 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [@types/react-dom@19.3.0](https://github.com/DefinitelyTyped/DefinitelyTyped)                                                | MIT                                 |
 | [@types/react@19.3.0](https://github.com/DefinitelyTyped/DefinitelyTyped)                                                    | MIT                                 |
 | [@types/resolve@1.20.6](https://github.com/DefinitelyTyped/DefinitelyTyped)                                                  | MIT                                 |
-| [@types/webextension-polyfill@0.12.5](https://github.com/DefinitelyTyped/DefinitelyTyped)                                    | MIT                                 |
+| [@types/webextension-polyfill@0.12.6](https://github.com/DefinitelyTyped/DefinitelyTyped)                                    | MIT                                 |
 | [@types/whatwg-mimetype@3.0.2](https://github.com/DefinitelyTyped/DefinitelyTyped)                                           | MIT                                 |
 | [@types/ws@8.18.1](https://github.com/DefinitelyTyped/DefinitelyTyped)                                                       | MIT                                 |
-| [@vitest/coverage-v8@5.0.0](https://github.com/vitest-dev/vitest)                                                            | MIT                                 |
+| [@vitest/coverage-v8@5.0.2](https://github.com/vitest-dev/vitest)                                                            | MIT                                 |
 | [@vitest/expect@3.2.4](https://github.com/vitest-dev/vitest)                                                                 | MIT                                 |
 | [@vitest/istanbul-lib-coverage@1.0.1](https://github.com/vitest-dev/istanbuljs)                                              | MIT                                 |
 | [@vitest/istanbul-lib-report@1.0.1](https://github.com/vitest-dev/istanbuljs)                                                | MIT                                 |
-| [@vitest/mocker@5.0.0](https://github.com/vitest-dev/vitest)                                                                 | MIT                                 |
+| [@vitest/mocker@5.0.2](https://github.com/vitest-dev/vitest)                                                                 | MIT                                 |
 | [@vitest/pretty-format@3.2.4](https://github.com/vitest-dev/vitest)                                                          | MIT                                 |
 | [@vitest/spy@3.2.4](https://github.com/vitest-dev/vitest)                                                                    | MIT                                 |
-| [@vitest/spy@5.0.0](https://github.com/vitest-dev/vitest)                                                                    | MIT                                 |
+| [@vitest/spy@5.0.2](https://github.com/vitest-dev/vitest)                                                                    | MIT                                 |
 | [@vitest/utils@3.2.4](https://github.com/vitest-dev/vitest)                                                                  | MIT                                 |
 | [@webcontainer/env@1.1.1](https://github.com/stackblitz/webcontainer-core)                                                   | MIT                                 |
 | [@webext-core/fake-browser@2.0.1](https://github.com/aklinker1/webext-core)                                                  | MIT                                 |
@@ -190,8 +190,8 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [bluebird@3.7.2](https://github.com/petkaantonov/bluebird)                                                                   | MIT                                 |
 | [boolbase@1.0.0](https://github.com/fb55/boolbase)                                                                           | ISC                                 |
 | [boxen@8.0.1](https://github.com/sindresorhus/boxen)                                                                         | MIT                                 |
-| [brace-expansion@1.1.18](https://github.com/juliangruber/brace-expansion)                                                    | MIT                                 |
-| [brace-expansion@5.0.9](https://github.com/juliangruber/brace-expansion)                                                     | MIT                                 |
+| [brace-expansion@1.1.21](https://github.com/juliangruber/brace-expansion)                                                    | MIT                                 |
+| [brace-expansion@5.0.12](https://github.com/juliangruber/brace-expansion)                                                    | MIT                                 |
 | [browserslist@4.28.9](https://github.com/browserslist/browserslist)                                                          | MIT                                 |
 | [buffer-equal-constant-time@1.0.1](https://github.com/goinstant/buffer-equal-constant-time)                                  | BSD-3-Clause                        |
 | [buffer-from@1.1.2](https://github.com/LinusU/buffer-from)                                                                   | MIT                                 |
@@ -336,7 +336,7 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [globals@14.0.0](https://github.com/sindresorhus/globals)                                                                    | MIT                                 |
 | [graceful-fs@4.2.10](https://github.com/isaacs/node-graceful-fs)                                                             | ISC                                 |
 | [graceful-fs@4.2.11](https://github.com/isaacs/node-graceful-fs)                                                             | ISC                                 |
-| [happy-dom@20.11.2](https://github.com/capricorn86/happy-dom)                                                                | MIT                                 |
+| [happy-dom@20.14.5](https://github.com/capricorn86/happy-dom)                                                                | MIT                                 |
 | [has-flag@4.0.0](https://github.com/sindresorhus/has-flag)                                                                   | MIT                                 |
 | [hasown@2.0.4](https://github.com/inspect-js/hasOwn)                                                                         | MIT                                 |
 | [hookable@6.1.1](https://github.com/unjs/hookable)                                                                           | MIT                                 |
@@ -360,7 +360,7 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [ini@4.1.1](https://github.com/npm/ini)                                                                                      | ISC                                 |
 | [ini@4.1.3](https://github.com/npm/ini)                                                                                      | ISC                                 |
 | [ini@6.0.0](https://github.com/npm/ini)                                                                                      | ISC                                 |
-| [ip-address@10.5.0](https://github.com/beaugunderson/ip-address)                                                             | MIT                                 |
+| [ip-address@10.7.3](https://github.com/beaugunderson/ip-address)                                                             | MIT                                 |
 | [is-core-module@2.16.2](https://github.com/inspect-js/is-core-module)                                                        | MIT                                 |
 | [is-docker@2.2.1](https://github.com/sindresorhus/is-docker)                                                                 | MIT                                 |
 | [is-docker@3.0.0](https://github.com/sindresorhus/is-docker)                                                                 | MIT                                 |
@@ -386,7 +386,7 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [js-tokens@10.0.0](https://github.com/lydell/js-tokens)                                                                      | MIT                                 |
 | [js-tokens@4.0.0](https://github.com/lydell/js-tokens)                                                                       | MIT                                 |
 | [js-tokens@9.0.1](https://github.com/lydell/js-tokens)                                                                       | MIT                                 |
-| [js-yaml@4.3.1](https://github.com/nodeca/js-yaml)                                                                           | MIT                                 |
+| [js-yaml@4.3.2](https://github.com/nodeca/js-yaml)                                                                           | MIT                                 |
 | [jsdom@30.0.1](https://github.com/jsdom/jsdom)                                                                               | MIT                                 |
 | [jsesc@3.1.0](https://github.com/mathiasbynens/jsesc)                                                                        | MIT                                 |
 | [json-buffer@3.0.1](https://github.com/dominictarr/json-buffer)                                                              | MIT                                 |
@@ -414,6 +414,7 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [lie@3.3.0](https://github.com/calvinmetcalf/lie)                                                                            | MIT                                 |
 | [lighthouse-logger@2.0.2](https://github.com/GoogleChrome/lighthouse)                                                        | Apache-2.0                          |
 | [lightningcss@1.32.0](https://github.com/parcel-bundler/lightningcss)                                                        | MPL-2.0                             |
+| [lightningcss@1.33.0](https://github.com/parcel-bundler/lightningcss)                                                        | MPL-2.0                             |
 | [linkedom@0.18.12](https://github.com/WebReflection/linkedom)                                                                | ISC                                 |
 | [local-pkg@1.2.1](https://github.com/antfu-collective/local-pkg)                                                             | MIT                                 |
 | [locate-path@6.0.0](https://github.com/sindresorhus/locate-path)                                                             | MIT                                 |
@@ -432,6 +433,7 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [lz-string@1.5.0](https://github.com/pieroxy/lz-string)                                                                      | MIT                                 |
 | [magic-string@0.30.21](https://github.com/Rich-Harris/magic-string)                                                          | MIT                                 |
 | [magic-string@1.2.3](https://github.com/Rich-Harris/magic-string)                                                            | MIT                                 |
+| [magic-string@1.4.2](https://github.com/Rich-Harris/magic-string)                                                            | MIT                                 |
 | [magicast@0.5.4](https://github.com/unjs/magicast)                                                                           | MIT                                 |
 | [make-error@1.3.6](https://github.com/JsCommunity/make-error)                                                                | ISC                                 |
 | [make-fetch-happen@15.0.6](https://github.com/npm/make-fetch-happen)                                                         | ISC                                 |
@@ -512,7 +514,7 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [playwright-core@1.62.1](https://github.com/microsoft/playwright)                                                            | Apache-2.0                          |
 | [playwright@1.62.1](https://github.com/microsoft/playwright)                                                                 | Apache-2.0                          |
 | [postcss-selector-parser@7.1.4](https://github.com/postcss/postcss-selector-parser)                                          | MIT                                 |
-| [postcss@8.5.26](https://github.com/postcss/postcss)                                                                         | MIT                                 |
+| [postcss@8.5.28](https://github.com/postcss/postcss)                                                                         | MIT                                 |
 | [powershell-utils@0.1.0](https://github.com/sindresorhus/powershell-utils)                                                   | MIT                                 |
 | [prelude-ls@1.2.1](https://github.com/gkz/prelude-ls)                                                                        | MIT                                 |
 | [prettier@3.9.6](https://github.com/prettier/prettier)                                                                       | MIT                                 |
@@ -550,7 +552,7 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [require-from-string@2.0.2](https://github.com/floatdrop/require-from-string)                                                | MIT                                 |
 | [resolve-from@4.0.0](https://github.com/sindresorhus/resolve-from)                                                           | MIT                                 |
 | [resolve@1.22.12](https://github.com/browserify/resolve)                                                                     | MIT                                 |
-| [rolldown@1.0.3](https://github.com/rolldown/rolldown)                                                                       | MIT                                 |
+| [rolldown@1.2.8](https://github.com/rolldown/rolldown)                                                                       | MIT                                 |
 | [run-applescript@7.1.0](https://github.com/sindresorhus/run-applescript)                                                     | MIT                                 |
 | [safe-buffer@5.1.2](https://github.com/feross/safe-buffer)                                                                   | MIT                                 |
 | [safe-buffer@5.2.1](https://github.com/feross/safe-buffer)                                                                   | MIT                                 |
@@ -566,7 +568,6 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [shebang-command@2.0.0](https://github.com/kevva/shebang-command)                                                            | MIT                                 |
 | [shebang-regex@3.0.0](https://github.com/sindresorhus/shebang-regex)                                                         | MIT                                 |
 | [shell-quote@1.10.0](https://github.com/ljharb/shell-quote)                                                                  | MIT                                 |
-| [siginfo@2.0.0](https://github.com/emilbayes/siginfo)                                                                        | ISC                                 |
 | [signal-exit@4.1.0](https://github.com/tapjs/signal-exit)                                                                    | ISC                                 |
 | [sigstore@4.1.1](https://github.com/sigstore/sigstore-js)                                                                    | Apache-2.0                          |
 | [smart-buffer@4.2.0](https://github.com/JoshGlazebrook/smart-buffer)                                                         | MIT                                 |
@@ -589,7 +590,6 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [split@1.0.1](https://github.com/dominictarr/split)                                                                          | MIT                                 |
 | [split2@4.2.0](https://github.com/mcollina/split2)                                                                           | ISC                                 |
 | [ssri@13.0.1](https://github.com/npm/ssri)                                                                                   | ISC                                 |
-| [stackback@0.0.2](https://github.com/shtylman/node-stackback)                                                                | MIT                                 |
 | [std-env@4.2.0](https://github.com/unjs/std-env)                                                                             | MIT                                 |
 | [storybook@10.6.0](https://github.com/storybookjs/storybook)                                                                 | MIT                                 |
 | [string_decoder@1.1.1](https://github.com/nodejs/string_decoder)                                                             | MIT                                 |
@@ -643,9 +643,9 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [ufo@1.6.4](https://github.com/unjs/ufo)                                                                                     | MIT                                 |
 | [uhyphen@0.2.0](https://github.com/WebReflection/uhyphen)                                                                    | ISC                                 |
 | [undici-types@8.3.0](https://github.com/nodejs/undici)                                                                       | MIT                                 |
-| [undici@6.28.0](https://github.com/nodejs/undici)                                                                            | MIT                                 |
-| [undici@7.29.0](https://github.com/nodejs/undici)                                                                            | MIT                                 |
-| [undici@8.10.0](https://github.com/nodejs/undici)                                                                            | MIT                                 |
+| [undici@6.29.0](https://github.com/nodejs/undici)                                                                            | MIT                                 |
+| [undici@7.30.0](https://github.com/nodejs/undici)                                                                            | MIT                                 |
+| [undici@8.11.2](https://github.com/nodejs/undici)                                                                            | MIT                                 |
 | [unimport@6.3.0](https://github.com/unjs/unimport)                                                                           | MIT                                 |
 | [universalify@2.0.1](https://github.com/RyanZim/universalify)                                                                | MIT                                 |
 | [unplugin-utils@0.3.1](https://github.com/sxzz/unplugin-utils)                                                               | MIT                                 |
@@ -659,8 +659,8 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [util-deprecate@1.0.2](https://github.com/TooTallNate/util-deprecate)                                                        | MIT                                 |
 | [uuid@14.0.2](https://github.com/uuidjs/uuid)                                                                                | MIT                                 |
 | [validate-npm-package-name@7.0.2](https://github.com/npm/validate-npm-package-name)                                          | ISC                                 |
-| [vite@8.0.16](https://github.com/vitejs/vite)                                                                                | MIT                                 |
-| [vitest@5.0.0](https://github.com/vitest-dev/vitest)                                                                         | MIT                                 |
+| [vite@8.3.0](https://github.com/vitejs/vite)                                                                                 | MIT                                 |
+| [vitest@5.0.2](https://github.com/vitest-dev/vitest)                                                                         | MIT                                 |
 | [w3c-xmlserializer@5.0.0](https://github.com/jsdom/w3c-xmlserializer)                                                        | MIT                                 |
 | [walk-up-path@4.0.0](https://github.com/isaacs/walk-up-path)                                                                 | ISC                                 |
 | [watchpack@2.5.2](https://github.com/webpack/watchpack)                                                                      | MIT                                 |
@@ -679,7 +679,7 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [which@2.0.2](https://github.com/isaacs/node-which)                                                                          | ISC                                 |
 | [which@4.0.0](https://github.com/npm/node-which)                                                                             | ISC                                 |
 | [which@6.0.1](https://github.com/npm/node-which)                                                                             | ISC                                 |
-| [why-is-node-running@2.3.0](https://github.com/mafintosh/why-is-node-running)                                                | MIT                                 |
+| [why-is-node-running@3.2.2](https://github.com/mafintosh/why-is-node-running)                                                | MIT                                 |
 | [widest-line@5.0.0](https://github.com/sindresorhus/widest-line)                                                             | MIT                                 |
 | [winreg@0.0.12](https://github.com/fresc81/node-winreg)                                                                      | BSD*                                |
 | [word-wrap@1.2.5](https://github.com/jonschlinkert/word-wrap)                                                                | MIT                                 |
