@@ -79,7 +79,7 @@
     "prettier": "^3.9.9",
     "publish-browser-extension": "^6.1.1",
     "spdx-expression-parse": "^5.0.0",
-    "storybook": "^10.5.5",
+    "storybook": "^10.6.1",
     "tailwindcss": "^4.3.2",
     "typescript": "^7.0.2",
     "vite": "^8.3.0",
