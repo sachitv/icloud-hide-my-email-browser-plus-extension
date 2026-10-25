@@ -591,7 +591,7 @@ This extension is based on the [Hide My Email browser extension](https://github.
 | [split2@4.2.0](https://github.com/mcollina/split2)                                                                           | ISC                                 |
 | [ssri@13.0.1](https://github.com/npm/ssri)                                                                                   | ISC                                 |
 | [std-env@4.2.0](https://github.com/unjs/std-env)                                                                             | MIT                                 |
-| [storybook@10.6.0](https://github.com/storybookjs/storybook)                                                                 | MIT                                 |
+| [storybook@10.6.3](https://github.com/storybookjs/storybook)                                                                 | MIT                                 |
 | [string_decoder@1.1.1](https://github.com/nodejs/string_decoder)                                                             | MIT                                 |
 | [string-width@4.2.3](https://github.com/sindresorhus/string-width)                                                           | MIT                                 |
 | [string-width@7.2.0](https://github.com/sindresorhus/string-width)                                                           | MIT                                 |
