@@ -97,7 +97,7 @@ jobs:
     runs-on: ubuntu-24.04-arm
     steps:
       - name: semantic-pull-request
-        uses: amannn/action-semantic-pull-request@v6.1.1
+        uses: amannn/action-semantic-pull-request@v6.1.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
